@@ -72,6 +72,50 @@ export const handleUploadError = (error, req, res, next) => {
   next(error);
 };
 
+// Instancia de multer para múltiples imágenes de reportes (máximo 3)
+export const uploadReportImages = multer({
+  storage: storage,
+  limits: { fileSize: config.upload.maxSize, files: 3 },
+  fileFilter: fileFilter,
+});
+
+// Middleware para manejar errores de upload de reportes
+export const handleReportUploadError = (error, req, res, next) => {
+  if (error instanceof multer.MulterError) {
+    if (error.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({
+        success: false,
+        message: 'Una o más imágenes del reporte son demasiado grandes',
+        error: `El tamaño máximo permitido por imagen es ${config.upload.maxSize / (1024 * 1024)}MB`,
+      });
+    }
+    if (error.code === 'LIMIT_FILE_COUNT') {
+      return res.status(400).json({
+        success: false,
+        message: 'Demasiadas imágenes en el reporte',
+        error: 'Se permite un máximo de 3 imágenes por reporte',
+      });
+    }
+    if (error.code === 'LIMIT_UNEXPECTED_FILE') {
+      return res.status(400).json({
+        success: false,
+        message: 'Campo de archivo inesperado en el reporte',
+        error: error.message,
+      });
+    }
+  }
+
+  if (error?.message?.includes('Tipo de archivo no permitido')) {
+    return res.status(400).json({
+      success: false,
+      message: 'Tipo de archivo no permitido en el reporte',
+      error: 'Las imágenes del reporte deben ser (JPEG, JPG, PNG, WebP)',
+    });
+  }
+
+  next(error);
+};
+
 // Elimina un archivo local por nombre
 export const deleteFile = (filename) => {
   try {
