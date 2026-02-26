@@ -6,9 +6,14 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import { dbConnection } from './db.js';
 
-// Importar modelos
+// Importar modelos — usuarios y auth
 import '../src/users/user.model.js';
 import '../src/auth/role.model.js';
+
+// Importar modelos — reportes (deben registrarse antes del sync)
+import '../src/reports/report.model.js';
+import '../src/reports/report-image.model.js';
+import '../src/reports/report-status-history.model.js';
 
 // Middlewares globales
 import { requestLimit } from '../middlewares/request-limit.js';
@@ -23,6 +28,7 @@ import {
 import authRoutes from '../src/auth/auth.routes.js';
 import userRoutes from '../src/users/user.routes.js';
 import profileRoutes from '../src/profiles/profile.routes.js';
+import reportRoutes from '../src/reports/report.routes.js';
 
 const BASE_PATH = '/gestionurbana/v1';
 
@@ -36,9 +42,10 @@ const middlewares = (app) => {
 };
 
 const routes = (app) => {
-  app.use(`${BASE_PATH}/auth`, authRoutes);
-  app.use(`${BASE_PATH}/users`, userRoutes);
+  app.use(`${BASE_PATH}/auth`,    authRoutes);
+  app.use(`${BASE_PATH}/users`,   userRoutes);
   app.use(`${BASE_PATH}/profile`, profileRoutes);
+  app.use(`${BASE_PATH}/reports`, reportRoutes);
 
   // Health check
   app.get(`${BASE_PATH}/health`, (_req, res) => {
