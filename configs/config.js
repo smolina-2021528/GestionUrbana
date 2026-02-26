@@ -35,6 +35,7 @@ export const config = {
     apiKey: process.env.CLOUDINARY_API_KEY,
     apiSecret: process.env.CLOUDINARY_API_SECRET,
     folder: process.env.CLOUDINARY_FOLDER,
+    folderReports: process.env.CLOUDINARY_FOLDER_REPORTS,
   },
 
   rateLimit: {
