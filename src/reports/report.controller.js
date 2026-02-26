@@ -88,4 +88,28 @@ export const createReport = async (req, res) => {
   }
 };
 
+// GET /api/reports/:reportId
+// Devuelve un reporte por su ID.
+export const getReportById = async (req, res) => {
+  try {
+    const report = await findReportById(req.params.reportId);
 
+    if (!report) {
+      return res.status(404).json({
+        success: false,
+        message: 'Reporte no encontrado.',
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: buildReportResponse(report),
+    });
+  } catch (error) {
+    console.error('Error en getReportById:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error al obtener el reporte.',
+    });
+  }
+};
