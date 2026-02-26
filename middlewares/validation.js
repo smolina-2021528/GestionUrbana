@@ -1,4 +1,5 @@
 import { body, validationResult } from 'express-validator';
+import { REPORT_CATEGORIES, REPORT_STATUSES } from '../helpers/report-constants.js';
 
 // Maneja los errores de validación y retorna respuesta formateada
 export const handleValidationErrors = (req, res, next) => {
@@ -170,6 +171,84 @@ export const validateChangePassword = [
     .withMessage('La nueva contraseña es obligatoria')
     .isLength({ min: 8 })
     .withMessage('La nueva contraseña debe tener al menos 8 caracteres'),
+
+  handleValidationErrors,
+];
+
+// Validaciones para crear un reporte
+export const validateCreateReport = [
+  body('title')
+    .trim()
+    .notEmpty()
+    .withMessage('El título es obligatorio')
+    .isLength({ min: 3, max: 150 })
+    .withMessage('El título debe tener entre 3 y 150 caracteres'),
+
+  body('description')
+    .trim()
+    .notEmpty()
+    .withMessage('La descripción es obligatoria')
+    .isLength({ min: 10, max: 2000 })
+    .withMessage('La descripción debe tener entre 10 y 2000 caracteres'),
+
+  body('category')
+    .trim()
+    .notEmpty()
+    .withMessage('La categoría es obligatoria')
+    .isIn(REPORT_CATEGORIES)
+    .withMessage('Categoría inválida. Valores permitidos: INFRAESTRUCTURA, SEGURIDAD, LIMPIEZA'),
+
+  handleValidationErrors,
+];
+
+// Validaciones para actualizar un reporte
+export const validateUpdateReport = [
+  body('title')
+    .optional()
+    .trim()
+    .isLength({ min: 3, max: 150 })
+    .withMessage('El título debe tener entre 3 y 150 caracteres'),
+
+  body('description')
+    .optional()
+    .trim()
+    .isLength({ min: 10, max: 2000 })
+    .withMessage('La descripción debe tener entre 10 y 2000 caracteres'),
+
+  body('category')
+    .optional()
+    .trim()
+    .isIn(REPORT_CATEGORIES)
+    .withMessage('Categoría inválida. Valores permitidos: INFRAESTRUCTURA, SEGURIDAD, LIMPIEZA'),
+
+  handleValidationErrors,
+];
+
+// Validaciones para cambiar el estado de un reporte
+export const validateChangeReportStatus = [
+  body('status')
+    .trim()
+    .notEmpty()
+    .withMessage('El estado es obligatorio')
+    .isIn(REPORT_STATUSES)
+    .withMessage('Estado inválido. Valores: PENDIENTE, EN_PROCESO, RESUELTO, RECHAZADO'),
+
+  body('notes')
+    .optional()
+    .isLength({ max: 500 })
+    .withMessage('Las notas no pueden superar los 500 caracteres'),
+
+  handleValidationErrors,
+];
+
+// Validaciones para asignar un reporte a personal municipal
+export const validateAssignReport = [
+  body('assignedTo')
+    .trim()
+    .notEmpty()
+    .withMessage('El ID del personal municipal es requerido')
+    .isString()
+    .withMessage('El ID del personal municipal es requerido'),
 
   handleValidationErrors,
 ];
