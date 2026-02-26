@@ -1,4 +1,5 @@
-ersion: "3.9"
+version: "3.9"
+
 services:
   postgres_db:
     image: postgres:16
@@ -9,7 +10,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     ports:
-      - ${DB_PORT}:5432
+      - "5436:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
@@ -18,7 +19,7 @@ services:
     container_name: gestion_urbana_mongo
     restart: always
     ports:
-      - "27017":27017
+      - "27017:27017"
     volumes:
       - mongo_data:/data/db
 
