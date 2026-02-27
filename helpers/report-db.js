@@ -3,6 +3,8 @@ import { Report } from '../src/reports/report.model.js';
 import { ReportImage } from '../src/reports/report-image.model.js';
 import { ReportStatusHistory } from '../src/reports/report-status-history.model.js';
 import { User } from '../src/users/user.model.js';
+import { buildGeoPoint } from '../utils/geo-helpers.js';
+
 
 // Incluye todas las asociaciones para cargar un reporte completo
 const getReportIncludes = () => [
@@ -192,3 +194,57 @@ export const deleteReport = async (reportId, transaction) => {
         throw new Error('Error al eliminar reporte');
     }
 };
+
+export const findReportsByProximity = async (latitude, longitude, radiusMeters, options = {}) => {
+    try {
+        const { limit = 10, offset = 0, status, category } = options;
+
+        const refPoint = sequelize.fn(
+            'ST_SetSRID',
+            sequelize.fn('ST_MakePoint', longitude, latitude),
+            4326
+        );
+
+        const refPointGeog = sequelize.fn(
+            'ST_GeogFromWKB',
+            sequelize.cast(refPoint, 'geometry')
+        );
+
+        const locationGeog = sequelize.fn(
+            'ST_GeogFromWKB',
+            sequelize.cast(sequelize.col('location'), 'geometry')
+        );
+
+        const where = {
+            [Op.and]: [
+                sequelize.where(
+                    sequelize.fn('ST_DWithin', locationGeog, refPointGeog, radiusMeters),
+                    true
+                ),
+            ],
+        };
+
+        if (status) where.Status = status;
+        if (category) where.Category = category;
+
+        const reports = await Report.findAndCountAll({
+            where,
+            include: getReportIncludes(),
+            order: [
+                [
+                    sequelize.fn('ST_Distance', locationGeog, refPointGeog),
+                    'ASC',
+                ],
+                [{ model: ReportImage, as: 'Images' }, 'order', 'ASC'],
+            ],
+            limit,
+            offset,
+        });
+
+        return reports;
+    } catch (error) {
+        console.error('Error buscando reportes por proximidad:', error);
+        throw new Error('Error al buscar reportes por proximidad');
+    }
+};
+
