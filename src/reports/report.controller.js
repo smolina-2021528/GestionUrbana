@@ -445,14 +445,69 @@ export const changeReportStatus = async (req, res) => {
   }
 };
 
+export const deleteReportImage = async (req, res) => {
+  try {
+    const { reportId, imageId } = req.params;
 
+    const image = await ReportImage.findOne({
+      where: { Id: imageId, ReportId: reportId },
+    });
+
+    if (!image) {
+      return res.status(404).json({
+        success: false,
+        message: 'Imagen no encontrada o no pertenece a este reporte.',
+      });
+    }
+
+    const report = await findReportById(reportId);
+
+    if (!report) {
+      return res.status(404).json({
+        success: false,
+        message: 'Reporte no encontrado.',
+      });
+    }
+
+    const isOwner = report.UserId === req.userId;
+    const isAdmin = req.userRole === 'ADMIN_ROLE';
+
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({
+        success: false,
+        message: 'No tienes permiso para eliminar imágenes de este reporte.',
+      });
+    }
+
+    const publicId = image.PublicId;
+    await image.destroy();
+
+    if (publicId) {
+      try {
+        await deleteImage(publicId);
+      } catch (err) {
+        console.error('Error al eliminar imagen de Cloudinary:', err);
+      }
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Imagen eliminada exitosamente.',
+    });
+
+  } catch (error) {
+    console.error('Error en deleteReportImage:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error al eliminar la imagen.',
+    });
+  }
+};
 
 export const assignReport = async (req, res) => {
   try {
     const { reportId } = req.params;
     const { assignedTo } = req.body;
-
-    // 1️⃣ Buscar el reporte
     const report = await Report.findByPk(reportId);
     if (!report) {
       return res.status(404).json({
