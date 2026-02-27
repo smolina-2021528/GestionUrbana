@@ -175,6 +175,55 @@ export const validateChangePassword = [
   handleValidationErrors,
 ];
 
+// ── Validaciones geográficas reutilizables ─────────────────────────────────────
+const geoValidations = [
+  body('latitude')
+    .optional({ nullable: true })
+    .isFloat({ min: -90, max: 90 })
+    .withMessage('La latitud debe ser un número entre -90 y 90')
+    .custom((value, { req }) => {
+      // Si se envió latitude debe acompañarse de longitude
+      const hasLat = value !== undefined && value !== null && value !== '';
+      const hasLng =
+        req.body.longitude !== undefined &&
+        req.body.longitude !== null &&
+        req.body.longitude !== '';
+
+      if (hasLat && !hasLng) {
+        throw new Error(
+          'Si se proporciona latitude también debe proporcionarse longitude'
+        );
+      }
+      return true;
+    }),
+
+  body('longitude')
+    .optional({ nullable: true })
+    .isFloat({ min: -180, max: 180 })
+    .withMessage('La longitud debe ser un número entre -180 y 180')
+    .custom((value, { req }) => {
+      // Si se envió longitude debe acompañarse de latitude
+      const hasLng = value !== undefined && value !== null && value !== '';
+      const hasLat =
+        req.body.latitude !== undefined &&
+        req.body.latitude !== null &&
+        req.body.latitude !== '';
+
+      if (hasLng && !hasLat) {
+        throw new Error(
+          'Si se proporciona longitude también debe proporcionarse latitude'
+        );
+      }
+      return true;
+    }),
+
+  body('address')
+    .optional({ nullable: true })
+    .trim()
+    .isLength({ max: 500 })
+    .withMessage('La dirección no puede superar los 500 caracteres'),
+];
+
 // Validaciones para crear un reporte
 export const validateCreateReport = [
   body('title')
@@ -198,6 +247,9 @@ export const validateCreateReport = [
     .isIn(REPORT_CATEGORIES)
     .withMessage('Categoría inválida. Valores permitidos: INFRAESTRUCTURA, SEGURIDAD, LIMPIEZA'),
 
+  // Campos geográficos opcionales
+  ...geoValidations,
+
   handleValidationErrors,
 ];
 
@@ -220,6 +272,9 @@ export const validateUpdateReport = [
     .trim()
     .isIn(REPORT_CATEGORIES)
     .withMessage('Categoría inválida. Valores permitidos: INFRAESTRUCTURA, SEGURIDAD, LIMPIEZA'),
+
+  // Campos geográficos opcionales
+  ...geoValidations,
 
   handleValidationErrors,
 ];

@@ -1,4 +1,4 @@
-import { DataTypes } from 'sequelize';
+import { DataTypes, QueryTypes } from 'sequelize';
 import { sequelize } from '../../configs/db.js';
 import { generateUserId } from '../../helpers/uuid-generator.js';
 import { User } from '../users/user.model.js';
@@ -96,6 +96,51 @@ export const Report = sequelize.define(
       allowNull: true,
       field: 'resolved_at',
     },
+
+    // ── Campos de geolocalización ──────────────────────────────────────────────
+    Latitude: {
+      type: DataTypes.DECIMAL(10, 8),
+      allowNull: true,
+      field: 'latitude',
+      validate: {
+        min: {
+          args: [-90],
+          msg: 'La latitud debe ser mayor o igual a -90.',
+        },
+        max: {
+          args: [90],
+          msg: 'La latitud debe ser menor o igual a 90.',
+        },
+      },
+    },
+
+    Longitude: {
+      type: DataTypes.DECIMAL(11, 8),
+      allowNull: true,
+      field: 'longitude',
+      validate: {
+        min: {
+          args: [-180],
+          msg: 'La longitud debe ser mayor o igual a -180.',
+        },
+        max: {
+          args: [180],
+          msg: 'La longitud debe ser menor o igual a 180.',
+        },
+      },
+    },
+
+    Location: {
+      type: DataTypes.GEOMETRY('POINT', 4326),
+      allowNull: true,
+      field: 'location',
+    },
+    Address: {
+      type: DataTypes.STRING(500),
+      allowNull: true,
+      field: 'address',
+    },
+
     CreatedAt: {
       type: DataTypes.DATE,
       allowNull: false,
@@ -117,7 +162,20 @@ export const Report = sequelize.define(
   }
 );
 
-// Asociaciones
 Report.belongsTo(User, { foreignKey: 'user_id',    as: 'Citizen' });
 Report.belongsTo(User, { foreignKey: 'assigned_to', as: 'AssignedMunicipal' });
 User.hasMany(Report,   { foreignKey: 'user_id',    as: 'Reports' });
+
+export const createSpatialIndex = async () => {
+  try {
+    await sequelize.query(
+      `CREATE INDEX IF NOT EXISTS reports_location_gist_idx
+       ON reports
+       USING GIST (location);`,
+      { type: QueryTypes.RAW }
+    );
+    console.log('PostGIS | Índice espacial GIST verificado/creado en reports.location');
+  } catch (error) {
+    console.error('PostGIS | Error creando índice espacial:', error.message);
+  }
+};

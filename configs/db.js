@@ -37,6 +37,9 @@ export const dbConnection = async () => {
     await sequelize.authenticate();
     console.log('PostgreSQL | Conectado a PostgreSQL');
     console.log('PostgreSQL | Conexión a la base de datos establecida');
+    
+    await sequelize.query('CREATE EXTENSION IF NOT EXISTS postgis;');
+    console.log('PostGIS | Extensión verificada/habilitada correctamente');
 
     if (process.env.NODE_ENV === 'development') {
       const syncLogging =
