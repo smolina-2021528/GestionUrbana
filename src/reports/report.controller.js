@@ -12,9 +12,10 @@ import {
   searchReportsByText,
   buildLocationData,
   findReportsByProximity,
+  getHeatmapData,
 } from '../../helpers/report-db.js';
 import { uploadReportImage, deleteImage } from '../../helpers/cloudinary-service.js';
-import { buildReportGeoResponse } from '../../utils/geo-helpers.js';
+import { buildReportGeoResponse, buildHeatmapPoint } from '../../utils/geo-helpers.js';
 import { DEFAULT_PRIORITY, DEFAULT_STATUS, REPORT_STATUSES, REPORT_CATEGORIES, REPORT_PRIORITIES } from '../../helpers/report-constants.js';
 import { getUserRoleNames } from '../../helpers/role-db.js';
 
@@ -760,6 +761,37 @@ export const getNearbyReports = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Error al obtener reportes cercanos.',
+    });
+  }
+};
+
+// GET /api/reports/heatmap
+// Retorna datos de mapa de calor para reportes.
+export const getHeatmap = async (req, res) => {
+  try {
+    const { category, priority, status, startDate, endDate } = req.query;
+
+    const filters = {};
+    if (category) filters.category = category;
+    if (priority) filters.priority = priority;
+    if (status) filters.status = status;
+    if (startDate) filters.startDate = startDate;
+    if (endDate) filters.endDate = endDate;
+
+    const rows = await getHeatmapData(filters);
+
+    const points = rows.map((report) => buildHeatmapPoint(report));
+
+    return res.status(200).json({
+      success: true,
+      data: points,
+      total: points.length,
+    });
+  } catch (error) {
+    console.error('Error en getHeatmap:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error al obtener los datos del mapa de calor.',
     });
   }
 };
