@@ -22,10 +22,13 @@ import {
   getAllReports,
   changeReportStatus,
   assignReport,
+  getReportStats,
 } from './report.controller.js';
 
 const router = Router();
 
+
+router.get('/stats', validateJWT, validateAdmin, getReportStats);
 
 router.get('/', validateJWT, validateAdmin, getAllReports);
 
