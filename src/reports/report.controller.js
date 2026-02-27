@@ -11,6 +11,7 @@ import {
   updateReportStatus,
   searchReportsByText,
   buildLocationData,
+  findReportsByProximity,
 } from '../../helpers/report-db.js';
 import { uploadReportImage, deleteImage } from '../../helpers/cloudinary-service.js';
 import { buildReportGeoResponse } from '../../utils/geo-helpers.js';
@@ -680,6 +681,85 @@ export const assignReport = async (req, res) => {
     return res.status(500).json({
       ok: false,
       msg: 'Error al asignar el reporte',
+    });
+  }
+};
+// GET /api/reports/nearby
+// Retorna reportes cercanos a unas coordenadas dadas dentro de un radio.
+export const getNearbyReports = async (req, res) => {
+  try {
+    let { lat, lng, radius = 1000, page = 1, limit = 10, status, category } = req.query;
+
+    const parsedLat = parseFloat(lat);
+    const parsedLng = parseFloat(lng);
+    const parsedRadius = parseInt(radius);
+
+    if (isNaN(parsedLat) || isNaN(parsedLng)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Los parámetros lat y lng deben ser números válidos.',
+      });
+    }
+
+    if (parsedLat < -90 || parsedLat > 90) {
+      return res.status(400).json({
+        success: false,
+        message: 'La latitud debe estar entre -90 y 90.',
+      });
+    }
+
+    if (parsedLng < -180 || parsedLng > 180) {
+      return res.status(400).json({
+        success: false,
+        message: 'La longitud debe estar entre -180 y 180.',
+      });
+    }
+
+    if (isNaN(parsedRadius) || parsedRadius < 50 || parsedRadius > 50000) {
+      return res.status(400).json({
+        success: false,
+        message: 'El radio debe ser un número entre 50 y 50,000 metros.',
+      });
+    }
+
+    let parsedPage = parseInt(page);
+    let parsedLimit = parseInt(limit);
+
+    if (isNaN(parsedPage) || parsedPage < 1) parsedPage = 1;
+    if (isNaN(parsedLimit) || parsedLimit < 1) parsedLimit = 10;
+    if (parsedLimit > 50) parsedLimit = 50;
+
+    const offset = (parsedPage - 1) * parsedLimit;
+
+    const { count, rows } = await findReportsByProximity(parsedLat, parsedLng, parsedRadius, {
+      limit: parsedLimit,
+      offset,
+      status,
+      category,
+    });
+
+    const reports = rows.map((report) => buildReportGeoResponse(report));
+    const totalPages = Math.ceil(count / parsedLimit);
+
+    return res.status(200).json({
+      success: true,
+      data: reports,
+      meta: {
+        center: { latitude: parsedLat, longitude: parsedLng },
+        radius: parsedRadius,
+      },
+      pagination: {
+        total: count,
+        page: parsedPage,
+        limit: parsedLimit,
+        totalPages,
+      },
+    });
+  } catch (error) {
+    console.error('Error en getNearbyReports:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error al obtener reportes cercanos.',
     });
   }
 };
