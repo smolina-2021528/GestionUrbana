@@ -10,9 +10,12 @@ import {
   deleteReport as deleteReportDB,
   updateReportStatus,
   searchReportsByText,
+  buildLocationData,
+  findReportsByProximity,
+  getHeatmapData,
 } from '../../helpers/report-db.js';
 import { uploadReportImage, deleteImage } from '../../helpers/cloudinary-service.js';
-import { buildReportResponse } from '../../utils/report-helpers.js';
+import { buildReportGeoResponse, buildHeatmapPoint } from '../../utils/geo-helpers.js';
 import { DEFAULT_PRIORITY, DEFAULT_STATUS, REPORT_STATUSES, REPORT_CATEGORIES, REPORT_PRIORITIES } from '../../helpers/report-constants.js';
 import { getUserRoleNames } from '../../helpers/role-db.js';
 
@@ -23,7 +26,9 @@ export const createReport = async (req, res) => {
   const uploadedImages = [];
 
   try {
-    const { title, description, category } = req.body;
+    const { title, description, category, latitude, longitude, address } = req.body;
+
+    const locationData = buildLocationData(latitude, longitude, address);
 
     const report = await Report.create(
       {
@@ -33,6 +38,7 @@ export const createReport = async (req, res) => {
         Priority: DEFAULT_PRIORITY,
         Status: DEFAULT_STATUS,
         UserId: req.userId,
+        ...locationData,
       },
       { transaction }
     );
@@ -73,7 +79,7 @@ export const createReport = async (req, res) => {
     return res.status(201).json({
       success: true,
       message: 'Reporte creado exitosamente.',
-      data: buildReportResponse(fullReport),
+      data: buildReportGeoResponse(fullReport),
     });
   } catch (error) {
     await transaction.rollback();
@@ -105,7 +111,7 @@ export const getReportById = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      data: buildReportResponse(report),
+      data: buildReportGeoResponse(report),
     });
   } catch (error) {
     console.error('Error en getReportById:', error);
@@ -137,7 +143,7 @@ export const getAllReports = async (req, res) => {
 
     const { count, rows } = await findAllReports(filters, { limit, offset });
 
-    const reports = rows.map((report) => buildReportResponse(report));
+    const reports = rows.map((report) => buildReportGeoResponse(report));
 
     const totalPages = Math.ceil(count / limit);
 
@@ -236,7 +242,7 @@ export const getMyReports = async (req, res) => {
 
     const { count, rows } = await findReportsByUser(req.userId, { limit, offset });
 
-    const reports = rows.map((report) => buildReportResponse(report));
+    const reports = rows.map((report) => buildReportGeoResponse(report));
 
     const totalPages = Math.ceil(count / limit);
 
@@ -276,12 +282,15 @@ export const updateReport = async (req, res) => {
       });
     }
 
-    const { title, description, category } = req.body;
+    const { title, description, category, latitude, longitude, address } = req.body;
 
     const updateData = {};
     if (title) updateData.Title = title;
     if (description) updateData.Description = description;
     if (category) updateData.Category = category;
+
+    const locationData = buildLocationData(latitude, longitude, address);
+    Object.assign(updateData, locationData);
 
     if (Object.keys(updateData).length > 0) {
       await report.update(updateData, { transaction });
@@ -316,7 +325,7 @@ export const updateReport = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: 'Reporte actualizado exitosamente.',
-      data: buildReportResponse(updatedReport),
+      data: buildReportGeoResponse(updatedReport),
     });
   } catch (error) {
     await transaction.rollback();
@@ -402,7 +411,7 @@ export const changeReportStatus = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: 'Estado actualizado correctamente.',
-      data: buildReportResponse(updatedReport),
+      data: buildReportGeoResponse(updatedReport),
     });
   } catch (error) {
     await transaction.rollback();
@@ -569,7 +578,7 @@ export const searchReports = async (req, res) => {
       offset,
     });
 
-    const reports     = rows.map((report) => buildReportResponse(report));
+    const reports     = rows.map((report) => buildReportGeoResponse(report));
     const totalPages  = Math.ceil(count / parsedLimit);
 
     return res.status(200).json({
@@ -662,15 +671,127 @@ export const assignReport = async (req, res) => {
     report.AssignedTo = user.Id;
     await report.save();
 
+    const fullReport = await findReportById(report.Id);
+
     return res.status(200).json({
       ok: true,
-      report,
+      report: buildReportGeoResponse(fullReport),
     });
   } catch (error) {
     console.error(error);
     return res.status(500).json({
       ok: false,
       msg: 'Error al asignar el reporte',
+    });
+  }
+};
+// GET /api/reports/nearby
+// Retorna reportes cercanos a unas coordenadas dadas dentro de un radio.
+export const getNearbyReports = async (req, res) => {
+  try {
+    let { lat, lng, radius = 1000, page = 1, limit = 10, status, category } = req.query;
+
+    const parsedLat = parseFloat(lat);
+    const parsedLng = parseFloat(lng);
+    const parsedRadius = parseInt(radius);
+
+    if (isNaN(parsedLat) || isNaN(parsedLng)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Los parámetros lat y lng deben ser números válidos.',
+      });
+    }
+
+    if (parsedLat < -90 || parsedLat > 90) {
+      return res.status(400).json({
+        success: false,
+        message: 'La latitud debe estar entre -90 y 90.',
+      });
+    }
+
+    if (parsedLng < -180 || parsedLng > 180) {
+      return res.status(400).json({
+        success: false,
+        message: 'La longitud debe estar entre -180 y 180.',
+      });
+    }
+
+    if (isNaN(parsedRadius) || parsedRadius < 50 || parsedRadius > 50000) {
+      return res.status(400).json({
+        success: false,
+        message: 'El radio debe ser un número entre 50 y 50,000 metros.',
+      });
+    }
+
+    let parsedPage = parseInt(page);
+    let parsedLimit = parseInt(limit);
+
+    if (isNaN(parsedPage) || parsedPage < 1) parsedPage = 1;
+    if (isNaN(parsedLimit) || parsedLimit < 1) parsedLimit = 10;
+    if (parsedLimit > 50) parsedLimit = 50;
+
+    const offset = (parsedPage - 1) * parsedLimit;
+
+    const { count, rows } = await findReportsByProximity(parsedLat, parsedLng, parsedRadius, {
+      limit: parsedLimit,
+      offset,
+      status,
+      category,
+    });
+
+    const reports = rows.map((report) => buildReportGeoResponse(report));
+    const totalPages = Math.ceil(count / parsedLimit);
+
+    return res.status(200).json({
+      success: true,
+      data: reports,
+      meta: {
+        center: { latitude: parsedLat, longitude: parsedLng },
+        radius: parsedRadius,
+      },
+      pagination: {
+        total: count,
+        page: parsedPage,
+        limit: parsedLimit,
+        totalPages,
+      },
+    });
+  } catch (error) {
+    console.error('Error en getNearbyReports:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error al obtener reportes cercanos.',
+    });
+  }
+};
+
+// GET /api/reports/heatmap
+// Retorna datos de mapa de calor para reportes.
+export const getHeatmap = async (req, res) => {
+  try {
+    const { category, priority, status, startDate, endDate } = req.query;
+
+    const filters = {};
+    if (category) filters.category = category;
+    if (priority) filters.priority = priority;
+    if (status) filters.status = status;
+    if (startDate) filters.startDate = startDate;
+    if (endDate) filters.endDate = endDate;
+
+    const rows = await getHeatmapData(filters);
+
+    const points = rows.map((report) => buildHeatmapPoint(report));
+
+    return res.status(200).json({
+      success: true,
+      data: points,
+      total: points.length,
+    });
+  } catch (error) {
+    console.error('Error en getHeatmap:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error al obtener los datos del mapa de calor.',
     });
   }
 };
