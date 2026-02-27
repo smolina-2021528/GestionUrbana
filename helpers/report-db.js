@@ -277,3 +277,20 @@ export const getHeatmapData = async (filters = {}) => {
         throw new Error('Error al obtener datos para mapa de calor');
     }
 };
+
+// Construye el objeto de campos geográficos listo para Report.create() o report.update()
+export const buildLocationData = (latitude, longitude, address) => {
+    const hasCoords = latitude != null && longitude != null;
+
+    if (!hasCoords) return {};
+
+    const data = {
+        Latitude:  latitude,
+        Longitude: longitude,
+        Location:  buildGeoPoint(latitude, longitude),
+    };
+
+    if (address) data.Address = address;
+
+    return data;
+};
