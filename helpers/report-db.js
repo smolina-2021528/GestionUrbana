@@ -1,3 +1,4 @@
+import { Op } from 'sequelize';
 import { Report } from '../src/reports/report.model.js';
 import { ReportImage } from '../src/reports/report-image.model.js';
 import { ReportStatusHistory } from '../src/reports/report-status-history.model.js';
@@ -139,6 +140,35 @@ export const updateReportStatus = async (reportId, newStatus, changedBy, notes, 
     } catch (error) {
         console.error('Error actualizando estado del reporte:', error);
         throw new Error('Error al actualizar estado del reporte');
+    }
+};
+
+
+// Busca reportes por texto en Title o Description (case-insensitive)
+export const searchReportsByText = async (query, options = {}) => {
+    try {
+        const { limit = 10, offset = 0 } = options;
+
+        const reports = await Report.findAndCountAll({
+            where: {
+                [Op.or]: [
+                    { Title:       { [Op.iLike]: `%${query}%` } },
+                    { Description: { [Op.iLike]: `%${query}%` } },
+                ],
+            },
+            include: getReportIncludes(),
+            order: [
+                ['created_at', 'DESC'],
+                [{ model: ReportImage, as: 'Images' }, 'order', 'ASC'],
+            ],
+            limit,
+            offset,
+        });
+
+        return reports;
+    } catch (error) {
+        console.error('Error buscando reportes por texto:', error);
+        throw new Error('Error al buscar reportes por texto');
     }
 };
 

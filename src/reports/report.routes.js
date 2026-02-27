@@ -23,6 +23,7 @@ import {
   changeReportStatus,
   assignReport,
   getReportStats,
+  searchReports,
 } from './report.controller.js';
 
 const router = Router();
@@ -48,6 +49,8 @@ router.post(
 );
 
 router.get('/my-reports', validateJWT, getMyReports);
+
+router.get('/search', validateJWT, searchReports);
 
 router.get('/:reportId', validateJWT, getReportById);
 

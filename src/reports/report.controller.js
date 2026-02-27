@@ -7,12 +7,15 @@ import {
   findReportById,
   deleteReport as deleteReportDB,
   updateReportStatus,
+  searchReportsByText,
 } from '../../helpers/report-db.js';
 import { uploadReportImage, deleteImage } from '../../helpers/cloudinary-service.js';
 import { buildReportResponse } from '../../utils/report-helpers.js';
 import { DEFAULT_PRIORITY, DEFAULT_STATUS, REPORT_STATUSES, REPORT_CATEGORIES, REPORT_PRIORITIES } from '../../helpers/report-constants.js';
 import { getUserRoleNames } from '../../helpers/role-helpers.js';
 
+// POST /api/reports
+// Crea un nuevo reporte con sus imágenes dentro de una transacción.
 export const createReport = async (req, res) => {
   const transaction = await sequelize.transaction();
   const uploadedImages = [];
@@ -85,6 +88,8 @@ export const createReport = async (req, res) => {
   }
 };
 
+// GET /api/reports/:reportId
+// Devuelve un reporte por su ID.
 export const getReportById = async (req, res) => {
   try {
     const report = await findReportById(req.params.reportId);
@@ -109,6 +114,7 @@ export const getReportById = async (req, res) => {
   }
 };
 
+// GET /api/reports
 export const getAllReports = async (req, res) => {
   try {
     let { page = 1, limit = 10, category, priority, status } = req.query;
@@ -152,6 +158,7 @@ export const getAllReports = async (req, res) => {
   }
 };
 
+// DELETE /api/reports/:reportId
 export const deleteReport = async (req, res) => {
   const transaction = await sequelize.transaction();
 
@@ -210,6 +217,8 @@ export const deleteReport = async (req, res) => {
   }
 };
 
+// GET /api/reports/me
+// Lista los reportes del usuario autenticado.
 export const getMyReports = async (req, res) => {
   try {
     let { page = 1, limit = 10 } = req.query;
@@ -249,6 +258,7 @@ export const getMyReports = async (req, res) => {
   }
 };
 
+// PUT /api/reports/:reportId
 export const updateReport = async (req, res) => {
   const transaction = await sequelize.transaction();
   const uploadedImages = [];
@@ -326,6 +336,7 @@ export const updateReport = async (req, res) => {
   }
 };
 
+// PATCH /api/reports/:reportId/status
 export const changeReportStatus = async (req, res) => {
   const transaction = await sequelize.transaction();
 
@@ -402,12 +413,16 @@ export const changeReportStatus = async (req, res) => {
   }
 };
 
+// GET /api/reports/:reportId/status-history
+// Devuelve el historial de estados de un reporte ordenado por fecha ascendente.
 export const getReportStatusHistory = async (req, res) => {
   try {
     const { reportId } = req.params;
 
+    // 1. Buscar el reporte
     const report = await findReportById(reportId);
 
+    // 2. Si no existe, 404
     if (!report) {
       return res.status(404).json({
         success: false,
@@ -415,6 +430,7 @@ export const getReportStatusHistory = async (req, res) => {
       });
     }
 
+    // 3. Cargar el StatusHistory ordenado por created_at ASC con el usuario que hizo el cambio
     const history = await ReportStatusHistory.findAll({
       where: { ReportId: reportId },
       order: [['created_at', 'ASC']],
@@ -427,6 +443,7 @@ export const getReportStatusHistory = async (req, res) => {
       ],
     });
 
+    // 4. Responder 200 con el historial formateado
     const formattedHistory = history.map((entry) => ({
       id: entry.Id,
       previousStatus: entry.PreviousStatus,
@@ -456,10 +473,13 @@ export const getReportStatusHistory = async (req, res) => {
   }
 };
 
+// DELETE /api/reports/:reportId/images/:imageId
+// Elimina una imagen específica de un reporte.
 export const deleteReportImage = async (req, res) => {
   try {
     const { reportId, imageId } = req.params;
 
+    // 1. Verificar que la imagen existe y pertenece al reporte
     const image = await ReportImage.findOne({
       where: { Id: imageId, ReportId: reportId },
     });
@@ -471,6 +491,7 @@ export const deleteReportImage = async (req, res) => {
       });
     }
 
+    // 2. Verificar que el reporte existe
     const report = await findReportById(reportId);
 
     if (!report) {
@@ -480,6 +501,7 @@ export const deleteReportImage = async (req, res) => {
       });
     }
 
+    // 3. Verificar que el usuario autenticado es dueño del reporte o es admin
     const isOwner = report.UserId === req.userId;
     const isAdmin = req.userRole === 'ADMIN_ROLE';
 
@@ -490,9 +512,11 @@ export const deleteReportImage = async (req, res) => {
       });
     }
 
+    // 4. Eliminar el registro de ReportImage de la BD
     const publicId = image.PublicId;
     await image.destroy();
 
+    // 5. Eliminar la imagen de Cloudinary usando el PublicId guardado
     if (publicId) {
       try {
         await deleteImage(publicId);
@@ -501,6 +525,7 @@ export const deleteReportImage = async (req, res) => {
       }
     }
 
+    // 6. Responder 200
     return res.status(200).json({
       success: true,
       message: 'Imagen eliminada exitosamente.',
@@ -515,6 +540,57 @@ export const deleteReportImage = async (req, res) => {
 };
 
 
+// GET /api/reports/search?q=texto
+// Busca reportes por coincidencia en Title o Description.
+export const searchReports = async (req, res) => {
+  try {
+    const { q, page = 1, limit = 10 } = req.query;
+
+    if (!q || q.trim().length < 3) {
+      return res.status(400).json({
+        success: false,
+        message: 'El parámetro q debe tener al menos 3 caracteres.',
+      });
+    }
+
+    let parsedPage  = parseInt(page);
+    let parsedLimit = parseInt(limit);
+
+    if (isNaN(parsedPage)  || parsedPage  < 1) parsedPage  = 1;
+    if (isNaN(parsedLimit) || parsedLimit < 1) parsedLimit = 10;
+    if (parsedLimit > 50) parsedLimit = 50;
+
+    const offset = (parsedPage - 1) * parsedLimit;
+
+    const { count, rows } = await searchReportsByText(q.trim(), {
+      limit: parsedLimit,
+      offset,
+    });
+
+    const reports     = rows.map((report) => buildReportResponse(report));
+    const totalPages  = Math.ceil(count / parsedLimit);
+
+    return res.status(200).json({
+      success: true,
+      data: reports,
+      pagination: {
+        total: count,
+        page: parsedPage,
+        limit: parsedLimit,
+        totalPages,
+      },
+    });
+  } catch (error) {
+    console.error('Error en searchReports:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error al buscar reportes.',
+    });
+  }
+};
+
+// GET /api/reports/stats
+// Retorna estadísticas agregadas de todos los reportes.
 export const getReportStats = async (req, res) => {
   try {
     const [total, ...countsByGroup] = await Promise.all([
@@ -550,6 +626,7 @@ export const getReportStats = async (req, res) => {
   }
 };
 
+// PATCH /api/reports/:reportId/assign
 export const assignReport = async (req, res) => {
   try {
     const { reportId } = req.params;
