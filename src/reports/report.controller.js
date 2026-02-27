@@ -5,6 +5,8 @@ import { ReportStatusHistory } from './report-status-history.model.js';
 import { User } from '../users/user.model.js';
 import {
   findReportById,
+  findReportsByUser,
+  findAllReports,
   deleteReport as deleteReportDB,
   updateReportStatus,
   searchReportsByText,
@@ -12,7 +14,7 @@ import {
 import { uploadReportImage, deleteImage } from '../../helpers/cloudinary-service.js';
 import { buildReportResponse } from '../../utils/report-helpers.js';
 import { DEFAULT_PRIORITY, DEFAULT_STATUS, REPORT_STATUSES, REPORT_CATEGORIES, REPORT_PRIORITIES } from '../../helpers/report-constants.js';
-import { getUserRoleNames } from '../../helpers/role-helpers.js';
+import { getUserRoleNames } from '../../helpers/role-db.js';
 
 // POST /api/reports
 // Crea un nuevo reporte con sus imágenes dentro de una transacción.

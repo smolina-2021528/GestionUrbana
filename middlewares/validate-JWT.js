@@ -40,6 +40,7 @@ export const validateJWT = async (req, res, next) => {
 
     req.user = user;
     req.userId = user.Id.toString();
+    req.userRole = user.UserRoles?.[0]?.Role?.Name ?? null;
 
     next();
   } catch (error) {
