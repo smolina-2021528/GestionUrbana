@@ -75,6 +75,9 @@ export const initServer = async () => {
     const { seedAdmin } = await import('../helpers/admin-seed.js');
     await seedAdmin();
 
+    const { createSpatialIndex } = await import('../src/reports/report.model.js');
+    await createSpatialIndex();
+
     middlewares(app);
     routes(app);
     app.use(errorHandler);
