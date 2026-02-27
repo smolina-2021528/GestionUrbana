@@ -281,12 +281,15 @@ export const updateReport = async (req, res) => {
       });
     }
 
-    const { title, description, category } = req.body;
+    const { title, description, category, latitude, longitude, address } = req.body;
 
     const updateData = {};
     if (title) updateData.Title = title;
     if (description) updateData.Description = description;
     if (category) updateData.Category = category;
+
+    const locationData = buildLocationData(latitude, longitude, address);
+    Object.assign(updateData, locationData);
 
     if (Object.keys(updateData).length > 0) {
       await report.update(updateData, { transaction });
@@ -321,7 +324,7 @@ export const updateReport = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: 'Reporte actualizado exitosamente.',
-      data: buildReportResponse(updatedReport),
+      data: buildReportGeoResponse(updatedReport),
     });
   } catch (error) {
     await transaction.rollback();
