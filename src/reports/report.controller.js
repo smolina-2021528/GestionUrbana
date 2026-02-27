@@ -13,7 +13,6 @@ import {
   buildLocationData,
 } from '../../helpers/report-db.js';
 import { uploadReportImage, deleteImage } from '../../helpers/cloudinary-service.js';
-import { buildReportResponse } from '../../utils/report-helpers.js';
 import { buildReportGeoResponse } from '../../utils/geo-helpers.js';
 import { DEFAULT_PRIORITY, DEFAULT_STATUS, REPORT_STATUSES, REPORT_CATEGORIES, REPORT_PRIORITIES } from '../../helpers/report-constants.js';
 import { getUserRoleNames } from '../../helpers/role-db.js';
@@ -110,7 +109,7 @@ export const getReportById = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      data: buildReportResponse(report),
+      data: buildReportGeoResponse(report),
     });
   } catch (error) {
     console.error('Error en getReportById:', error);
@@ -142,7 +141,7 @@ export const getAllReports = async (req, res) => {
 
     const { count, rows } = await findAllReports(filters, { limit, offset });
 
-    const reports = rows.map((report) => buildReportResponse(report));
+    const reports = rows.map((report) => buildReportGeoResponse(report));
 
     const totalPages = Math.ceil(count / limit);
 
@@ -241,7 +240,7 @@ export const getMyReports = async (req, res) => {
 
     const { count, rows } = await findReportsByUser(req.userId, { limit, offset });
 
-    const reports = rows.map((report) => buildReportResponse(report));
+    const reports = rows.map((report) => buildReportGeoResponse(report));
 
     const totalPages = Math.ceil(count / limit);
 
@@ -410,7 +409,7 @@ export const changeReportStatus = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: 'Estado actualizado correctamente.',
-      data: buildReportResponse(updatedReport),
+      data: buildReportGeoResponse(updatedReport),
     });
   } catch (error) {
     await transaction.rollback();
@@ -577,7 +576,7 @@ export const searchReports = async (req, res) => {
       offset,
     });
 
-    const reports     = rows.map((report) => buildReportResponse(report));
+    const reports     = rows.map((report) => buildReportGeoResponse(report));
     const totalPages  = Math.ceil(count / parsedLimit);
 
     return res.status(200).json({
@@ -670,9 +669,11 @@ export const assignReport = async (req, res) => {
     report.AssignedTo = user.Id;
     await report.save();
 
+    const fullReport = await findReportById(report.Id);
+
     return res.status(200).json({
       ok: true,
-      report,
+      report: buildReportGeoResponse(fullReport),
     });
   } catch (error) {
     console.error(error);
