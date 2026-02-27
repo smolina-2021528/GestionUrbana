@@ -165,3 +165,17 @@ export const Report = sequelize.define(
 Report.belongsTo(User, { foreignKey: 'user_id',    as: 'Citizen' });
 Report.belongsTo(User, { foreignKey: 'assigned_to', as: 'AssignedMunicipal' });
 User.hasMany(Report,   { foreignKey: 'user_id',    as: 'Reports' });
+
+export const createSpatialIndex = async () => {
+  try {
+    await sequelize.query(
+      `CREATE INDEX IF NOT EXISTS reports_location_gist_idx
+       ON reports
+       USING GIST (location);`,
+      { type: QueryTypes.RAW }
+    );
+    console.log('PostGIS | Índice espacial GIST verificado/creado en reports.location');
+  } catch (error) {
+    console.error('PostGIS | Error creando índice espacial:', error.message);
+  }
+};
