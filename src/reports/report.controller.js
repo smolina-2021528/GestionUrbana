@@ -10,9 +10,11 @@ import {
   deleteReport as deleteReportDB,
   updateReportStatus,
   searchReportsByText,
+  buildLocationData,
 } from '../../helpers/report-db.js';
 import { uploadReportImage, deleteImage } from '../../helpers/cloudinary-service.js';
 import { buildReportResponse } from '../../utils/report-helpers.js';
+import { buildReportGeoResponse } from '../../utils/geo-helpers.js';
 import { DEFAULT_PRIORITY, DEFAULT_STATUS, REPORT_STATUSES, REPORT_CATEGORIES, REPORT_PRIORITIES } from '../../helpers/report-constants.js';
 import { getUserRoleNames } from '../../helpers/role-db.js';
 
@@ -23,7 +25,9 @@ export const createReport = async (req, res) => {
   const uploadedImages = [];
 
   try {
-    const { title, description, category } = req.body;
+    const { title, description, category, latitude, longitude, address } = req.body;
+
+    const locationData = buildLocationData(latitude, longitude, address);
 
     const report = await Report.create(
       {
@@ -33,6 +37,7 @@ export const createReport = async (req, res) => {
         Priority: DEFAULT_PRIORITY,
         Status: DEFAULT_STATUS,
         UserId: req.userId,
+        ...locationData,
       },
       { transaction }
     );
@@ -73,7 +78,7 @@ export const createReport = async (req, res) => {
     return res.status(201).json({
       success: true,
       message: 'Reporte creado exitosamente.',
-      data: buildReportResponse(fullReport),
+      data: buildReportGeoResponse(fullReport),
     });
   } catch (error) {
     await transaction.rollback();
