@@ -24,6 +24,8 @@ import {
   assignReport,
   getReportStats,
   searchReports,
+  getNearbyReports,
+  getHeatmap,
 } from './report.controller.js';
 
 const router = Router();
@@ -51,6 +53,10 @@ router.post(
 router.get('/my-reports', validateJWT, getMyReports);
 
 router.get('/search', validateJWT, searchReports);
+
+router.get('/nearby', validateJWT, getNearbyReports);
+
+router.get('/heatmap', validateJWT, getHeatmap);
 
 router.get('/:reportId', validateJWT, getReportById);
 
