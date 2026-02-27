@@ -248,3 +248,32 @@ export const findReportsByProximity = async (latitude, longitude, radiusMeters, 
     }
 };
 
+export const getHeatmapData = async (filters = {}) => {
+    try {
+        const { category, priority, status, startDate, endDate } = filters;
+
+        const where = {
+            Latitude: { [Op.not]: null },
+        };
+
+        if (category) where.Category = category;
+        if (priority) where.Priority = priority;
+        if (status)   where.Status   = status;
+
+        if (startDate || endDate) {
+            where.CreatedAt = {};
+            if (startDate) where.CreatedAt[Op.gte] = new Date(startDate);
+            if (endDate)   where.CreatedAt[Op.lte] = new Date(endDate);
+        }
+
+        const reports = await Report.findAll({
+            where,
+            attributes: ['Id', 'Latitude', 'Longitude', 'Category', 'Priority', 'Status', 'CreatedAt'],
+        });
+
+        return reports;
+    } catch (error) {
+        console.error('Error obteniendo datos para mapa de calor:', error);
+        throw new Error('Error al obtener datos para mapa de calor');
+    }
+};
