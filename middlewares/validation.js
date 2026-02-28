@@ -296,6 +296,29 @@ export const validateChangeReportStatus = [
   handleValidationErrors,
 ];
 
+// Validaciones para actualizar exclusivamente la ubicación de un reporte
+export const validateUpdateLocation = [
+  body('latitude')
+    .notEmpty()
+    .withMessage('La latitud es obligatoria')
+    .isFloat({ min: -90, max: 90 })
+    .withMessage('La latitud debe ser un número entre -90 y 90'),
+
+  body('longitude')
+    .notEmpty()
+    .withMessage('La longitud es obligatoria')
+    .isFloat({ min: -180, max: 180 })
+    .withMessage('La longitud debe ser un número entre -180 y 180'),
+
+  body('address')
+    .optional({ nullable: true })
+    .trim()
+    .isLength({ max: 500 })
+    .withMessage('La dirección no puede superar los 500 caracteres'),
+
+  handleValidationErrors,
+];
+
 // Validaciones para asignar un reporte a personal municipal
 export const validateAssignReport = [
   body('assignedTo')

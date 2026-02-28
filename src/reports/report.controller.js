@@ -805,6 +805,40 @@ export const getGeoStats = async (req, res) => {
   }
 };
 
+// PATCH /api/reports/:reportId/location
+export const updateReportLocation = async (req, res) => {
+  try {
+    const report = req.report;
+
+    if (report.Status !== 'PENDIENTE') {
+      return res.status(400).json({
+        success: false,
+        message: 'Solo se puede actualizar la ubicación de reportes en estado PENDIENTE.',
+      });
+    }
+
+    const { latitude, longitude, address } = req.body;
+
+    const locationData = buildLocationData(latitude, longitude, address);
+
+    await report.update(locationData);
+
+    const updatedReport = await findReportById(report.Id);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Ubicación del reporte actualizada exitosamente.',
+      data: buildReportGeoResponse(updatedReport),
+    });
+  } catch (error) {
+    console.error('Error en updateReportLocation:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error al actualizar la ubicación del reporte.',
+    });
+  }
+};
+
 // Retorna datos de mapa de calor para reportes.
 export const getHeatmap = async (req, res) => {
   try {

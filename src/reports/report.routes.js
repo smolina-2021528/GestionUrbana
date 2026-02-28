@@ -10,6 +10,7 @@ import {
   validateUpdateReport,
   validateChangeReportStatus,
   validateAssignReport,
+  validateUpdateLocation,
 } from '../../middlewares/validation.js';
 import {
   createReport,
@@ -27,6 +28,7 @@ import {
   getNearbyReports,
   getHeatmap,
   getGeoStats,
+  updateReportLocation,
 } from './report.controller.js';
 
 const router = Router();
@@ -77,6 +79,8 @@ router.put(
 router.delete('/:reportId', validateJWT, validateReportOwner, deleteReport);
 
 router.delete('/:reportId/images/:imageId', validateJWT, validateReportOwner, deleteReportImage);
+
+router.patch('/:reportId/location', validateJWT, validateReportOwner, validateUpdateLocation, updateReportLocation);
 
 router.get('/:reportId/history', validateJWT, getReportStatusHistory);
 
