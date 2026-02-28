@@ -26,12 +26,15 @@ import {
   searchReports,
   getNearbyReports,
   getHeatmap,
+  getGeoStats,
 } from './report.controller.js';
 
 const router = Router();
 
 
 router.get('/stats', validateJWT, validateAdmin, getReportStats);
+
+router.get('/geo-stats', validateJWT, validateAdmin, getGeoStats);
 
 router.get('/', validateJWT, validateAdmin, getAllReports);
 

@@ -1,3 +1,4 @@
+import { Op } from 'sequelize';
 import { sequelize } from '../../configs/db.js';
 import { Report } from './report.model.js';
 import { ReportImage } from './report-image.model.js';
@@ -347,7 +348,6 @@ export const updateReport = async (req, res) => {
   }
 };
 
-// PATCH /api/reports/:reportId/status
 export const changeReportStatus = async (req, res) => {
   const transaction = await sequelize.transaction();
 
@@ -424,7 +424,6 @@ export const changeReportStatus = async (req, res) => {
   }
 };
 
-// GET /api/reports/:reportId/status-history
 // Devuelve el historial de estados de un reporte ordenado por fecha ascendente.
 export const getReportStatusHistory = async (req, res) => {
   try {
@@ -484,7 +483,6 @@ export const getReportStatusHistory = async (req, res) => {
   }
 };
 
-// DELETE /api/reports/:reportId/images/:imageId
 // Elimina una imagen específica de un reporte.
 export const deleteReportImage = async (req, res) => {
   try {
@@ -551,7 +549,6 @@ export const deleteReportImage = async (req, res) => {
 };
 
 
-// GET /api/reports/search?q=texto
 // Busca reportes por coincidencia en Title o Description.
 export const searchReports = async (req, res) => {
   try {
@@ -600,7 +597,6 @@ export const searchReports = async (req, res) => {
   }
 };
 
-// GET /api/reports/stats
 // Retorna estadísticas agregadas de todos los reportes.
 export const getReportStats = async (req, res) => {
   try {
@@ -685,7 +681,6 @@ export const assignReport = async (req, res) => {
     });
   }
 };
-// GET /api/reports/nearby
 // Retorna reportes cercanos a unas coordenadas dadas dentro de un radio.
 export const getNearbyReports = async (req, res) => {
   try {
@@ -765,7 +760,51 @@ export const getNearbyReports = async (req, res) => {
   }
 };
 
-// GET /api/reports/heatmap
+// Retorna estadísticas geográficas: total, con/sin ubicación, desglose por categoría y cobertura.
+export const getGeoStats = async (req, res) => {
+  try {
+    const [total, withLocation, ...categoryCountsByLocation] = await Promise.all([
+      Report.count(),
+      Report.count({ where: { Location: { [Op.ne]: null } } }),
+      ...REPORT_CATEGORIES.map((category) =>
+        Report.count({
+          where: {
+            Category: category,
+            Location: { [Op.ne]: null },
+          },
+        })
+      ),
+    ]);
+
+    const withoutLocation = total - withLocation;
+    const locationCoverage = total > 0
+      ? parseFloat(((withLocation / total) * 100).toFixed(2))
+      : 0;
+
+    const byCategory = {};
+    REPORT_CATEGORIES.forEach((category, i) => {
+      byCategory[category] = categoryCountsByLocation[i];
+    });
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        total,
+        withLocation,
+        withoutLocation,
+        locationCoverage,
+        byCategory,
+      },
+    });
+  } catch (error) {
+    console.error('Error en getGeoStats:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error al obtener las estadísticas geográficas.',
+    });
+  }
+};
+
 // Retorna datos de mapa de calor para reportes.
 export const getHeatmap = async (req, res) => {
   try {
