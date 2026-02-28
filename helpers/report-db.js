@@ -1,4 +1,5 @@
 import { Op } from 'sequelize';
+import { sequelize } from '../configs/db.js';
 import { Report } from '../src/reports/report.model.js';
 import { ReportImage } from '../src/reports/report-image.model.js';
 import { ReportStatusHistory } from '../src/reports/report-status-history.model.js';
@@ -278,7 +279,36 @@ export const getHeatmapData = async (filters = {}) => {
     }
 };
 
-// Construye el objeto de campos geográficos listo para Report.create() o report.update()
+export const findReportsByBoundingBox = async (swLat, swLng, neLat, neLng, options = {}) => {
+    try {
+        const { limit = 200, status, category } = options;
+
+        const where = {
+            Latitude:  { [Op.between]: [swLat, neLat] },
+            Longitude: { [Op.between]: [swLng, neLng] },
+            Location:  { [Op.not]: null },
+        };
+
+        if (status)   where.Status   = status;
+        if (category) where.Category = category;
+
+        const reports = await Report.findAll({
+            where,
+            attributes: [
+                'Id', 'Title', 'Category', 'Priority', 'Status',
+                'Latitude', 'Longitude', 'Address', 'CreatedAt',
+            ],
+            order: [['created_at', 'DESC']],
+            limit,
+        });
+
+        return reports;
+    } catch (error) {
+        console.error('Error buscando reportes por bounding box:', error);
+        throw new Error('Error al buscar reportes por área');
+    }
+};
+
 export const buildLocationData = (latitude, longitude, address) => {
     const hasCoords = latitude != null && longitude != null;
 

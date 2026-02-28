@@ -30,6 +30,7 @@ import {
   getGeoStats,
   updateReportLocation,
   removeReportLocation,
+  getReportsByBoundingBox,
 } from './report.controller.js';
 
 const router = Router();
@@ -63,6 +64,8 @@ router.get('/search', validateJWT, searchReports);
 router.get('/nearby', validateJWT, getNearbyReports);
 
 router.get('/heatmap', validateJWT, getHeatmap);
+
+router.get('/bbox', validateJWT, getReportsByBoundingBox);
 
 router.get('/:reportId', validateJWT, getReportById);
 

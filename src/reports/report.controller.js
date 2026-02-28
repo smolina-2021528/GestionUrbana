@@ -14,6 +14,7 @@ import {
   buildLocationData,
   findReportsByProximity,
   getHeatmapData,
+  findReportsByBoundingBox,
 } from '../../helpers/report-db.js';
 import { uploadReportImage, deleteImage } from '../../helpers/cloudinary-service.js';
 import { buildReportGeoResponse, buildHeatmapPoint } from '../../utils/geo-helpers.js';
@@ -871,6 +872,70 @@ export const removeReportLocation = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Error al eliminar la ubicación del reporte.',
+    });
+  }
+};
+
+
+export const getReportsByBoundingBox = async (req, res) => {
+  try {
+    const { swLat, swLng, neLat, neLng, status, category } = req.query;
+
+    const parsedSwLat = parseFloat(swLat);
+    const parsedSwLng = parseFloat(swLng);
+    const parsedNeLat = parseFloat(neLat);
+    const parsedNeLng = parseFloat(neLng);
+
+    if (isNaN(parsedSwLat) || isNaN(parsedSwLng) || isNaN(parsedNeLat) || isNaN(parsedNeLng)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Los parámetros swLat, swLng, neLat y neLng son obligatorios y deben ser números válidos.',
+      });
+    }
+
+    if (parsedSwLat < -90 || parsedSwLat > 90 || parsedNeLat < -90 || parsedNeLat > 90) {
+      return res.status(400).json({
+        success: false,
+        message: 'La latitud debe estar entre -90 y 90.',
+      });
+    }
+
+    if (parsedSwLng < -180 || parsedSwLng > 180 || parsedNeLng < -180 || parsedNeLng > 180) {
+      return res.status(400).json({
+        success: false,
+        message: 'La longitud debe estar entre -180 y 180.',
+      });
+    }
+
+    if (parsedSwLat >= parsedNeLat) {
+      return res.status(400).json({
+        success: false,
+        message: 'swLat debe ser menor que neLat.',
+      });
+    }
+
+    const reports = await findReportsByBoundingBox(
+      parsedSwLat, parsedSwLng,
+      parsedNeLat, parsedNeLng,
+      { status, category }
+    );
+
+    const data = reports.map((report) => buildReportGeoResponse(report));
+
+    return res.status(200).json({
+      success: true,
+      data,
+      total: data.length,
+      bbox: {
+        sw: { latitude: parsedSwLat, longitude: parsedSwLng },
+        ne: { latitude: parsedNeLat, longitude: parsedNeLng },
+      },
+    });
+  } catch (error) {
+    console.error('Error en getReportsByBoundingBox:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error al obtener reportes del área.',
     });
   }
 };
