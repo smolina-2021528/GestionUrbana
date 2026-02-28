@@ -29,6 +29,7 @@ import {
   getHeatmap,
   getGeoStats,
   updateReportLocation,
+  removeReportLocation,
 } from './report.controller.js';
 
 const router = Router();
@@ -81,6 +82,8 @@ router.delete('/:reportId', validateJWT, validateReportOwner, deleteReport);
 router.delete('/:reportId/images/:imageId', validateJWT, validateReportOwner, deleteReportImage);
 
 router.patch('/:reportId/location', validateJWT, validateReportOwner, validateUpdateLocation, updateReportLocation);
+
+router.delete('/:reportId/location', validateJWT, validateReportOwner, removeReportLocation);
 
 router.get('/:reportId/history', validateJWT, getReportStatusHistory);
 

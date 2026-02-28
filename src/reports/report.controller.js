@@ -839,6 +839,42 @@ export const updateReportLocation = async (req, res) => {
   }
 };
 
+// DELETE /api/reports/:reportId/location
+// Elimina la ubicación de un reporte en estado PENDIENTE por privacidad o error.
+export const removeReportLocation = async (req, res) => {
+  try {
+    const report = req.report;
+
+    if (report.Status !== 'PENDIENTE') {
+      return res.status(400).json({
+        success: false,
+        message: 'Solo se puede eliminar la ubicación de reportes en estado PENDIENTE.',
+      });
+    }
+
+    await report.update({
+      Latitude: null,
+      Longitude: null,
+      Location: null,
+      Address: null,
+    });
+
+    const updatedReport = await findReportById(report.Id);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Ubicación del reporte eliminada exitosamente.',
+      data: buildReportGeoResponse(updatedReport),
+    });
+  } catch (error) {
+    console.error('Error en removeReportLocation:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error al eliminar la ubicación del reporte.',
+    });
+  }
+};
+
 // Retorna datos de mapa de calor para reportes.
 export const getHeatmap = async (req, res) => {
   try {
