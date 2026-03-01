@@ -643,16 +643,16 @@ export const assignReport = async (req, res) => {
     const report = await Report.findByPk(reportId);
     if (!report) {
       return res.status(404).json({
-        ok: false,
-        msg: 'Reporte no encontrado',
+        success: false,
+        message: 'Reporte no encontrado.',
       });
     }
 
     const user = await User.findByPk(assignedTo);
     if (!user) {
       return res.status(404).json({
-        ok: false,
-        msg: 'Usuario a asignar no existe',
+        success: false,
+        message: 'Usuario a asignar no existe.',
       });
     }
 
@@ -660,8 +660,8 @@ export const assignReport = async (req, res) => {
 
     if (!roles.includes('ADMIN_ROLE')) {
       return res.status(400).json({
-        ok: false,
-        msg: 'El usuario no es personal municipal (ADMIN_ROLE)',
+        success: false,
+        message: 'El usuario no es personal municipal (ADMIN_ROLE).',
       });
     }
 
@@ -671,14 +671,15 @@ export const assignReport = async (req, res) => {
     const fullReport = await findReportById(report.Id);
 
     return res.status(200).json({
-      ok: true,
-      report: buildReportGeoResponse(fullReport),
+      success: true,
+      message: 'Reporte asignado exitosamente.',
+      data: buildReportGeoResponse(fullReport),
     });
   } catch (error) {
     console.error(error);
     return res.status(500).json({
-      ok: false,
-      msg: 'Error al asignar el reporte',
+      success: false,
+      message: 'Error al asignar el reporte.',
     });
   }
 };
@@ -914,13 +915,31 @@ export const getReportsByBoundingBox = async (req, res) => {
       });
     }
 
+    if (parsedSwLng >= parsedNeLng) {
+      return res.status(400).json({
+        success: false,
+        message: 'swLng debe ser menor que neLng.',
+      });
+    }
+
     const reports = await findReportsByBoundingBox(
       parsedSwLat, parsedSwLng,
       parsedNeLat, parsedNeLng,
       { status, category }
     );
 
-    const data = reports.map((report) => buildReportGeoResponse(report));
+    const data = reports.map((report) => ({
+      id:            report.Id,
+      title:         report.Title,
+      category:      report.Category,
+      priority:      report.Priority,
+      status:        report.Status,
+      address:       report.Address ?? null,
+      latitude:      report.Latitude  != null ? parseFloat(report.Latitude)  : null,
+      longitude:     report.Longitude != null ? parseFloat(report.Longitude) : null,
+      hasLocation:   report.Latitude  != null && report.Longitude != null,
+      createdAt:     report.CreatedAt,
+    }));
 
     return res.status(200).json({
       success: true,

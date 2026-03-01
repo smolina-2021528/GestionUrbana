@@ -217,6 +217,7 @@ export const findReportsByProximity = async (latitude, longitude, radiusMeters, 
         );
 
         const where = {
+            Location: { [Op.ne]: null },
             [Op.and]: [
                 sequelize.where(
                     sequelize.fn('ST_DWithin', locationGeog, refPointGeog, radiusMeters),
