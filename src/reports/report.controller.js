@@ -4,6 +4,8 @@ import { Report } from './report.model.js';
 import { ReportImage } from './report-image.model.js';
 import { ReportStatusHistory } from './report-status-history.model.js';
 import { User } from '../users/user.model.js';
+import { notifyStatusChange } from '../../helpers/notification-service.js';
+import { notifyStatusChange, notifyReportAssigned } from '../../helpers/notification-service.js';
 import {
   findReportById,
   findReportsByUser,
@@ -374,13 +376,13 @@ export const changeReportStatus = async (req, res) => {
       });
     }
 
-    const currentStatus = report.Status;
+    const currentStatus = report.Status;               // ya existía
 
     const allowedTransitions = {
-      PENDIENTE: ['EN_PROCESO', 'RECHAZADO'],
+      PENDIENTE:  ['EN_PROCESO', 'RECHAZADO'],
       EN_PROCESO: ['RESUELTO', 'RECHAZADO', 'PENDIENTE'],
-      RESUELTO: [],
-      RECHAZADO: ['PENDIENTE'],
+      RESUELTO:   [],
+      RECHAZADO:  ['PENDIENTE'],
     };
 
     if (!allowedTransitions[currentStatus]) {
@@ -399,6 +401,8 @@ export const changeReportStatus = async (req, res) => {
       });
     }
 
+    const previousStatus = currentStatus;              // ← capturar antes del update
+
     const updatedReport = await updateReportStatus(
       reportId,
       newStatus,
@@ -408,6 +412,13 @@ export const changeReportStatus = async (req, res) => {
     );
 
     await transaction.commit();
+
+    // Notificar de forma no bloqueante, igual que notifyNewComment en comment.controller.js
+    setImmediate(() => {
+      notifyStatusChange(updatedReport, previousStatus, newStatus).catch((err) =>
+        console.error('Error en notifyStatusChange:', err)
+      );
+    });
 
     return res.status(200).json({
       success: true,

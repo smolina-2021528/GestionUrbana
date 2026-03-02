@@ -27,7 +27,7 @@ import {
     findCommentById,
     deleteComment as deleteCommentDB,
 } from "../../helpers/comment-db.js";
-import { notifyStatusChange } from '../../helpers/notification-service.js';
+import { notifyStatusChange, notifyReportAssigned } from '../../helpers/notification-service.js';
 
 // POST /api/reports/:reportId/comments
 export const createComment = async (req, res) => {
@@ -385,87 +385,3 @@ export const deleteNotification = async (req, res) => {
     }
 };
 
-export const changeReportStatus = async (req, res) => {
-  const transaction = await sequelize.transaction();
-
-  try {
-    const { reportId } = req.params;
-    const { status: newStatus, notes } = req.body;
-
-    if (req.userRole !== 'ADMIN_ROLE') {
-      await transaction.rollback();
-      return res.status(403).json({
-        success: false,
-        message: 'Solo los administradores pueden cambiar el estado del reporte.',
-      });
-    }
-
-    const report = await findReportById(reportId);
-
-    if (!report) {
-      await transaction.rollback();
-      return res.status(404).json({
-        success: false,
-        message: 'Reporte no encontrado.',
-      });
-    }
-
-    const currentStatus = report.Status;               // ya existía
-
-    const allowedTransitions = {
-      PENDIENTE:  ['EN_PROCESO', 'RECHAZADO'],
-      EN_PROCESO: ['RESUELTO', 'RECHAZADO', 'PENDIENTE'],
-      RESUELTO:   [],
-      RECHAZADO:  ['PENDIENTE'],
-    };
-
-    if (!allowedTransitions[currentStatus]) {
-      await transaction.rollback();
-      return res.status(400).json({
-        success: false,
-        message: 'Estado actual inválido.',
-      });
-    }
-
-    if (!allowedTransitions[currentStatus].includes(newStatus)) {
-      await transaction.rollback();
-      return res.status(400).json({
-        success: false,
-        message: `No se puede cambiar de ${currentStatus} a ${newStatus}.`,
-      });
-    }
-
-    const previousStatus = currentStatus;              // ← capturar antes del update
-
-    const updatedReport = await updateReportStatus(
-      reportId,
-      newStatus,
-      req.userId,
-      notes,
-      transaction
-    );
-
-    await transaction.commit();
-
-    // Notificar de forma no bloqueante, igual que notifyNewComment en comment.controller.js
-    setImmediate(() => {
-      notifyStatusChange(updatedReport, previousStatus, newStatus).catch((err) =>
-        console.error('Error en notifyStatusChange:', err)
-      );
-    });
-
-    return res.status(200).json({
-      success: true,
-      message: 'Estado actualizado correctamente.',
-      data: buildReportGeoResponse(updatedReport),
-    });
-  } catch (error) {
-    await transaction.rollback();
-    console.error('Error en changeReportStatus:', error);
-
-    return res.status(500).json({
-      success: false,
-      message: 'Error al cambiar el estado del reporte.',
-    });
-  }
-};
