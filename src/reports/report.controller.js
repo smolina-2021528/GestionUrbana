@@ -679,6 +679,12 @@ export const assignReport = async (req, res) => {
     report.AssignedTo = user.Id;
     await report.save();
 
+    setImmediate(() => {
+      notifyReportAssigned(report, assignedTo).catch((err) =>
+        console.error('Error en notifyReportAssigned:', err)
+      );
+    });
+
     const fullReport = await findReportById(report.Id);
 
     return res.status(200).json({
