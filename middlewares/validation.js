@@ -330,3 +330,30 @@ export const validateAssignReport = [
 
   handleValidationErrors,
 ];
+
+// Validaciones para crear un comentario en un reporte
+export const validateCreateComment = [
+  body('content')
+    .trim()
+    .notEmpty()
+    .withMessage('El contenido del comentario es obligatorio')
+    .isLength({ min: 1, max: 1000 })
+    .withMessage('El contenido debe tener entre 1 y 1000 caracteres'),
+
+  body('isInternal')
+    .optional()
+    .isBoolean()
+    .withMessage('isInternal debe ser un valor booleano'),
+
+  handleValidationErrors,
+];
+
+// Validaciones para obtener comentarios de un reporte 
+export const validateGetComments = [
+  body('includeInternal')
+    .optional()
+    .isBoolean()
+    .withMessage('includeInternal debe ser un valor booleano'),
+
+  handleValidationErrors,
+];
