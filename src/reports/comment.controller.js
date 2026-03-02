@@ -7,6 +7,12 @@ import { findCommentById } from "../../helpers/comment-db.js";
 import { notifyNewComment } from "../../helpers/notification-service.js";
 import { buildCommentResponse } from "../../utils/comment-helpers.js";
 import { deleteComment as deleteCommentDB } from "../../helpers/comment-db.js";
+import { findReportById } from "../../helpers/report-db.js"; // ya existe
+import {
+    followReport as followReportDB,
+    unfollowReport as unfollowReportDB,
+    getFollowedReports as getFollowedReportsDB,
+} from "../../helpers/follow-db.js";
 import {
     createComment as createCommentDB,
     findCommentsByReport,
@@ -157,6 +163,103 @@ export const deleteComment = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: "Error al eliminar el comentario.",
+        });
+    }
+};
+
+// POST /api/reports/:reportId/follow
+export const followReport = async (req, res) => {
+    try {
+        const { reportId } = req.params;
+
+        const report = await findReportById(reportId);
+        if (!report) {
+            return res.status(404).json({
+                success: false,
+                message: "Reporte no encontrado.",
+            });
+        }
+
+        const { alreadyFollowing } = await followReportDB(reportId, req.userId);
+        if (alreadyFollowing) {
+            return res.status(409).json({
+                success: false,
+                message: "Ya estás siguiendo este reporte.",
+            });
+        }
+
+        return res.status(201).json({
+            success: true,
+            message: "Ahora sigues este reporte.",
+        });
+    } catch (error) {
+        console.error("Error en followReport:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Error al seguir el reporte.",
+        });
+    }
+};
+
+// DELETE /api/reports/:reportId/follow
+export const unfollowReport = async (req, res) => {
+    try {
+        const { reportId } = req.params;
+
+        const { wasFollowing } = await unfollowReportDB(reportId, req.userId);
+        if (!wasFollowing) {
+            return res.status(404).json({
+                success: false,
+                message: "No estabas siguiendo este reporte.",
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Has dejado de seguir este reporte.",
+        });
+    } catch (error) {
+        console.error("Error en unfollowReport:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Error al dejar de seguir el reporte.",
+        });
+    }
+};
+
+// GET /api/reports/followed
+export const getFollowedReports = async (req, res) => {
+    try {
+        let { page = 1, limit = 10 } = req.query;
+
+        page  = parseInt(page);
+        limit = parseInt(limit);
+
+        if (isNaN(page)  || page  < 1) page  = 1;
+        if (isNaN(limit) || limit < 1) limit = 10;
+        if (limit > 50) limit = 50;
+
+        const offset = (page - 1) * limit;
+
+        const { count, rows } = await getFollowedReportsDB(req.userId, { limit, offset });
+
+        const totalPages = Math.ceil(count / limit);
+
+        return res.status(200).json({
+            success: true,
+            data: rows.map((r) => r.Report),
+            pagination: {
+                total: count,
+                page,
+                limit,
+                totalPages,
+            },
+        });
+    } catch (error) {
+        console.error("Error en getFollowedReports:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Error al obtener los reportes seguidos.",
         });
     }
 };
