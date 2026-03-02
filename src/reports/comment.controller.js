@@ -9,6 +9,14 @@ import { buildCommentResponse } from "../../utils/comment-helpers.js";
 import { deleteComment as deleteCommentDB } from "../../helpers/comment-db.js";
 import { findReportById } from "../../helpers/report-db.js"; // ya existe
 import {
+    findNotificationsByUser,
+    markAsRead,
+    markAllAsRead,
+    countUnread,
+    deleteNotification as deleteNotificationDB,
+} from "../../helpers/notification-db.js";
+import { buildNotificationResponse } from "../../utils/notification-helpers.js";
+import {
     followReport as followReportDB,
     unfollowReport as unfollowReportDB,
     getFollowedReports as getFollowedReportsDB,
@@ -260,6 +268,118 @@ export const getFollowedReports = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: "Error al obtener los reportes seguidos.",
+        });
+    }
+};
+
+
+
+// GET /api/notifications
+export const getMyNotifications = async (req, res) => {
+    try {
+        let { page = 1, limit = 10, onlyUnread = "false" } = req.query;
+
+        page  = parseInt(page);
+        limit = parseInt(limit);
+
+        if (isNaN(page)  || page  < 1) page  = 1;
+        if (isNaN(limit) || limit < 1) limit = 10;
+        if (limit > 50) limit = 50;
+
+        const offset      = (page - 1) * limit;
+        const onlyUnreadB = onlyUnread === "true";
+
+        const [{ count, rows }, unreadCount] = await Promise.all([
+            findNotificationsByUser(req.userId, { onlyUnread: onlyUnreadB, limit, offset }),
+            countUnread(req.userId),
+        ]);
+
+        return res.status(200).json({
+            success: true,
+            data: rows.map(buildNotificationResponse),
+            unreadCount,
+            pagination: {
+                total: count,
+                page,
+                limit,
+                totalPages: Math.ceil(count / limit),
+            },
+        });
+    } catch (error) {
+        console.error("Error en getMyNotifications:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Error al obtener las notificaciones.",
+        });
+    }
+};
+
+// PATCH /api/notifications/:notificationId/read
+export const markNotificationAsRead = async (req, res) => {
+    try {
+        const { notificationId } = req.params;
+
+        const updated = await markAsRead(notificationId, req.userId);
+        if (!updated) {
+            return res.status(404).json({
+                success: false,
+                message: "Notificación no encontrada.",
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Notificación marcada como leída.",
+        });
+    } catch (error) {
+        console.error("Error en markNotificationAsRead:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Error al marcar la notificación como leída.",
+        });
+    }
+};
+
+// PATCH /api/notifications/read-all
+export const markAllNotificationsAsRead = async (req, res) => {
+    try {
+        await markAllAsRead(req.userId);
+
+        return res.status(200).json({
+            success: true,
+            message: "Todas las notificaciones han sido marcadas como leídas.",
+        });
+    } catch (error) {
+        console.error("Error en markAllNotificationsAsRead:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Error al marcar las notificaciones como leídas.",
+        });
+    }
+};
+
+// DELETE /api/notifications/:notificationId
+export const deleteNotification = async (req, res) => {
+    try {
+        const { notificationId } = req.params;
+
+        const deleted = await deleteNotificationDB(notificationId, req.userId);
+        if (!deleted) {
+            return res.status(404).json({
+                success: false,
+                message: "Notificación no encontrada.",
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Notificación eliminada exitosamente.",
+        });
+    } catch (error) {
+        console.error("Error en deleteNotification:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Error al eliminar la notificación.",
         });
     }
 };
