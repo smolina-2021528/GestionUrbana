@@ -6,6 +6,13 @@ import {
 import { findCommentById } from "../../helpers/comment-db.js";
 import { notifyNewComment } from "../../helpers/notification-service.js";
 import { buildCommentResponse } from "../../utils/comment-helpers.js";
+import { deleteComment as deleteCommentDB } from "../../helpers/comment-db.js";
+import {
+    createComment as createCommentDB,
+    findCommentsByReport,
+    findCommentById,
+    deleteComment as deleteCommentDB,
+} from "../../helpers/comment-db.js";
 
 // POST /api/reports/:reportId/comments
 export const createComment = async (req, res) => {
@@ -113,5 +120,43 @@ export const getCommentsByReport = async (req, res) => {
         success: false,
         message: "Error al obtener los comentarios.",
     });
+    }
+};
+
+// DELETE /api/reports/:reportId/comments/:commentId
+export const deleteComment = async (req, res) => {
+    try {
+        const { commentId } = req.params;
+
+        const comment = await findCommentById(commentId);
+        if (!comment) {
+            return res.status(404).json({
+                success: false,
+                message: "Comentario no encontrado.",
+            });
+        }
+
+        const isAuthor = comment.UserId === req.userId;
+        const isAdmin  = req.userRole === "ADMIN_ROLE";
+
+        if (!isAuthor && !isAdmin) {
+            return res.status(403).json({
+                success: false,
+                message: "No tienes permiso para eliminar este comentario.",
+            });
+        }
+
+        await deleteCommentDB(commentId);
+
+        return res.status(200).json({
+            success: true,
+            message: "Comentario eliminado exitosamente.",
+        });
+    } catch (error) {
+        console.error("Error en deleteComment:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Error al eliminar el comentario.",
+        });
     }
 };
