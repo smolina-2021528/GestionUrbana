@@ -10,10 +10,15 @@ import { dbConnection } from './db.js';
 import '../src/users/user.model.js';
 import '../src/auth/role.model.js';
 
-// Importar modelos — reportes (deben registrarse antes del sync)
+// Importar modelos — reportes 
 import '../src/reports/report.model.js';
 import '../src/reports/report-image.model.js';
 import '../src/reports/report-status-history.model.js';
+
+// Importacion para commentarios, seguimiento y notificaciones en los modelos
+import '../src/reports/report-comment.model.js';
+import '../src/reports/report-follower.model.js';
+import '../src/reports/report-notification.model.js';
 
 // Middlewares globales
 import { requestLimit } from '../middlewares/request-limit.js';
