@@ -357,3 +357,26 @@ export const validateGetComments = [
 
   handleValidationErrors,
 ];
+// Validaciones para analizar un reporte con IA (imagen + dirección)
+export const validateAnalyzeReport = [
+  body('address')
+    .trim()
+    .notEmpty()
+    .withMessage('La dirección es obligatoria')
+    .isLength({ max: 500 })
+    .withMessage('La dirección no puede superar los 500 caracteres'),
+
+  handleValidationErrors,
+];
+
+// Validaciones para crear un reporte generado por IA
+export const validateAiCreateReport = [
+  body('address')
+    .trim()
+    .notEmpty()
+    .withMessage('La dirección es obligatoria')
+    .isLength({ max: 500 })
+    .withMessage('La dirección no puede superar los 500 caracteres'),
+
+  handleValidationErrors,
+];
