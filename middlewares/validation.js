@@ -1,4 +1,4 @@
-import { body, validationResult } from 'express-validator';
+import { body, query, validationResult } from 'express-validator';
 import { REPORT_CATEGORIES, REPORT_STATUSES } from '../helpers/report-constants.js';
 
 // Maneja los errores de validación y retorna respuesta formateada
@@ -348,9 +348,9 @@ export const validateCreateComment = [
   handleValidationErrors,
 ];
 
-// Validaciones para obtener comentarios de un reporte 
+// Validaciones para obtener comentarios de un reporte
 export const validateGetComments = [
-  body('includeInternal')
+  query('includeInternal')
     .optional()
     .isBoolean()
     .withMessage('includeInternal debe ser un valor booleano'),

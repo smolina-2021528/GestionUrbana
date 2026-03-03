@@ -40,18 +40,17 @@ export const findNotificationsByUser = async (userId, options = {}) => {
  */
 export const markAsRead = async (notificationId, userId) => {
     try {
-        const [affectedRows] = await ReportNotification.update(
-            { IsRead: true },
-            {
-                where: {
-                    Id: notificationId,
-                    UserId: userId,
-                    IsRead: false,
-                },
-            }
-        );
+        // Verificar primero que la notificación pertenece al usuario
+        const notification = await ReportNotification.findOne({
+            where: { Id: notificationId, UserId: userId },
+        });
 
-        return affectedRows > 0;
+        if (!notification) return null; // No existe o no pertenece al usuario
+
+        if (notification.IsRead) return 'already_read'; // Ya estaba leída
+
+        await notification.update({ IsRead: true });
+        return 'updated';
     } catch (error) {
         console.error('Error marcando notificación como leída:', error);
         throw new Error('Error al actualizar la notificación');

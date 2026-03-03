@@ -75,7 +75,7 @@ export const createComment = async (data, transaction) => {
  */
 export const deleteComment = async (commentId, transaction) => {
     try {
-        const comment = await ReportComment.findByPk(commentId);
+        const comment = await ReportComment.findByPk(commentId, { transaction });
         if (!comment) throw new Error('Comentario no encontrado');
 
         await comment.destroy({ transaction });

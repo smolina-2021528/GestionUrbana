@@ -324,23 +324,26 @@ export const markNotificationAsRead = async (req, res) => {
   try {
     const { notificationId } = req.params;
 
-    const updated = await markAsRead(notificationId, req.userId);
-    if (!updated) {
+    const result = await markAsRead(notificationId, req.userId);
+
+    if (result === null) {
       return res.status(404).json({
         success: false,
-        message: "Notificación no encontrada.",
+        message: 'Notificación no encontrada.',
       });
     }
 
     return res.status(200).json({
       success: true,
-      message: "Notificación marcada como leída.",
+      message: result === 'already_read'
+        ? 'La notificación ya estaba marcada como leída.'
+        : 'Notificación marcada como leída.',
     });
   } catch (error) {
-    console.error("Error en markNotificationAsRead:", error);
+    console.error('Error en markNotificationAsRead:', error);
     return res.status(500).json({
       success: false,
-      message: "Error al marcar la notificación como leída.",
+      message: 'Error al marcar la notificación como leída.',
     });
   }
 };
