@@ -1,11 +1,13 @@
-import { Op } from 'sequelize';
-import { sequelize } from '../../configs/db.js';
-import { Report } from './report.model.js';
-import { ReportImage } from './report-image.model.js';
-import { ReportStatusHistory } from './report-status-history.model.js';
-import { User } from '../users/user.model.js';
-import { notifyStatusChange } from '../../helpers/notification-service.js';
-import { notifyStatusChange, notifyReportAssigned } from '../../helpers/notification-service.js';
+import { Op } from "sequelize";
+import { sequelize } from "../../configs/db.js";
+import { Report } from "./report.model.js";
+import { ReportImage } from "./report-image.model.js";
+import { ReportStatusHistory } from "./report-status-history.model.js";
+import { User } from "../users/user.model.js";
+import {
+  notifyStatusChange,
+  notifyReportAssigned,
+} from "../../helpers/notification-service.js";
 import {
   findReportById,
   findReportsByUser,
@@ -17,11 +19,23 @@ import {
   findReportsByProximity,
   getHeatmapData,
   findReportsByBoundingBox,
-} from '../../helpers/report-db.js';
-import { uploadReportImage, deleteImage } from '../../helpers/cloudinary-service.js';
-import { buildReportGeoResponse, buildHeatmapPoint } from '../../utils/geo-helpers.js';
-import { DEFAULT_PRIORITY, DEFAULT_STATUS, REPORT_STATUSES, REPORT_CATEGORIES, REPORT_PRIORITIES } from '../../helpers/report-constants.js';
-import { getUserRoleNames } from '../../helpers/role-db.js';
+} from "../../helpers/report-db.js";
+import {
+  uploadReportImage,
+  deleteImage,
+} from "../../helpers/cloudinary-service.js";
+import {
+  buildReportGeoResponse,
+  buildHeatmapPoint,
+} from "../../utils/geo-helpers.js";
+import {
+  DEFAULT_PRIORITY,
+  DEFAULT_STATUS,
+  REPORT_STATUSES,
+  REPORT_CATEGORIES,
+  REPORT_PRIORITIES,
+} from "../../helpers/report-constants.js";
+import { getUserRoleNames } from "../../helpers/role-db.js";
 
 // POST /api/reports
 // Crea un nuevo reporte con sus imágenes dentro de una transacción.
@@ -30,7 +44,8 @@ export const createReport = async (req, res) => {
   const uploadedImages = [];
 
   try {
-    const { title, description, category, latitude, longitude, address } = req.body;
+    const { title, description, category, latitude, longitude, address } =
+      req.body;
 
     const locationData = buildLocationData(latitude, longitude, address);
 
@@ -44,13 +59,16 @@ export const createReport = async (req, res) => {
         UserId: req.userId,
         ...locationData,
       },
-      { transaction }
+      { transaction },
     );
 
     if (req.files && req.files.length > 0) {
       for (let i = 0; i < req.files.length; i++) {
         const file = req.files[i];
-        const { fileName, publicId } = await uploadReportImage(file.path, file.filename);
+        const { fileName, publicId } = await uploadReportImage(
+          file.path,
+          file.filename,
+        );
 
         uploadedImages.push(publicId);
 
@@ -61,7 +79,7 @@ export const createReport = async (req, res) => {
             PublicId: publicId,
             Order: i,
           },
-          { transaction }
+          { transaction },
         );
       }
     }
@@ -73,7 +91,7 @@ export const createReport = async (req, res) => {
         NewStatus: DEFAULT_STATUS,
         ChangedBy: req.userId,
       },
-      { transaction }
+      { transaction },
     );
 
     await transaction.commit();
@@ -82,7 +100,7 @@ export const createReport = async (req, res) => {
 
     return res.status(201).json({
       success: true,
-      message: 'Reporte creado exitosamente.',
+      message: "Reporte creado exitosamente.",
       data: buildReportGeoResponse(fullReport),
     });
   } catch (error) {
@@ -92,10 +110,10 @@ export const createReport = async (req, res) => {
       await deleteImage(publicId);
     }
 
-    console.error('Error en createReport:', error);
+    console.error("Error en createReport:", error);
     return res.status(500).json({
       success: false,
-      message: 'Error al crear el reporte.',
+      message: "Error al crear el reporte.",
     });
   }
 };
@@ -109,7 +127,7 @@ export const getReportById = async (req, res) => {
     if (!report) {
       return res.status(404).json({
         success: false,
-        message: 'Reporte no encontrado.',
+        message: "Reporte no encontrado.",
       });
     }
 
@@ -118,10 +136,10 @@ export const getReportById = async (req, res) => {
       data: buildReportGeoResponse(report),
     });
   } catch (error) {
-    console.error('Error en getReportById:', error);
+    console.error("Error en getReportById:", error);
     return res.status(500).json({
       success: false,
-      message: 'Error al obtener el reporte.',
+      message: "Error al obtener el reporte.",
     });
   }
 };
@@ -162,10 +180,10 @@ export const getAllReports = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Error en getAllReports:', error);
+    console.error("Error en getAllReports:", error);
     return res.status(500).json({
       success: false,
-      message: 'Error al obtener los reportes.',
+      message: "Error al obtener los reportes.",
     });
   }
 };
@@ -180,21 +198,21 @@ export const deleteReport = async (req, res) => {
     const userId = req.userId;
 
     const isOwner = report.UserId === userId;
-    const isAdmin = userRole === 'ADMIN_ROLE';
+    const isAdmin = userRole === "ADMIN_ROLE";
 
     if (!isOwner && !isAdmin) {
       await transaction.rollback();
       return res.status(403).json({
         success: false,
-        message: 'No tienes permiso para eliminar este reporte.',
+        message: "No tienes permiso para eliminar este reporte.",
       });
     }
 
-    if (isOwner && report.Status !== 'PENDIENTE') {
+    if (isOwner && report.Status !== "PENDIENTE") {
       await transaction.rollback();
       return res.status(400).json({
         success: false,
-        message: 'Solo puedes eliminar reportes en estado PENDIENTE.',
+        message: "Solo puedes eliminar reportes en estado PENDIENTE.",
       });
     }
 
@@ -208,7 +226,7 @@ export const deleteReport = async (req, res) => {
           try {
             await deleteImage(image.PublicId);
           } catch (err) {
-            console.error('Error eliminando imagen de Cloudinary:', err);
+            console.error("Error eliminando imagen de Cloudinary:", err);
           }
         }
       });
@@ -216,15 +234,15 @@ export const deleteReport = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: 'Reporte eliminado exitosamente.',
+      message: "Reporte eliminado exitosamente.",
     });
   } catch (error) {
     await transaction.rollback();
-    console.error('Error en deleteReport:', error);
+    console.error("Error en deleteReport:", error);
 
     return res.status(500).json({
       success: false,
-      message: 'Error al eliminar el reporte.',
+      message: "Error al eliminar el reporte.",
     });
   }
 };
@@ -244,7 +262,10 @@ export const getMyReports = async (req, res) => {
 
     const offset = (page - 1) * limit;
 
-    const { count, rows } = await findReportsByUser(req.userId, { limit, offset });
+    const { count, rows } = await findReportsByUser(req.userId, {
+      limit,
+      offset,
+    });
 
     const reports = rows.map((report) => buildReportGeoResponse(report));
 
@@ -261,11 +282,11 @@ export const getMyReports = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Error en getMyReports:', error);
+    console.error("Error en getMyReports:", error);
 
     return res.status(500).json({
       success: false,
-      message: 'Error al obtener tus reportes.',
+      message: "Error al obtener tus reportes.",
     });
   }
 };
@@ -278,15 +299,16 @@ export const updateReport = async (req, res) => {
   try {
     const report = req.report;
 
-    if (report.Status !== 'PENDIENTE') {
+    if (report.Status !== "PENDIENTE") {
       await transaction.rollback();
       return res.status(400).json({
         success: false,
-        message: 'Solo se pueden editar reportes en estado PENDIENTE',
+        message: "Solo se pueden editar reportes en estado PENDIENTE",
       });
     }
 
-    const { title, description, category, latitude, longitude, address } = req.body;
+    const { title, description, category, latitude, longitude, address } =
+      req.body;
 
     const updateData = {};
     if (title) updateData.Title = title;
@@ -306,7 +328,10 @@ export const updateReport = async (req, res) => {
       for (let i = 0; i < req.files.length; i++) {
         const file = req.files[i];
 
-        const { fileName, publicId } = await uploadReportImage(file.path, file.filename);
+        const { fileName, publicId } = await uploadReportImage(
+          file.path,
+          file.filename,
+        );
 
         uploadedImages.push(publicId);
 
@@ -317,7 +342,7 @@ export const updateReport = async (req, res) => {
             PublicId: publicId,
             Order: currentImageCount + i,
           },
-          { transaction }
+          { transaction },
         );
       }
     }
@@ -328,7 +353,7 @@ export const updateReport = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: 'Reporte actualizado exitosamente.',
+      message: "Reporte actualizado exitosamente.",
       data: buildReportGeoResponse(updatedReport),
     });
   } catch (error) {
@@ -338,15 +363,15 @@ export const updateReport = async (req, res) => {
       try {
         await deleteImage(publicId);
       } catch (err) {
-        console.error('Error limpiando imagen tras fallo:', err);
+        console.error("Error limpiando imagen tras fallo:", err);
       }
     }
 
-    console.error('Error en updateReport:', error);
+    console.error("Error en updateReport:", error);
 
     return res.status(500).json({
       success: false,
-      message: 'Error al actualizar el reporte.',
+      message: "Error al actualizar el reporte.",
     });
   }
 };
@@ -358,11 +383,12 @@ export const changeReportStatus = async (req, res) => {
     const { reportId } = req.params;
     const { status: newStatus, notes } = req.body;
 
-    if (req.userRole !== 'ADMIN_ROLE') {
+    if (req.userRole !== "ADMIN_ROLE") {
       await transaction.rollback();
       return res.status(403).json({
         success: false,
-        message: 'Solo los administradores pueden cambiar el estado del reporte.',
+        message:
+          "Solo los administradores pueden cambiar el estado del reporte.",
       });
     }
 
@@ -372,24 +398,24 @@ export const changeReportStatus = async (req, res) => {
       await transaction.rollback();
       return res.status(404).json({
         success: false,
-        message: 'Reporte no encontrado.',
+        message: "Reporte no encontrado.",
       });
     }
 
-    const currentStatus = report.Status;               // ya existía
+    const currentStatus = report.Status; // ya existía
 
     const allowedTransitions = {
-      PENDIENTE:  ['EN_PROCESO', 'RECHAZADO'],
-      EN_PROCESO: ['RESUELTO', 'RECHAZADO', 'PENDIENTE'],
-      RESUELTO:   [],
-      RECHAZADO:  ['PENDIENTE'],
+      PENDIENTE: ["EN_PROCESO", "RECHAZADO"],
+      EN_PROCESO: ["RESUELTO", "RECHAZADO", "PENDIENTE"],
+      RESUELTO: [],
+      RECHAZADO: ["PENDIENTE"],
     };
 
     if (!allowedTransitions[currentStatus]) {
       await transaction.rollback();
       return res.status(400).json({
         success: false,
-        message: 'Estado actual inválido.',
+        message: "Estado actual inválido.",
       });
     }
 
@@ -401,37 +427,37 @@ export const changeReportStatus = async (req, res) => {
       });
     }
 
-    const previousStatus = currentStatus;              // ← capturar antes del update
+    const previousStatus = currentStatus; // ← capturar antes del update
 
     const updatedReport = await updateReportStatus(
       reportId,
       newStatus,
       req.userId,
       notes,
-      transaction
+      transaction,
     );
 
     await transaction.commit();
 
     // Notificar de forma no bloqueante, igual que notifyNewComment en comment.controller.js
     setImmediate(() => {
-      notifyStatusChange(updatedReport, previousStatus, newStatus).catch((err) =>
-        console.error('Error en notifyStatusChange:', err)
+      notifyStatusChange(updatedReport, previousStatus, newStatus).catch(
+        (err) => console.error("Error en notifyStatusChange:", err),
       );
     });
 
     return res.status(200).json({
       success: true,
-      message: 'Estado actualizado correctamente.',
+      message: "Estado actualizado correctamente.",
       data: buildReportGeoResponse(updatedReport),
     });
   } catch (error) {
     await transaction.rollback();
-    console.error('Error en changeReportStatus:', error);
+    console.error("Error en changeReportStatus:", error);
 
     return res.status(500).json({
       success: false,
-      message: 'Error al cambiar el estado del reporte.',
+      message: "Error al cambiar el estado del reporte.",
     });
   }
 };
@@ -448,19 +474,19 @@ export const getReportStatusHistory = async (req, res) => {
     if (!report) {
       return res.status(404).json({
         success: false,
-        message: 'Reporte no encontrado.',
+        message: "Reporte no encontrado.",
       });
     }
 
     // 3. Cargar el StatusHistory ordenado por created_at ASC con el usuario que hizo el cambio
     const history = await ReportStatusHistory.findAll({
       where: { ReportId: reportId },
-      order: [['created_at', 'ASC']],
+      order: [["created_at", "ASC"]],
       include: [
         {
           model: User,
-          as: 'ChangedByUser',
-          attributes: ['Id', 'Name', 'Surname', 'Username'],
+          as: "ChangedByUser",
+          attributes: ["Id", "Name", "Surname", "Username"],
         },
       ],
     });
@@ -487,10 +513,10 @@ export const getReportStatusHistory = async (req, res) => {
       data: formattedHistory,
     });
   } catch (error) {
-    console.error('Error en getReportStatusHistory:', error);
+    console.error("Error en getReportStatusHistory:", error);
     return res.status(500).json({
       success: false,
-      message: 'Error al obtener el historial de estados.',
+      message: "Error al obtener el historial de estados.",
     });
   }
 };
@@ -508,7 +534,7 @@ export const deleteReportImage = async (req, res) => {
     if (!image) {
       return res.status(404).json({
         success: false,
-        message: 'Imagen no encontrada o no pertenece a este reporte.',
+        message: "Imagen no encontrada o no pertenece a este reporte.",
       });
     }
 
@@ -518,18 +544,18 @@ export const deleteReportImage = async (req, res) => {
     if (!report) {
       return res.status(404).json({
         success: false,
-        message: 'Reporte no encontrado.',
+        message: "Reporte no encontrado.",
       });
     }
 
     // 3. Verificar que el usuario autenticado es dueño del reporte o es admin
     const isOwner = report.UserId === req.userId;
-    const isAdmin = req.userRole === 'ADMIN_ROLE';
+    const isAdmin = req.userRole === "ADMIN_ROLE";
 
     if (!isOwner && !isAdmin) {
       return res.status(403).json({
         success: false,
-        message: 'No tienes permiso para eliminar imágenes de este reporte.',
+        message: "No tienes permiso para eliminar imágenes de este reporte.",
       });
     }
 
@@ -542,24 +568,23 @@ export const deleteReportImage = async (req, res) => {
       try {
         await deleteImage(publicId);
       } catch (err) {
-        console.error('Error al eliminar imagen de Cloudinary:', err);
+        console.error("Error al eliminar imagen de Cloudinary:", err);
       }
     }
 
     // 6. Responder 200
     return res.status(200).json({
       success: true,
-      message: 'Imagen eliminada exitosamente.',
+      message: "Imagen eliminada exitosamente.",
     });
   } catch (error) {
-    console.error('Error en deleteReportImage:', error);
+    console.error("Error en deleteReportImage:", error);
     return res.status(500).json({
       success: false,
-      message: 'Error al eliminar la imagen.',
+      message: "Error al eliminar la imagen.",
     });
   }
 };
-
 
 // Busca reportes por coincidencia en Title o Description.
 export const searchReports = async (req, res) => {
@@ -569,14 +594,14 @@ export const searchReports = async (req, res) => {
     if (!q || q.trim().length < 3) {
       return res.status(400).json({
         success: false,
-        message: 'El parámetro q debe tener al menos 3 caracteres.',
+        message: "El parámetro q debe tener al menos 3 caracteres.",
       });
     }
 
-    let parsedPage  = parseInt(page);
+    let parsedPage = parseInt(page);
     let parsedLimit = parseInt(limit);
 
-    if (isNaN(parsedPage)  || parsedPage  < 1) parsedPage  = 1;
+    if (isNaN(parsedPage) || parsedPage < 1) parsedPage = 1;
     if (isNaN(parsedLimit) || parsedLimit < 1) parsedLimit = 10;
     if (parsedLimit > 50) parsedLimit = 50;
 
@@ -587,8 +612,8 @@ export const searchReports = async (req, res) => {
       offset,
     });
 
-    const reports     = rows.map((report) => buildReportGeoResponse(report));
-    const totalPages  = Math.ceil(count / parsedLimit);
+    const reports = rows.map((report) => buildReportGeoResponse(report));
+    const totalPages = Math.ceil(count / parsedLimit);
 
     return res.status(200).json({
       success: true,
@@ -601,10 +626,10 @@ export const searchReports = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Error en searchReports:', error);
+    console.error("Error en searchReports:", error);
     return res.status(500).json({
       success: false,
-      message: 'Error al buscar reportes.',
+      message: "Error al buscar reportes.",
     });
   }
 };
@@ -614,34 +639,57 @@ export const getReportStats = async (req, res) => {
   try {
     const [total, ...countsByGroup] = await Promise.all([
       Report.count(),
-      ...REPORT_STATUSES.map((status) => Report.count({ where: { Status: status } })),
-      ...REPORT_CATEGORIES.map((category) => Report.count({ where: { Category: category } })),
-      ...REPORT_PRIORITIES.map((priority) => Report.count({ where: { Priority: priority } })),
+      ...REPORT_STATUSES.map((status) =>
+        Report.count({ where: { Status: status } }),
+      ),
+      ...REPORT_CATEGORIES.map((category) =>
+        Report.count({ where: { Category: category } }),
+      ),
+      ...REPORT_PRIORITIES.map((priority) =>
+        Report.count({ where: { Priority: priority } }),
+      ),
     ]);
 
     const [
-      pendiente, en_proceso, resuelto, rechazado,
-      infraestructura, seguridad, limpieza,
-      alta, media, baja,
+      pendiente,
+      en_proceso,
+      resuelto,
+      rechazado,
+      infraestructura,
+      seguridad,
+      limpieza,
+      alta,
+      media,
+      baja,
     ] = countsByGroup;
 
-    const resolutionRate = total > 0
-      ? parseFloat(((resuelto / total) * 100).toFixed(2))
-      : 0;
+    const resolutionRate =
+      total > 0 ? parseFloat(((resuelto / total) * 100).toFixed(2)) : 0;
 
     return res.status(200).json({
       success: true,
       data: {
         total,
-        byStatus: { PENDIENTE: pendiente, EN_PROCESO: en_proceso, RESUELTO: resuelto, RECHAZADO: rechazado },
-        byCategory: { INFRAESTRUCTURA: infraestructura, SEGURIDAD: seguridad, LIMPIEZA: limpieza },
+        byStatus: {
+          PENDIENTE: pendiente,
+          EN_PROCESO: en_proceso,
+          RESUELTO: resuelto,
+          RECHAZADO: rechazado,
+        },
+        byCategory: {
+          INFRAESTRUCTURA: infraestructura,
+          SEGURIDAD: seguridad,
+          LIMPIEZA: limpieza,
+        },
         byPriority: { ALTA: alta, MEDIA: media, BAJA: baja },
         resolutionRate,
       },
     });
   } catch (error) {
     console.error("Error en getReportStats:", error);
-    return res.status(500).json({ success: false, message: "Error al obtener las estadísticas." });
+    return res
+      .status(500)
+      .json({ success: false, message: "Error al obtener las estadísticas." });
   }
 };
 
@@ -655,7 +703,7 @@ export const assignReport = async (req, res) => {
     if (!report) {
       return res.status(404).json({
         success: false,
-        message: 'Reporte no encontrado.',
+        message: "Reporte no encontrado.",
       });
     }
 
@@ -663,16 +711,16 @@ export const assignReport = async (req, res) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'Usuario a asignar no existe.',
+        message: "Usuario a asignar no existe.",
       });
     }
 
     const roles = await getUserRoleNames(user.Id);
 
-    if (!roles.includes('ADMIN_ROLE')) {
+    if (!roles.includes("ADMIN_ROLE")) {
       return res.status(400).json({
         success: false,
-        message: 'El usuario no es personal municipal (ADMIN_ROLE).',
+        message: "El usuario no es personal municipal (ADMIN_ROLE).",
       });
     }
 
@@ -681,7 +729,7 @@ export const assignReport = async (req, res) => {
 
     setImmediate(() => {
       notifyReportAssigned(report, assignedTo).catch((err) =>
-        console.error('Error en notifyReportAssigned:', err)
+        console.error("Error en notifyReportAssigned:", err),
       );
     });
 
@@ -689,21 +737,29 @@ export const assignReport = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: 'Reporte asignado exitosamente.',
+      message: "Reporte asignado exitosamente.",
       data: buildReportGeoResponse(fullReport),
     });
   } catch (error) {
     console.error(error);
     return res.status(500).json({
       success: false,
-      message: 'Error al asignar el reporte.',
+      message: "Error al asignar el reporte.",
     });
   }
 };
 // Retorna reportes cercanos a unas coordenadas dadas dentro de un radio.
 export const getNearbyReports = async (req, res) => {
   try {
-    let { lat, lng, radius = 1000, page = 1, limit = 10, status, category } = req.query;
+    let {
+      lat,
+      lng,
+      radius = 1000,
+      page = 1,
+      limit = 10,
+      status,
+      category,
+    } = req.query;
 
     const parsedLat = parseFloat(lat);
     const parsedLng = parseFloat(lng);
@@ -712,28 +768,28 @@ export const getNearbyReports = async (req, res) => {
     if (isNaN(parsedLat) || isNaN(parsedLng)) {
       return res.status(400).json({
         success: false,
-        message: 'Los parámetros lat y lng deben ser números válidos.',
+        message: "Los parámetros lat y lng deben ser números válidos.",
       });
     }
 
     if (parsedLat < -90 || parsedLat > 90) {
       return res.status(400).json({
         success: false,
-        message: 'La latitud debe estar entre -90 y 90.',
+        message: "La latitud debe estar entre -90 y 90.",
       });
     }
 
     if (parsedLng < -180 || parsedLng > 180) {
       return res.status(400).json({
         success: false,
-        message: 'La longitud debe estar entre -180 y 180.',
+        message: "La longitud debe estar entre -180 y 180.",
       });
     }
 
     if (isNaN(parsedRadius) || parsedRadius < 50 || parsedRadius > 50000) {
       return res.status(400).json({
         success: false,
-        message: 'El radio debe ser un número entre 50 y 50,000 metros.',
+        message: "El radio debe ser un número entre 50 y 50,000 metros.",
       });
     }
 
@@ -746,12 +802,17 @@ export const getNearbyReports = async (req, res) => {
 
     const offset = (parsedPage - 1) * parsedLimit;
 
-    const { count, rows } = await findReportsByProximity(parsedLat, parsedLng, parsedRadius, {
-      limit: parsedLimit,
-      offset,
-      status,
-      category,
-    });
+    const { count, rows } = await findReportsByProximity(
+      parsedLat,
+      parsedLng,
+      parsedRadius,
+      {
+        limit: parsedLimit,
+        offset,
+        status,
+        category,
+      },
+    );
 
     const reports = rows.map((report) => buildReportGeoResponse(report));
     const totalPages = Math.ceil(count / parsedLimit);
@@ -771,10 +832,10 @@ export const getNearbyReports = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Error en getNearbyReports:', error);
+    console.error("Error en getNearbyReports:", error);
     return res.status(500).json({
       success: false,
-      message: 'Error al obtener reportes cercanos.',
+      message: "Error al obtener reportes cercanos.",
     });
   }
 };
@@ -782,23 +843,23 @@ export const getNearbyReports = async (req, res) => {
 // Retorna estadísticas geográficas: total, con/sin ubicación, desglose por categoría y cobertura.
 export const getGeoStats = async (req, res) => {
   try {
-    const [total, withLocation, ...categoryCountsByLocation] = await Promise.all([
-      Report.count(),
-      Report.count({ where: { Location: { [Op.ne]: null } } }),
-      ...REPORT_CATEGORIES.map((category) =>
-        Report.count({
-          where: {
-            Category: category,
-            Location: { [Op.ne]: null },
-          },
-        })
-      ),
-    ]);
+    const [total, withLocation, ...categoryCountsByLocation] =
+      await Promise.all([
+        Report.count(),
+        Report.count({ where: { Location: { [Op.ne]: null } } }),
+        ...REPORT_CATEGORIES.map((category) =>
+          Report.count({
+            where: {
+              Category: category,
+              Location: { [Op.ne]: null },
+            },
+          }),
+        ),
+      ]);
 
     const withoutLocation = total - withLocation;
-    const locationCoverage = total > 0
-      ? parseFloat(((withLocation / total) * 100).toFixed(2))
-      : 0;
+    const locationCoverage =
+      total > 0 ? parseFloat(((withLocation / total) * 100).toFixed(2)) : 0;
 
     const byCategory = {};
     REPORT_CATEGORIES.forEach((category, i) => {
@@ -816,10 +877,10 @@ export const getGeoStats = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Error en getGeoStats:', error);
+    console.error("Error en getGeoStats:", error);
     return res.status(500).json({
       success: false,
-      message: 'Error al obtener las estadísticas geográficas.',
+      message: "Error al obtener las estadísticas geográficas.",
     });
   }
 };
@@ -829,10 +890,11 @@ export const updateReportLocation = async (req, res) => {
   try {
     const report = req.report;
 
-    if (report.Status !== 'PENDIENTE') {
+    if (report.Status !== "PENDIENTE") {
       return res.status(400).json({
         success: false,
-        message: 'Solo se puede actualizar la ubicación de reportes en estado PENDIENTE.',
+        message:
+          "Solo se puede actualizar la ubicación de reportes en estado PENDIENTE.",
       });
     }
 
@@ -846,14 +908,14 @@ export const updateReportLocation = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: 'Ubicación del reporte actualizada exitosamente.',
+      message: "Ubicación del reporte actualizada exitosamente.",
       data: buildReportGeoResponse(updatedReport),
     });
   } catch (error) {
-    console.error('Error en updateReportLocation:', error);
+    console.error("Error en updateReportLocation:", error);
     return res.status(500).json({
       success: false,
-      message: 'Error al actualizar la ubicación del reporte.',
+      message: "Error al actualizar la ubicación del reporte.",
     });
   }
 };
@@ -864,10 +926,11 @@ export const removeReportLocation = async (req, res) => {
   try {
     const report = req.report;
 
-    if (report.Status !== 'PENDIENTE') {
+    if (report.Status !== "PENDIENTE") {
       return res.status(400).json({
         success: false,
-        message: 'Solo se puede eliminar la ubicación de reportes en estado PENDIENTE.',
+        message:
+          "Solo se puede eliminar la ubicación de reportes en estado PENDIENTE.",
       });
     }
 
@@ -882,18 +945,17 @@ export const removeReportLocation = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: 'Ubicación del reporte eliminada exitosamente.',
+      message: "Ubicación del reporte eliminada exitosamente.",
       data: buildReportGeoResponse(updatedReport),
     });
   } catch (error) {
-    console.error('Error en removeReportLocation:', error);
+    console.error("Error en removeReportLocation:", error);
     return res.status(500).json({
       success: false,
-      message: 'Error al eliminar la ubicación del reporte.',
+      message: "Error al eliminar la ubicación del reporte.",
     });
   }
 };
-
 
 export const getReportsByBoundingBox = async (req, res) => {
   try {
@@ -904,58 +966,76 @@ export const getReportsByBoundingBox = async (req, res) => {
     const parsedNeLat = parseFloat(neLat);
     const parsedNeLng = parseFloat(neLng);
 
-    if (isNaN(parsedSwLat) || isNaN(parsedSwLng) || isNaN(parsedNeLat) || isNaN(parsedNeLng)) {
+    if (
+      isNaN(parsedSwLat) ||
+      isNaN(parsedSwLng) ||
+      isNaN(parsedNeLat) ||
+      isNaN(parsedNeLng)
+    ) {
       return res.status(400).json({
         success: false,
-        message: 'Los parámetros swLat, swLng, neLat y neLng son obligatorios y deben ser números válidos.',
+        message:
+          "Los parámetros swLat, swLng, neLat y neLng son obligatorios y deben ser números válidos.",
       });
     }
 
-    if (parsedSwLat < -90 || parsedSwLat > 90 || parsedNeLat < -90 || parsedNeLat > 90) {
+    if (
+      parsedSwLat < -90 ||
+      parsedSwLat > 90 ||
+      parsedNeLat < -90 ||
+      parsedNeLat > 90
+    ) {
       return res.status(400).json({
         success: false,
-        message: 'La latitud debe estar entre -90 y 90.',
+        message: "La latitud debe estar entre -90 y 90.",
       });
     }
 
-    if (parsedSwLng < -180 || parsedSwLng > 180 || parsedNeLng < -180 || parsedNeLng > 180) {
+    if (
+      parsedSwLng < -180 ||
+      parsedSwLng > 180 ||
+      parsedNeLng < -180 ||
+      parsedNeLng > 180
+    ) {
       return res.status(400).json({
         success: false,
-        message: 'La longitud debe estar entre -180 y 180.',
+        message: "La longitud debe estar entre -180 y 180.",
       });
     }
 
     if (parsedSwLat >= parsedNeLat) {
       return res.status(400).json({
         success: false,
-        message: 'swLat debe ser menor que neLat.',
+        message: "swLat debe ser menor que neLat.",
       });
     }
 
     if (parsedSwLng >= parsedNeLng) {
       return res.status(400).json({
         success: false,
-        message: 'swLng debe ser menor que neLng.',
+        message: "swLng debe ser menor que neLng.",
       });
     }
 
     const reports = await findReportsByBoundingBox(
-      parsedSwLat, parsedSwLng,
-      parsedNeLat, parsedNeLng,
-      { status, category }
+      parsedSwLat,
+      parsedSwLng,
+      parsedNeLat,
+      parsedNeLng,
+      { status, category },
     );
 
     const data = reports.map((report) => ({
-      id:            report.Id,
-      title:         report.Title,
-      category:      report.Category,
-      priority:      report.Priority,
-      status:        report.Status,
-      address:       report.Address ?? null,
-      latitude:      report.Latitude  != null ? parseFloat(report.Latitude)  : null,
-      longitude:     report.Longitude != null ? parseFloat(report.Longitude) : null,
-      hasLocation:   report.Latitude  != null && report.Longitude != null,
-      createdAt:     report.CreatedAt,
+      id: report.Id,
+      title: report.Title,
+      category: report.Category,
+      priority: report.Priority,
+      status: report.Status,
+      address: report.Address ?? null,
+      latitude: report.Latitude != null ? parseFloat(report.Latitude) : null,
+      longitude: report.Longitude != null ? parseFloat(report.Longitude) : null,
+      hasLocation: report.Latitude != null && report.Longitude != null,
+      createdAt: report.CreatedAt,
     }));
 
     return res.status(200).json({
@@ -968,10 +1048,10 @@ export const getReportsByBoundingBox = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Error en getReportsByBoundingBox:', error);
+    console.error("Error en getReportsByBoundingBox:", error);
     return res.status(500).json({
       success: false,
-      message: 'Error al obtener reportes del área.',
+      message: "Error al obtener reportes del área.",
     });
   }
 };
@@ -998,10 +1078,10 @@ export const getHeatmap = async (req, res) => {
       total: points.length,
     });
   } catch (error) {
-    console.error('Error en getHeatmap:', error);
+    console.error("Error en getHeatmap:", error);
     return res.status(500).json({
       success: false,
-      message: 'Error al obtener los datos del mapa de calor.',
+      message: "Error al obtener los datos del mapa de calor.",
     });
   }
 };
