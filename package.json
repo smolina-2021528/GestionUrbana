@@ -21,6 +21,7 @@
   "author": "Equipo GestionUrbana",
   "license": "MIT",
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "argon2": "^0.44.0",
     "cloudinary": "^2.7.0",
     "cors": "^2.8.5",
