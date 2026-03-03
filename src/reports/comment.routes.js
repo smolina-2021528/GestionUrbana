@@ -1,7 +1,7 @@
 import { Router } from 'express';
 
 import { validateJWT } from '../../middlewares/validate-JWT.js';
-import { validateCreateComment } from '../../middlewares/validation.js';
+import { validateCreateComment, validateGetComments } from '../../middlewares/validation.js';
 import {
   createComment,
   getCommentsByReport,
@@ -13,13 +13,13 @@ import {
 
 const router = Router();
 
+router.get('/followed', validateJWT, getFollowedReports);
+
 router.post('/:reportId/comments', validateJWT, validateCreateComment, createComment);
 
-router.get('/:reportId/comments', validateJWT, getCommentsByReport);
+router.get('/:reportId/comments', validateJWT, validateGetComments, getCommentsByReport);
 
 router.delete('/:reportId/comments/:commentId', validateJWT, deleteComment);
-
-router.get('/followed', validateJWT, getFollowedReports);
 
 router.post('/:reportId/follow', validateJWT, followReport);
 
