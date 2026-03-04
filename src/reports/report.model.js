@@ -10,6 +10,9 @@ import {
   DEFAULT_STATUS,
 } from '../../helpers/report-constants.js';
 
+// ── Valores válidos para el ciclo de vida del análisis IA ─────────────────────
+export const AI_STATUS_VALUES = ['PENDING', 'OK', 'FAILED'];
+
 export const Report = sequelize.define(
   'Report',
   {
@@ -97,39 +100,25 @@ export const Report = sequelize.define(
       field: 'resolved_at',
     },
 
-    // ── Campos de geolocalización ──────────────────────────────────────────────
+    // ── Geolocalización ────────────────────────────────────────────────────────
     Latitude: {
       type: DataTypes.DECIMAL(10, 8),
       allowNull: true,
       field: 'latitude',
       validate: {
-        min: {
-          args: [-90],
-          msg: 'La latitud debe ser mayor o igual a -90.',
-        },
-        max: {
-          args: [90],
-          msg: 'La latitud debe ser menor o igual a 90.',
-        },
+        min: { args: [-90], msg: 'La latitud debe ser mayor o igual a -90.' },
+        max: { args: [90], msg: 'La latitud debe ser menor o igual a 90.' },
       },
     },
-
     Longitude: {
       type: DataTypes.DECIMAL(11, 8),
       allowNull: true,
       field: 'longitude',
       validate: {
-        min: {
-          args: [-180],
-          msg: 'La longitud debe ser mayor o igual a -180.',
-        },
-        max: {
-          args: [180],
-          msg: 'La longitud debe ser menor o igual a 180.',
-        },
+        min: { args: [-180], msg: 'La longitud debe ser mayor o igual a -180.' },
+        max: { args: [180], msg: 'La longitud debe ser menor o igual a 180.' },
       },
     },
-
     Location: {
       type: DataTypes.GEOMETRY('POINT', 4326),
       allowNull: true,
@@ -141,6 +130,84 @@ export const Report = sequelize.define(
       field: 'address',
     },
 
+    // ── Análisis IA ────────────────────────────────────────────────────────────
+    // AiStatus: ciclo de vida del análisis.
+    AiStatus: {
+      type: DataTypes.STRING(10),
+      allowNull: true,
+      defaultValue: null,
+      field: 'ai_status',
+      validate: {
+        isIn: {
+          args: [AI_STATUS_VALUES],
+          msg: `ai_status debe ser uno de: ${AI_STATUS_VALUES.join(', ')}.`,
+        },
+      },
+    },
+
+    // Categoría (INFRAESTRUCTURA / SEGURIDAD / LIMPIEZA)
+    AiCategory: {
+      type: DataTypes.STRING(50),
+      allowNull: true,
+      defaultValue: null,
+      field: 'ai_category',
+      validate: {
+        isIn: {
+          args: [[...REPORT_CATEGORIES, null]],
+          msg: `ai_category debe ser una de: ${REPORT_CATEGORIES.join(', ')}.`,
+        },
+      },
+    },
+
+    // Prioridad (ALTA / MEDIA / BAJA)
+    AiPriority: {
+      type: DataTypes.STRING(20),
+      allowNull: true,
+      defaultValue: null,
+      field: 'ai_priority',
+      validate: {
+        isIn: {
+          args: [[...REPORT_PRIORITIES, null]],
+          msg: `ai_priority debe ser una de: ${REPORT_PRIORITIES.join(', ')}.`,
+        },
+      },
+    },
+
+    AiConfidence: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+      defaultValue: null,
+      field: 'ai_confidence',
+      validate: {
+        min: { args: [0], msg: 'ai_confidence debe ser ≥ 0.' },
+        max: { args: [1], msg: 'ai_confidence debe ser ≤ 1.' },
+      },
+    },
+
+    // Se puede mapear desde el campo "description" abreviado o un campo extra
+    AiReasoning: {
+      type: DataTypes.STRING(500),
+      allowNull: true,
+      defaultValue: null,
+      field: 'ai_reasoning',
+    },
+
+    // Timestamp exacto en que el análisis IA finalizó (OK o FAILED).
+    AiProcessedAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      defaultValue: null,
+      field: 'ai_processed_at',
+    },
+
+    AiRaw: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      defaultValue: null,
+      field: 'ai_raw',
+    },
+
+    // ── Timestamps ─────────────────────────────────────────────────────────────
     CreatedAt: {
       type: DataTypes.DATE,
       allowNull: false,
@@ -162,9 +229,9 @@ export const Report = sequelize.define(
   }
 );
 
-Report.belongsTo(User, { foreignKey: 'user_id',    as: 'Citizen' });
+Report.belongsTo(User, { foreignKey: 'user_id', as: 'Citizen' });
 Report.belongsTo(User, { foreignKey: 'assigned_to', as: 'AssignedMunicipal' });
-User.hasMany(Report,   { foreignKey: 'user_id',    as: 'Reports' });
+User.hasMany(Report, { foreignKey: 'user_id', as: 'Reports' });
 
 export const createSpatialIndex = async () => {
   try {

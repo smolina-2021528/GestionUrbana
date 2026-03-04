@@ -1,7 +1,7 @@
 import { getReportImageUrl } from '../helpers/cloudinary-service.js';
 import { PRIORITY_COLORS } from '../helpers/report-constants.js';
 
-// Construye la respuesta normalizada de un reporte (DTO de salida)
+// Construye la respuesta normalizada de un reporte (DTO de salida).
 export const buildReportResponse = (report) => {
     return {
         id: report.Id,
@@ -31,6 +31,20 @@ export const buildReportResponse = (report) => {
             }
             : null,
         resolvedAt: report.ResolvedAt,
+
+        // ── Metadatos del análisis IA ────────────────────────────────────────
+        // Solo se incluyen cuando AiStatus no es null (reporte creado por flujo IA).
+        ai: report.AiStatus !== null && report.AiStatus !== undefined
+            ? {
+                status: report.AiStatus,
+                category: report.AiCategory ?? null,
+                priority: report.AiPriority ?? null,
+                confidence: report.AiConfidence ?? null,
+                reasoning: report.AiReasoning ?? null,
+                processedAt: report.AiProcessedAt ?? null,
+            }
+            : null,
+
         createdAt: report.CreatedAt,
         updatedAt: report.UpdatedAt,
     };
