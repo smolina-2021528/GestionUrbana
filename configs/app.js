@@ -36,6 +36,7 @@ import profileRoutes from '../src/profiles/profile.routes.js';
 import reportRoutes      from '../src/reports/report.routes.js';
 import commentRoutes      from '../src/reports/comment.routes.js';
 import notificationRoutes from '../src/reports/notification.routes.js';
+import aiRoutes from '../src/reports/ai.routes.js';
 
 const BASE_PATH = '/gestionurbana/v1';
 
@@ -53,6 +54,7 @@ const routes = (app) => {
   app.use(`${BASE_PATH}/users`,         userRoutes);
   app.use(`${BASE_PATH}/profile`,       profileRoutes);
   app.use(`${BASE_PATH}/reports`,       reportRoutes);
+  app.use(`${BASE_PATH}/reports`, aiRoutes);
   app.use(`${BASE_PATH}/reports`,       commentRoutes);
   app.use(`${BASE_PATH}/notifications`, notificationRoutes);
 

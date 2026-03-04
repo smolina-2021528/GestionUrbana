@@ -1,5 +1,4 @@
-import { buildReportGeoResponse } from '../utils/geo-helpers';
-
+import { buildReportGeoResponse } from '../utils/geo-helpers.js';
 /**
  * Construye la respuesta del endpoint GET /analyze.
  */
