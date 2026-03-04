@@ -4,6 +4,7 @@ import { validateJWT } from '../../middlewares/validate-JWT.js';
 import { validateAdmin } from '../../middlewares/validate-admin.js';
 import { validateReportOwner } from '../../middlewares/validate-report-owner.js';
 import { validateReportImages } from '../../middlewares/validate-report-images.js';
+import { requireAIEnabled } from '../../middlewares/require-ai-enabled.js';
 import { uploadReportImages, handleReportUploadError } from '../../helpers/file-upload.js';
 import {
   validateCreateReport,
@@ -31,6 +32,7 @@ import {
   updateReportLocation,
   removeReportLocation,
   getReportsByBoundingBox,
+  reprocessReportAI,
 } from './report.controller.js';
 
 const router = Router();
@@ -89,5 +91,13 @@ router.patch('/:reportId/location', validateJWT, validateReportOwner, validateUp
 router.delete('/:reportId/location', validateJWT, validateReportOwner, removeReportLocation);
 
 router.get('/:reportId/history', validateJWT, getReportStatusHistory);
+
+router.post(
+  '/:reportId/ai/reprocess',
+  validateJWT,
+  validateAdmin,
+  requireAIEnabled,
+  reprocessReportAI
+);
 
 export default router;

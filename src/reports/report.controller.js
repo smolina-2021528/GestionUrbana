@@ -3,6 +3,7 @@ import { sequelize } from "../../configs/db.js";
 import { Report } from "./report.model.js";
 import { ReportImage } from "./report-image.model.js";
 import { ReportStatusHistory } from "./report-status-history.model.js";
+import { markReportAIPending } from "../../helpers/ai-report-db.js";
 import { User } from "../users/user.model.js";
 import {
   notifyStatusChange,
@@ -1082,6 +1083,53 @@ export const getHeatmap = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Error al obtener los datos del mapa de calor.",
+    });
+  }
+};
+
+// POST /gestionurbana/v1/reports/:reportId/ai/reprocess
+// Marca un reporte existente como PENDING para un nuevo ciclo de análisis IA.
+// Protegido con validateJWT + validateAdmin + requireAIEnabled.
+// Por ahora retorna 202 "queued" sin ejecutar Gemini — pipeline listo para integrarlo.
+export const reprocessReportAI = async (req, res) => {
+  const { reportId } = req.params;
+
+  try {
+    // ── 1. Verificar que el reporte existe ──────────────────────────────────
+    const report = await findReportById(reportId);
+
+    if (!report) {
+      return res.status(404).json({
+        success: false,
+        message: `No se encontró ningún reporte con id "${reportId}".`,
+      });
+    }
+
+    // ── 2. Marcar el reporte como PENDING en los campos de IA ───────────────
+    const updated = await markReportAIPending(reportId);
+
+    if (!updated) {
+      return res.status(500).json({
+        success: false,
+        message: "No se pudo actualizar el estado de IA del reporte.",
+      });
+    }
+
+    // ── 3. Responder 202 Accepted — el análisis se ejecutará de forma asíncrona
+    //       (Gemini se integrará aquí en la siguiente iteración del pipeline)
+    return res.status(202).json({
+      success: true,
+      message: "El reporte ha sido encolado para reprocessamiento con IA.",
+      data: {
+        reportId,
+        aiStatus: "PENDING",
+      },
+    });
+  } catch (error) {
+    console.error("Error en reprocessReportAI:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Error interno al encolar el reporte para análisis IA.",
     });
   }
 };

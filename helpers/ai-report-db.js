@@ -1,4 +1,5 @@
 import { Report } from '../src/reports/report.model.js';
+import { AI_STATUS_VALUES } from '../src/reports/report.model.js';
 import { ReportImage } from '../src/reports/report-image.model.js';
 import { ReportStatusHistory } from '../src/reports/report-status-history.model.js';
 import { buildLocationData } from './report-db.js';
@@ -71,4 +72,21 @@ export const createAiReport = async (aiData, userId, transaction) => {
 
     // ── 5. Retornar solo el Id para que el controlador haga el findReportById completo ─
     return report.Id;
+};
+
+export const markReportAIPending = async (reportId) => {
+    const [affectedRows] = await Report.update(
+        {
+            AiStatus:      'PENDING',
+            AiCategory:    null,
+            AiPriority:    null,
+            AiConfidence:  null,
+            AiReasoning:   null,
+            AiProcessedAt: null,
+            AiRaw:         null,
+        },
+        { where: { Id: reportId } }
+    );
+
+    return affectedRows > 0;
 };
