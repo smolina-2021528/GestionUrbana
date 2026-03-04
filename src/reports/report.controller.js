@@ -99,15 +99,16 @@ export const createReport = async (req, res) => {
     // ── Auto-geocodificación con Nominatim ───────────────────────────────────
     // Si se envió address pero no coordenadas, intentar resolverlas
     let locationData = buildLocationData(latitude, longitude, address);
+    let locationResolved = !!(latitude && longitude);
 
     if (!latitude && !longitude && address) {
       try {
         const geoResult = await geocodeAddress(address);
         if (geoResult) {
-          locationData = buildLocationData(geoResult.latitude, geoResult.longitude, geoResult.address);
+          locationData     = buildLocationData(geoResult.latitude, geoResult.longitude, geoResult.address);
+          locationResolved = true;
         }
       } catch (geoError) {
-        // Nominatim falló: continuar sin coordenadas, no es bloqueante
         console.warn('[createReport] Nominatim no pudo geocodificar la dirección:', geoError.message);
       }
     }
@@ -168,6 +169,7 @@ export const createReport = async (req, res) => {
         ? 'Reporte creado exitosamente con ayuda de IA.'
         : 'Reporte creado exitosamente.',
       aiGenerated,
+      locationResolved,
       data: buildReportGeoResponse(fullReport),
     });
   } catch (error) {
@@ -382,7 +384,22 @@ export const updateReport = async (req, res) => {
     if (description) updateData.Description = description;
     if (category) updateData.Category = category;
 
-    const locationData = buildLocationData(latitude, longitude, address);
+    // ── Auto-geocodificación con Nominatim ───────────────────────────────────
+    let locationData     = buildLocationData(latitude, longitude, address);
+    let locationResolved = !!(latitude && longitude);
+
+    if (!latitude && !longitude && address) {
+      try {
+        const geoResult = await geocodeAddress(address);
+        if (geoResult) {
+          locationData     = buildLocationData(geoResult.latitude, geoResult.longitude, geoResult.address);
+          locationResolved = true;
+        }
+      } catch (geoError) {
+        console.warn('[updateReport] Nominatim no pudo geocodificar la dirección:', geoError.message);
+      }
+    }
+
     Object.assign(updateData, locationData);
 
     if (Object.keys(updateData).length > 0) {
@@ -421,6 +438,7 @@ export const updateReport = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Reporte actualizado exitosamente.",
+      locationResolved,
       data: buildReportGeoResponse(updatedReport),
     });
   } catch (error) {
