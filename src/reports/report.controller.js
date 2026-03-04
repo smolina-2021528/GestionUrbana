@@ -37,6 +37,8 @@ import {
   REPORT_PRIORITIES,
 } from "../../helpers/report-constants.js";
 import { getUserRoleNames } from "../../helpers/role-db.js";
+import { analyzeReportImage } from "../../helpers/gemini-service.js";
+import { geocodeAddress }     from "../../helpers/nominatim-service.js";
 
 // POST /api/reports
 // Crea un nuevo reporte con sus imágenes dentro de una transacción.
@@ -45,17 +47,78 @@ export const createReport = async (req, res) => {
   const uploadedImages = [];
 
   try {
-    const { title, description, category, latitude, longitude, address } =
-      req.body;
+    let { title, description, category, latitude, longitude, address } = req.body;
+    let aiGenerated = false;
+    let resolvedPriority = DEFAULT_PRIORITY;
 
-    const locationData = buildLocationData(latitude, longitude, address);
+    // ── Auto-completado con Gemini ───────────────────────────────────────────
+    const missingFields = !title || !description || !category;
+    const hasImage      = req.files && req.files.length > 0;
 
+    if (missingFields && hasImage) {
+      try {
+        const firstImagePath = req.files[0].path;
+        const aiResult = await analyzeReportImage(firstImagePath);
+
+        // Mezclar: el usuario manda primero, Gemini rellena lo que falta
+        title       = title       || aiResult.title;
+        description = description || aiResult.description;
+        category    = category    || aiResult.category;
+
+        // Gemini también sugiere prioridad — solo se aplica si el usuario
+        // no la envió (el modelo acepta priority en el body de forma opcional)
+        if (!req.body.priority) {
+          resolvedPriority = aiResult.priority;
+        }
+
+        aiGenerated = true;
+      } catch (aiError) {
+        // Gemini falló: si aún faltan campos obligatorios, devolver 400 normal
+        console.warn('[createReport] Gemini no pudo analizar la imagen:', aiError.message);
+
+        if (!title || !description || !category) {
+          await transaction.rollback();
+          return res.status(400).json({
+            success: false,
+            message:
+              'Faltan campos obligatorios (title, description, category) y no se pudo analizar la imagen automáticamente.',
+          });
+        }
+      }
+    }
+
+    // Validación final: si después de Gemini aún faltan campos, 400
+    if (!title || !description || !category) {
+      await transaction.rollback();
+      return res.status(400).json({
+        success: false,
+        message: 'Los campos title, description y category son obligatorios.',
+      });
+    }
+
+    // ── Auto-geocodificación con Nominatim ───────────────────────────────────
+    // Si se envió address pero no coordenadas, intentar resolverlas
+    let locationData = buildLocationData(latitude, longitude, address);
+
+    if (!latitude && !longitude && address) {
+      try {
+        const geoResult = await geocodeAddress(address);
+        if (geoResult) {
+          locationData = buildLocationData(geoResult.latitude, geoResult.longitude, geoResult.address);
+        }
+      } catch (geoError) {
+        // Nominatim falló: continuar sin coordenadas, no es bloqueante
+        console.warn('[createReport] Nominatim no pudo geocodificar la dirección:', geoError.message);
+      }
+    }
+
+    // ── Crear reporte ────────────────────────────────────────────────────────
     const report = await Report.create(
       {
         Title: title,
         Description: description,
         Category: category,
-        Priority: DEFAULT_PRIORITY,
+        Priority: resolvedPriority,
         Status: DEFAULT_STATUS,
         UserId: req.userId,
         ...locationData,
@@ -101,7 +164,10 @@ export const createReport = async (req, res) => {
 
     return res.status(201).json({
       success: true,
-      message: "Reporte creado exitosamente.",
+      message: aiGenerated
+        ? 'Reporte creado exitosamente con ayuda de IA.'
+        : 'Reporte creado exitosamente.',
+      aiGenerated,
       data: buildReportGeoResponse(fullReport),
     });
   } catch (error) {
