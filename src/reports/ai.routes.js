@@ -8,12 +8,19 @@ import { analyzeReport, aiCreateReport } from './ai.controller.js';
 
 const router = Router();
 
+// este metodo nos garantiza que los errores de Multer llegan a handleReportUploadError
+const uploadSingleImageSafe = (req, res, next) => {
+  uploadSingleImage(req, res, (err) => {
+    if (err) return handleReportUploadError(err, req, res, next);
+    next();
+  });
+};
+
 // POST /api/reports/analyze
 router.post(
   '/analyze',
   validateJWT,
-  uploadSingleImage,
-  handleReportUploadError,
+  uploadSingleImageSafe,
   validateSingleReportImage,
   validateAnalyzeReport,
   analyzeReport,
@@ -23,8 +30,7 @@ router.post(
 router.post(
   '/ai-create',
   validateJWT,
-  uploadSingleImage,
-  handleReportUploadError,
+  uploadSingleImageSafe,
   validateSingleReportImage,
   validateAiCreateReport,
   aiCreateReport,
