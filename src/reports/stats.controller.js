@@ -12,6 +12,7 @@ import { getReportsForExport } from '../../helpers/stats-db.js';
 import { generateExportFile } from '../../helpers/export-service.js';
 import { buildExportFilename } from '../../utils/stats-helpers.js';
 import { EXPORT_COLUMNS, EXPORT_MAX_ROWS }  from '../../helpers/stats-constants.js';
+import { getStatusTransitionStats } from '../../helpers/stats-db.js';
 
 // GET /stats/dashboard
 export const getDashboard = async (req, res) => {
@@ -180,6 +181,33 @@ export const exportReports = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: 'Error al exportar los reportes.',
+        });
+    }
+};
+
+// GET /stats/transitions
+export const getStatusTransitions = async (req, res) => {
+    try {
+        // 1. Parsear fechas
+        const { startDate, endDate } = parseDateRange(req.query);
+
+        // 2. Obtener transiciones
+        const transitions = await getStatusTransitionStats({ startDate, endDate });
+
+        // 3. Retornar 200
+        return res.status(200).json({
+            success: true,
+            filters: {
+                startDate: startDate ? startDate.toISOString() : null,
+                endDate:   endDate   ? endDate.toISOString()   : null,
+            },
+            data: transitions,
+        });
+    } catch (error) {
+        console.error('Error en getStatusTransitions:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Error al obtener las transiciones de estado.',
         });
     }
 };
