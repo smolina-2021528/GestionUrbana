@@ -5,6 +5,7 @@ import { ReportImage } from '../src/reports/report-image.model.js';
 import { ReportStatusHistory } from '../src/reports/report-status-history.model.js';
 import { User } from '../src/users/user.model.js';
 import { buildGeoPoint } from '../utils/geo-helpers.js';
+import { buildDateWhereClause } from './date-helpers.js';
 
 
 // Incluye todas las asociaciones para cargar un reporte completo
@@ -53,9 +54,13 @@ export const findReportById = async (reportId) => {
 // Lista los reportes de un usuario con paginación
 export const findReportsByUser = async (userId, options = {}) => {
     try {
-        const { limit = 10, offset = 0 } = options;
+        const { limit = 10, offset = 0, startDate, endDate } = options;
+
+        const where = { UserId: userId };
+        Object.assign(where, buildDateWhereClause(startDate, endDate));
+
         const reports = await Report.findAndCountAll({
-            where: { UserId: userId },
+            where,
             include: getReportIncludes(),
             order: [
                 ['created_at', 'DESC'],
@@ -74,13 +79,14 @@ export const findReportsByUser = async (userId, options = {}) => {
 // Lista reportes con filtros opcionales y paginación
 export const findAllReports = async (filters = {}, options = {}) => {
     try {
-        const { category, priority, status } = filters;
+        const { category, priority, status, startDate, endDate } = filters;
         const { limit = 10, offset = 0 } = options;
 
         const where = {};
         if (category) where.Category = category;
         if (priority) where.Priority = priority;
-        if (status) where.Status = status;
+        if (status)   where.Status   = status;
+        Object.assign(where, buildDateWhereClause(startDate, endDate));
 
         const reports = await Report.findAndCountAll({
             where,
@@ -150,15 +156,18 @@ export const updateReportStatus = async (reportId, newStatus, changedBy, notes, 
 // Busca reportes por texto en Title o Description (case-insensitive)
 export const searchReportsByText = async (query, options = {}) => {
     try {
-        const { limit = 10, offset = 0 } = options;
+        const { limit = 10, offset = 0, startDate, endDate } = options;
+
+        const where = {
+            [Op.or]: [
+                { Title:       { [Op.iLike]: `%${query}%` } },
+                { Description: { [Op.iLike]: `%${query}%` } },
+            ],
+        };
+        Object.assign(where, buildDateWhereClause(startDate, endDate));
 
         const reports = await Report.findAndCountAll({
-            where: {
-                [Op.or]: [
-                    { Title:       { [Op.iLike]: `%${query}%` } },
-                    { Description: { [Op.iLike]: `%${query}%` } },
-                ],
-            },
+            where,
             include: getReportIncludes(),
             order: [
                 ['created_at', 'DESC'],
