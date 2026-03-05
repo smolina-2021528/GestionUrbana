@@ -1,13 +1,10 @@
 import { Report } from '../src/reports/report.model.js';
-import { AI_STATUS_VALUES } from '../src/reports/report.model.js';
 import { ReportImage } from '../src/reports/report-image.model.js';
 import { ReportStatusHistory } from '../src/reports/report-status-history.model.js';
 import { buildLocationData } from './report-db.js';
 import { DEFAULT_STATUS } from './report-constants.js';
 
-/**
- * Crea un reporte generado por IA dentro de una transacción existente.
-**/
+// Crea un reporte generado por IA dentro de una transacción existente.
 export const createAiReport = async (aiData, userId, transaction) => {
     const {
         title,
@@ -22,10 +19,10 @@ export const createAiReport = async (aiData, userId, transaction) => {
         aiRaw = null,
     } = aiData;
 
-    // ── 1. Campos de geolocalización 
+    // Campos de geolocalización 
     const locationData = buildLocationData(latitude, longitude, address);
 
-    // ── 2. Crear el reporte ────────────────────────────────────────────────────────────
+    // Crear el reporte
     const report = await Report.create(
         {
             Title: title,
@@ -46,7 +43,7 @@ export const createAiReport = async (aiData, userId, transaction) => {
         { transaction }
     );
 
-    // ── 3. Crear la imagen asociada si se dio ───────────────────────────────
+    // Crear la imagen asociada si se dio
     if (imageUrl && imagePublicId) {
         await ReportImage.create(
             {
@@ -59,7 +56,7 @@ export const createAiReport = async (aiData, userId, transaction) => {
         );
     }
 
-    // ── 4. Registrar el estado inicial en el historial ────────────────────────────────
+    // Registrar el estado inicial en el historial
     await ReportStatusHistory.create(
         {
             ReportId: report.Id,
@@ -70,7 +67,7 @@ export const createAiReport = async (aiData, userId, transaction) => {
         { transaction }
     );
 
-    // ── 5. Retornar solo el Id para que el controlador haga el findReportById completo ─
+    // Retornar solo el Id para que el controlador haga el findReportById completo 
     return report.Id;
 };
 
