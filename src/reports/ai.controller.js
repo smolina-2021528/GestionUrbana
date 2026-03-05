@@ -12,7 +12,7 @@ import {
 } from '../../helpers/ai-helpers.js';
 
 export const analyzeReport = async (req, res) => {
-    // ── 1. Verificar que se subió exactamente una imagen ───────────────────
+    // Verificar que se subió exactamente una imagen
     if (!req.file) {
         return res.status(400).json({
             success: false,
@@ -20,7 +20,7 @@ export const analyzeReport = async (req, res) => {
         });
     }
 
-    // ── 2. Leer address del body ───────────────────────────────────────────
+    // Leer address del body
     const { address } = req.body;
 
     if (!address || address.trim() === '') {
@@ -31,7 +31,7 @@ export const analyzeReport = async (req, res) => {
         });
     }
 
-    // ── 3 & 4. Gemini y Nominatim en paralelo ─────────────────────────────
+    // Gemini y Nominatim en paralelo
     let geminiResult;
     let nominatimResult;
 
@@ -48,17 +48,17 @@ export const analyzeReport = async (req, res) => {
         );
     }
 
-    // ── 5. Limpiar archivo temporal ────────────────────────────────────────
+    // Limpiar archivo temporal
     deleteTempFile(req.file.path);
 
-    // ── 6. Retornar 200 ────────────────────────────────────────────────────
+    // Retornar 200 
     return res.status(200).json(
         buildAnalysisResponse(geminiResult, nominatimResult)
     );
 };
 
 export const aiCreateReport = async (req, res) => {
-    // ── 1. Verificar que se subió exactamente una imagen ───────────────────
+    // Verificar que se subió exactamente una imagen
     if (!req.file) {
         return res.status(400).json({
             success: false,
@@ -66,20 +66,22 @@ export const aiCreateReport = async (req, res) => {
         });
     }
 
-    // ── 2. Leer address del body ───────────────────────────────────────────
+    // Leer address del body 
     const { address } = req.body;
 
-    // ── 3. Gemini y Nominatim en paralelo ─────────────────────────────────
+    // Gemini y Nominatim en paralelo 
     let geminiResult;
     let nominatimResult;
+
+    const trimmedAddress = address?.trim() ?? '';
 
     try {
         [geminiResult, nominatimResult] = await Promise.all([
             analyzeReportImage(req.file.path),
-            geocodeAddress(address?.trim() ?? ''),
+            trimmedAddress ? geocodeAddress(trimmedAddress) : Promise.resolve(null),
         ]);
     } catch (error) {
-        // ── 4. Gemini falló: limpiar temporal y abortar ────────────────────
+        // Gemini falló: limpiar temporal y abortar
         deleteTempFile(req.file.path);
         return res.status(422).json(
             buildAiErrorResponse('gemini', error.message)
@@ -100,10 +102,10 @@ export const aiCreateReport = async (req, res) => {
         );
     }
 
-    // ── 6. Limpiar archivo temporal (por si uploadReportImage no lo hizo) ──
+    // Limpiar archivo temporal
     deleteTempFile(req.file.path);
 
-    // ── 7 – 9. Transacción: crear reporte y hacer commit ──────────────────
+    //Transacción: crear reporte y hacer commit
     const transaction = await sequelize.transaction();
 
     let reportId;
@@ -128,7 +130,7 @@ export const aiCreateReport = async (req, res) => {
 
         await transaction.commit();
     } catch (error) {
-        // ── 12. Rollback + eliminar imagen de Cloudinary ───────────────────
+        // Rollback + eliminar imagen de Cloudinary
         await transaction.rollback();
         await deleteImage(publicId).catch((err) =>
             console.error('[aiCreateReport] Error eliminando imagen de Cloudinary tras rollback:', err.message)
@@ -140,10 +142,9 @@ export const aiCreateReport = async (req, res) => {
         );
     }
 
-    // ── 10. Obtener reporte completo con includes ──────────────────────────
+    // Obtener reporte completo con includes 
     const fullReport = await findReportById(reportId);
 
-    // ── 11. Retornar 201 ───────────────────────────────────────────────────
     return res.status(201).json(
         buildAiReportResponse(fullReport)
     );
