@@ -6,8 +6,12 @@ import { getReportTrends, getResolutionTimeSeries } from '../../helpers/stats-db
 import { buildTrendsResponse } from '../../utils/stats-helpers.js';
 import { GROUPBY_OPTIONS } from '../../helpers/stats-constants.js';
 import { getZoneRanking as getZoneRankingDB, getTopZonesByAddress } from '../../helpers/zone-db.js';
-import { buildZoneRankingResponse }                                  from '../../utils/stats-helpers.js';
-import { ZONE_RADIUS_OPTIONS }                                       from '../../helpers/stats-constants.js';
+import { buildZoneRankingResponse }  from '../../utils/stats-helpers.js';
+import { ZONE_RADIUS_OPTIONS } from '../../helpers/stats-constants.js';
+import { getReportsForExport } from '../../helpers/stats-db.js';
+import { generateExportFile } from '../../helpers/export-service.js';
+import { buildExportFilename } from '../../utils/stats-helpers.js';
+import { EXPORT_COLUMNS, EXPORT_MAX_ROWS }  from '../../helpers/stats-constants.js';
 
 // GET /stats/dashboard
 export const getDashboard = async (req, res) => {
@@ -123,6 +127,59 @@ export const getZoneRanking = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: 'Error al obtener el ranking de zonas.',
+        });
+    }
+};
+
+// GET /stats/export
+export const exportReports = async (req, res) => {
+    try {
+        // 1. Extraer filtros
+        const { format = 'xlsx', category, priority, status } = req.query;
+        const { startDate, endDate } = parseDateRange(req.query);
+
+        // 2. Validar formato
+        const safeFormat = ['csv', 'xlsx'].includes(format) ? format : 'xlsx';
+
+        // 3. Obtener datos para exportar
+        const { rows, truncated } = await getReportsForExport({
+            category,
+            priority,
+            status,
+            startDate,
+            endDate,
+        });
+
+        // 4. Informar al frontend si los resultados fueron truncados
+        if (truncated) {
+            res.setHeader('X-Export-Truncated', 'true');
+            res.setHeader('X-Export-Max-Rows', String(EXPORT_MAX_ROWS));
+        }
+
+        // 5. Generar archivo
+        const { content, contentType, isBuffer } = generateExportFile(rows, safeFormat, EXPORT_COLUMNS);
+
+        // 6. Construir nombre del archivo
+        const filename = buildExportFilename(safeFormat, { startDate, endDate });
+
+        // 7-8. Setear headers y enviar respuesta según formato
+        res.setHeader('Content-Type', contentType);
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+
+        if (isBuffer) {
+            // XLSX — workbook.xlsx.write() escribe al stream y luego cerramos
+            await content.xlsx.write(res);
+            return res.end();
+        }
+
+        // CSV — string directo
+        return res.send(content);
+
+    } catch (error) {
+        console.error('Error en exportReports:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Error al exportar los reportes.',
         });
     }
 };
