@@ -1,14 +1,18 @@
 import { QueryTypes, Op } from 'sequelize';
 import { sequelize } from '../configs/db.js';
 import { Report } from '../src/reports/report.model.js';
+import { ReportImage } from '../src/reports/report-image.model.js';
 import { ReportComment } from '../src/reports/report-comment.model.js';
 import { ReportFollower } from '../src/reports/report-follower.model.js';
 import { ReportStatusHistory } from '../src/reports/report-status-history.model.js';
+import { User } from '../src/users/user.model.js';
 import {
   REPORT_STATUSES,
   REPORT_CATEGORIES,
   REPORT_PRIORITIES,
 } from './report-constants.js';
+import { EXPORT_MAX_ROWS } from './stats-constants.js';
+import { buildDateWhereClause } from './date-helpers.js';
 
 // ─── Helpers internos ─────────────────────────────────────────────────────────
 
@@ -22,12 +26,12 @@ const buildReportWhere = ({ startDate, endDate, category, priority, status } = {
   if (startDate || endDate) {
     where.created_at = {};
     if (startDate) where.created_at[Op.gte] = new Date(startDate);
-    if (endDate)   where.created_at[Op.lte] = new Date(endDate);
+    if (endDate) where.created_at[Op.lte] = new Date(endDate);
   }
 
   if (category) where.Category = category;
   if (priority) where.Priority = priority;
-  if (status)   where.Status   = status;
+  if (status) where.Status = status;
 
   return where;
 };
@@ -38,7 +42,7 @@ const buildReportWhere = ({ startDate, endDate, category, priority, status } = {
 const defaultDateRange = (startDate, endDate, days = 30) => {
   if (startDate || endDate) return { startDate, endDate };
 
-  const end   = new Date();
+  const end = new Date();
   const start = new Date();
   start.setDate(start.getDate() - (days - 1));
   start.setHours(0, 0, 0, 0);
@@ -54,9 +58,11 @@ const defaultDateRange = (startDate, endDate, days = 30) => {
 export const getDashboardMetrics = async (filters = {}) => {
   const { startDate, endDate, category, priority } = filters;
 
-  const baseWhere    = buildReportWhere({ startDate, endDate, category, priority });
+  // Cláusulas WHERE compartidas
+  const baseWhere = buildReportWhere({ startDate, endDate, category, priority });
   const resolvedWhere = buildReportWhere({ startDate, endDate, category, priority, status: 'RESUELTO' });
 
+  // Parámetros para la query raw de tiempo promedio de resolución
   const rawConditions = [];
   const rawReplacements = {};
 
@@ -78,7 +84,7 @@ export const getDashboardMetrics = async (filters = {}) => {
   }
 
   const resolvedCondition = [...rawConditions, "r.status = 'RESUELTO'", 'r.resolved_at IS NOT NULL'];
-  const resolvedWhereSQL  = resolvedCondition.length
+  const resolvedWhereSQL = resolvedCondition.length
     ? `WHERE ${resolvedCondition.join(' AND ')}`
     : '';
 
@@ -110,20 +116,20 @@ export const getDashboardMetrics = async (filters = {}) => {
     Report.count({ where: baseWhere }),
 
     // 2. Conteo por estado
-    Report.count({ where: { ...baseWhere, Status: 'PENDIENTE'  } }),
+    Report.count({ where: { ...baseWhere, Status: 'PENDIENTE' } }),
     Report.count({ where: { ...baseWhere, Status: 'EN_PROCESO' } }),
-    Report.count({ where: { ...baseWhere, Status: 'RESUELTO'   } }),
-    Report.count({ where: { ...baseWhere, Status: 'RECHAZADO'  } }),
+    Report.count({ where: { ...baseWhere, Status: 'RESUELTO' } }),
+    Report.count({ where: { ...baseWhere, Status: 'RECHAZADO' } }),
 
     // 3. Conteo por categoría
     Report.count({ where: { ...baseWhere, Category: 'INFRAESTRUCTURA' } }),
-    Report.count({ where: { ...baseWhere, Category: 'SEGURIDAD'       } }),
-    Report.count({ where: { ...baseWhere, Category: 'LIMPIEZA'        } }),
+    Report.count({ where: { ...baseWhere, Category: 'SEGURIDAD' } }),
+    Report.count({ where: { ...baseWhere, Category: 'LIMPIEZA' } }),
 
     // 4. Conteo por prioridad
-    Report.count({ where: { ...baseWhere, Priority: 'ALTA'  } }),
+    Report.count({ where: { ...baseWhere, Priority: 'ALTA' } }),
     Report.count({ where: { ...baseWhere, Priority: 'MEDIA' } }),
-    Report.count({ where: { ...baseWhere, Priority: 'BAJA'  } }),
+    Report.count({ where: { ...baseWhere, Priority: 'BAJA' } }),
 
     // 5. Tiempo promedio de resolución en horas (query raw)
     sequelize.query(
@@ -146,8 +152,9 @@ export const getDashboardMetrics = async (filters = {}) => {
        JOIN reports rep ON rc.report_id = rep.id
        WHERE rc.is_internal = false
        ${commentDateWhere.replace(/:(\w+)/g, (_, key) => {
-         return `:${key}`;
-       })}`,
+        // Inline replacement preview — actual replacement handled by Sequelize below
+        return `:${key}`;
+      })}`,
       { replacements: rawReplacements, type: QueryTypes.SELECT }
     ),
 
@@ -159,7 +166,7 @@ export const getDashboardMetrics = async (filters = {}) => {
   const resolutionRate =
     total > 0 ? parseFloat(((resuelto / total) * 100).toFixed(2)) : 0;
 
-  const rawAvgHours  = avgResolutionResult?.[0]?.avg_hours;
+  const rawAvgHours = avgResolutionResult?.[0]?.avg_hours;
   const avgResolutionHours =
     rawAvgHours !== null && rawAvgHours !== undefined
       ? parseFloat(parseFloat(rawAvgHours).toFixed(2))
@@ -175,20 +182,20 @@ export const getDashboardMetrics = async (filters = {}) => {
       avgResolutionHours,
     },
     byStatus: {
-      PENDIENTE:  pendiente,
+      PENDIENTE: pendiente,
       EN_PROCESO: en_proceso,
-      RESUELTO:   resuelto,
-      RECHAZADO:  rechazado,
+      RESUELTO: resuelto,
+      RECHAZADO: rechazado,
     },
     byCategory: {
       INFRAESTRUCTURA: infraestructura,
-      SEGURIDAD:       seguridad,
-      LIMPIEZA:        limpieza,
+      SEGURIDAD: seguridad,
+      LIMPIEZA: limpieza,
     },
     byPriority: {
-      ALTA:  alta,
+      ALTA: alta,
       MEDIA: media,
-      BAJA:  baja,
+      BAJA: baja,
     },
     location: {
       withLocation,
@@ -216,11 +223,11 @@ export const getReportTrends = async (filters = {}) => {
 
   // Validar groupBy
   const validGroupBy = ['day', 'week', 'month'];
-  const safeGroupBy  = validGroupBy.includes(groupBy) ? groupBy : 'day';
+  const safeGroupBy = validGroupBy.includes(groupBy) ? groupBy : 'day';
 
   // Construir condiciones WHERE dinámicas
-  const conditions    = ['created_at BETWEEN :startDate AND :endDate'];
-  const replacements  = { startDate: new Date(startDate), endDate: new Date(endDate), groupBy: safeGroupBy };
+  const conditions = ['created_at BETWEEN :startDate AND :endDate'];
+  const replacements = { startDate: new Date(startDate), endDate: new Date(endDate), groupBy: safeGroupBy };
 
   if (category) {
     conditions.push('category = :category');
@@ -247,7 +254,7 @@ export const getReportTrends = async (filters = {}) => {
 
   return rows.map((row) => ({
     period: new Date(row.period),
-    total:  parseInt(row.total, 10),
+    total: parseInt(row.total, 10),
   }));
 };
 
@@ -262,16 +269,16 @@ export const getResolutionTimeSeries = async (filters = {}) => {
   ({ startDate, endDate } = defaultDateRange(startDate, endDate, 30));
 
   const validGroupBy = ['day', 'week', 'month'];
-  const safeGroupBy  = validGroupBy.includes(groupBy) ? groupBy : 'day';
+  const safeGroupBy = validGroupBy.includes(groupBy) ? groupBy : 'day';
 
-  const conditions   = [
+  const conditions = [
     'created_at BETWEEN :startDate AND :endDate',
     "status = 'RESUELTO'",
     'resolved_at IS NOT NULL',
   ];
   const replacements = {
     startDate: new Date(startDate),
-    endDate:   new Date(endDate),
+    endDate: new Date(endDate),
   };
 
   if (category) {
@@ -292,7 +299,7 @@ export const getResolutionTimeSeries = async (filters = {}) => {
   );
 
   return rows.map((row) => ({
-    period:   new Date(row.period),
+    period: new Date(row.period),
     avgHours: row.avg_hours !== null ? parseFloat(parseFloat(row.avg_hours).toFixed(2)) : null,
   }));
 };
@@ -301,12 +308,12 @@ export const getResolutionTimeSeries = async (filters = {}) => {
 
 /**
  * Cuántos reportes pasaron de cada estado a cada otro en el rango.
- * Útil para detectar cuellos de botella en el flujo de trabajo.
+ * Útil para detectar cuellos de botella en el flujo de trabajo. 
  */
 export const getStatusTransitionStats = async (filters = {}) => {
   const { startDate, endDate } = filters;
 
-  const conditions  = [];
+  const conditions = [];
   const replacements = {};
 
   if (startDate) {
@@ -335,7 +342,84 @@ export const getStatusTransitionStats = async (filters = {}) => {
 
   return rows.map((row) => ({
     previousStatus: row.previous_status ?? null,
-    newStatus:      row.new_status,
-    count:          parseInt(row.total, 10),
+    newStatus: row.new_status,
+    count: parseInt(row.total, 10),
   }));
+};
+
+// ─── getReportsForExport ──────────────────────────────────────────────────────
+
+/**
+ * Query optimizada para exportación masiva de reportes.
+ * Carga solo los campos e includes mínimos necesarios y respeta el límite
+ * de filas definido en EXPORT_MAX_ROWS para proteger al servidor.
+ */
+export const getReportsForExport = async (filters = {}) => {
+  const { category, priority, status, startDate, endDate } = filters;
+
+  // Construir cláusula WHERE ─────────────────────────────────────────────────
+  const where = {};
+  if (category) where.Category = category;
+  if (priority) where.Priority = priority;
+  if (status) where.Status = status;
+  Object.assign(where, buildDateWhereClause(startDate, endDate));
+
+  // Obtener el total real y las filas en paralelo ────────────────────────────
+  const [total, rows] = await Promise.all([
+
+    // Total sin límite — necesario para saber si se truncó
+    Report.count({ where }),
+
+    // Filas limitadas a EXPORT_MAX_ROWS con includes mínimos
+    Report.findAll({
+      where,
+
+      // Subquery inline para el conteo de comentarios públicos
+      attributes: {
+        include: [
+          [
+            sequelize.literal(`(
+              SELECT COUNT(*)::int
+              FROM report_comments rc
+              WHERE rc.report_id = "Report"."id"
+                AND rc.is_internal = false
+            )`),
+            'commentCount',
+          ],
+        ],
+      },
+
+      include: [
+        {
+          model: User,
+          as: 'Citizen',
+          attributes: ['Name', 'Surname'],
+        },
+        {
+          model: User,
+          as: 'AssignedMunicipal',
+          attributes: ['Name', 'Surname'],
+          required: false,
+        },
+        // Solo la URL de la primera imagen (order ASC, separate para no
+        // multiplicar filas del reporte en la query principal)
+        {
+          model: ReportImage,
+          as: 'Images',
+          attributes: ['ImageUrl', 'Order'],
+          separate: true,
+          order: [['order', 'ASC']],
+        },
+      ],
+
+      order: [['created_at', 'DESC']],
+      limit: EXPORT_MAX_ROWS,
+    }),
+  ]);
+
+  return {
+    rows,
+    total,
+    truncated: total > EXPORT_MAX_ROWS,
+  };
 };
