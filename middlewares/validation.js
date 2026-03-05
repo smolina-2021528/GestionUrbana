@@ -357,6 +357,57 @@ export const validateGetComments = [
 
   handleValidationErrors,
 ];
+// Validaciones para crear un reporte que acepta campos opcionales si viene imagen
+export const validateCreateReportOrAI = [
+  body('title')
+    .optional()
+    .trim()
+    .isLength({ min: 3, max: 150 })
+    .withMessage('El título debe tener entre 3 y 150 caracteres'),
+
+  body('description')
+    .optional()
+    .trim()
+    .isLength({ min: 10, max: 2000 })
+    .withMessage('La descripción debe tener entre 10 y 2000 caracteres'),
+
+  body('category')
+    .optional()
+    .trim()
+    .isIn(REPORT_CATEGORIES)
+    .withMessage('Categoría inválida. Valores permitidos: INFRAESTRUCTURA, SEGURIDAD, LIMPIEZA'),
+
+  // Campos geográficos opcionales
+  ...geoValidations,
+
+  // Validación final: si no viene imagen, los tres campos son obligatorios
+  body('title').custom((value, { req }) => {
+    const hasImage = req.files && req.files.length > 0;
+    if (!hasImage && (!value || value.trim() === '')) {
+      throw new Error('El título es obligatorio cuando no se adjunta una imagen');
+    }
+    return true;
+  }),
+
+  body('description').custom((value, { req }) => {
+    const hasImage = req.files && req.files.length > 0;
+    if (!hasImage && (!value || value.trim() === '')) {
+      throw new Error('La descripción es obligatoria cuando no se adjunta una imagen');
+    }
+    return true;
+  }),
+
+  body('category').custom((value, { req }) => {
+    const hasImage = req.files && req.files.length > 0;
+    if (!hasImage && (!value || value.trim() === '')) {
+      throw new Error('La categoría es obligatoria cuando no se adjunta una imagen');
+    }
+    return true;
+  }),
+
+  handleValidationErrors,
+];
+
 // Validaciones para analizar un reporte con IA (imagen + dirección)
 export const validateAnalyzeReport = [
   body('address')

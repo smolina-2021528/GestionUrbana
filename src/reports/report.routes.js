@@ -8,6 +8,7 @@ import { requireAIEnabled } from '../../middlewares/require-ai-enabled.js';
 import { uploadReportImages, handleReportUploadError } from '../../helpers/file-upload.js';
 import {
   validateCreateReport,
+  validateCreateReportOrAI,
   validateUpdateReport,
   validateChangeReportStatus,
   validateAssignReport,
@@ -55,7 +56,7 @@ router.post(
   uploadReportImages.array('images', 3),
   handleReportUploadError,
   validateReportImages,
-  validateCreateReport,
+  validateCreateReportOrAI,
   createReport
 );
 
