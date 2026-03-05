@@ -6,6 +6,7 @@ export const buildAnalysisResponse = (geminiResult, nominatimResult) => {
     const locationFound = nominatimResult !== null && nominatimResult !== undefined;
 
     return {
+        success: true,
         analysis: {
             title: geminiResult.title,
             description: geminiResult.description,
