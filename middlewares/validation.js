@@ -1,5 +1,13 @@
 import { body, query, validationResult } from 'express-validator';
-import { REPORT_CATEGORIES, REPORT_STATUSES } from '../helpers/report-constants.js';
+import { REPORT_CATEGORIES, REPORT_PRIORITIES, REPORT_STATUSES } from '../helpers/report-constants.js';
+
+import {
+  DATE_RANGES,
+  GROUPBY_OPTIONS,
+  EXPORT_FORMATS,
+  ZONE_RADIUS_OPTIONS,
+} from '../helpers/stats-constants.js';
+
 
 // Maneja los errores de validación y retorna respuesta formateada
 export const handleValidationErrors = (req, res, next) => {
@@ -428,6 +436,132 @@ export const validateAiCreateReport = [
     .withMessage('La dirección es obligatoria')
     .isLength({ max: 500 })
     .withMessage('La dirección no puede superar los 500 caracteres'),
+
+  handleValidationErrors,
+];
+
+// ── Validaciones de rango de fechas
+export const validateDateRangeQuery = [
+  query('startDate')
+    .optional()
+    .isISO8601()
+    .withMessage('startDate debe ser una fecha ISO 8601 válida')
+    .custom((value, { req }) => {
+      if (value && req.query.endDate) {
+        if (new Date(value) > new Date(req.query.endDate)) {
+          throw new Error('startDate no puede ser mayor que endDate');
+        }
+      }
+      return true;
+    }),
+
+  query('endDate')
+    .optional()
+    .isISO8601()
+    .withMessage('endDate debe ser una fecha ISO 8601 válida')
+    .custom((value, { req }) => {
+      if (value && req.query.startDate) {
+        if (new Date(value) < new Date(req.query.startDate)) {
+          throw new Error('endDate no puede ser menor que startDate');
+        }
+      }
+      return true;
+    }),
+
+  query('dateRange')
+    .optional()
+    .isIn(Object.keys(DATE_RANGES))
+    .withMessage(
+      `dateRange debe ser uno de: ${Object.keys(DATE_RANGES).join(', ')}`
+    ),
+
+  query('groupBy')
+    .optional()
+    .isIn(GROUPBY_OPTIONS)
+    .withMessage(`groupBy debe ser uno de: ${GROUPBY_OPTIONS.join(', ')}`),
+
+  handleValidationErrors,
+];
+
+// ── Validaciones para el endpoint de exportación
+export const validateExportQuery = [
+  query('format')
+    .notEmpty()
+    .withMessage('El formato de exportación es obligatorio')
+    .isIn(EXPORT_FORMATS)
+    .withMessage(`format debe ser uno de: ${EXPORT_FORMATS.join(', ')}`),
+
+  query('category')
+    .optional()
+    .isIn(REPORT_CATEGORIES)
+    .withMessage(`category debe ser uno de: ${REPORT_CATEGORIES.join(', ')}`),
+
+  query('priority')
+    .optional()
+    .isIn(REPORT_PRIORITIES)
+    .withMessage(`priority debe ser uno de: ${REPORT_PRIORITIES.join(', ')}`),
+
+  query('status')
+    .optional()
+    .isIn(REPORT_STATUSES)
+    .withMessage(`status debe ser uno de: ${REPORT_STATUSES.join(', ')}`),
+
+  query('startDate')
+    .optional()
+    .isISO8601()
+    .withMessage('startDate debe ser una fecha ISO 8601 válida')
+    .custom((value, { req }) => {
+      if (value && req.query.endDate) {
+        if (new Date(value) > new Date(req.query.endDate)) {
+          throw new Error('startDate no puede ser mayor que endDate');
+        }
+      }
+      return true;
+    }),
+
+  query('endDate')
+    .optional()
+    .isISO8601()
+    .withMessage('endDate debe ser una fecha ISO 8601 válida')
+    .custom((value, { req }) => {
+      if (value && req.query.startDate) {
+        if (new Date(value) < new Date(req.query.startDate)) {
+          throw new Error('endDate no puede ser menor que startDate');
+        }
+      }
+      return true;
+    }),
+
+  handleValidationErrors,
+];
+
+// ── Validaciones para el endpoint de ranking de zonas
+export const validateZoneRankingQuery = [
+  query('radius')
+    .optional()
+    .isInt()
+    .withMessage('radius debe ser un número entero')
+    .toInt()
+    .isIn(ZONE_RADIUS_OPTIONS)
+    .withMessage(
+      `radius debe ser uno de: ${ZONE_RADIUS_OPTIONS.join(', ')} (metros)`
+    ),
+
+  query('limit')
+    .optional()
+    .isInt({ min: 1, max: 20 })
+    .withMessage('limit debe ser un entero entre 1 y 20')
+    .toInt(),
+
+  query('category')
+    .optional()
+    .isIn(REPORT_CATEGORIES)
+    .withMessage(`category debe ser uno de: ${REPORT_CATEGORIES.join(', ')}`),
+
+  query('status')
+    .optional()
+    .isIn(REPORT_STATUSES)
+    .withMessage(`status debe ser uno de: ${REPORT_STATUSES.join(', ')}`),
 
   handleValidationErrors,
 ];
