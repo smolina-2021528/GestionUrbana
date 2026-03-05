@@ -79,6 +79,9 @@ export const uploadReportImages = multer({
   fileFilter: fileFilter,
 });
 
+// Middleware para un único archivo — usado por los endpoints de IA
+export const uploadSingleImage = uploadReportImages.single('image');
+
 // Middleware para manejar errores de upload de reportes
 export const handleReportUploadError = (error, req, res, next) => {
   if (error instanceof multer.MulterError) {
