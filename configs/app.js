@@ -54,7 +54,7 @@ const routes = (app) => {
   app.use(`${BASE_PATH}/users`,         userRoutes);
   app.use(`${BASE_PATH}/profile`,       profileRoutes);
   app.use(`${BASE_PATH}/reports`,       reportRoutes);
-  app.use(`${BASE_PATH}/reports`, aiRoutes);
+  app.use(`${BASE_PATH}/reports`,       aiRoutes);
   app.use(`${BASE_PATH}/reports`,       commentRoutes);
   app.use(`${BASE_PATH}/notifications`, notificationRoutes);
 
