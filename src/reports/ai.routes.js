@@ -1,7 +1,8 @@
 import { Router } from 'express';
 
 import { validateJWT } from '../../middlewares/validate-JWT.js';
-import { uploadReportImages, handleReportUploadError } from '../../helpers/file-upload.js';
+import { uploadSingleImage, handleReportUploadError } from '../../helpers/file-upload.js';
+import { validateSingleReportImage } from '../../middlewares/validate-report-images.js';
 import { validateAnalyzeReport, validateAiCreateReport } from '../../middlewares/validation.js';
 import { analyzeReport, aiCreateReport } from './ai.controller.js';
 
@@ -11,8 +12,9 @@ const router = Router();
 router.post(
   '/analyze',
   validateJWT,
-  uploadReportImages.single('image'),
+  uploadSingleImage,
   handleReportUploadError,
+  validateSingleReportImage,
   validateAnalyzeReport,
   analyzeReport,
 );
@@ -21,8 +23,9 @@ router.post(
 router.post(
   '/ai-create',
   validateJWT,
-  uploadReportImages.single('image'),
+  uploadSingleImage,
   handleReportUploadError,
+  validateSingleReportImage,
   validateAiCreateReport,
   aiCreateReport,
 );
