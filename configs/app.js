@@ -89,6 +89,8 @@ export const initServer = async () => {
     const { createSpatialIndex } = await import('../src/reports/report.model.js');
     await createSpatialIndex();
 
+    await import('./gemini-config.js');
+
     middlewares(app);
     routes(app);
     app.use(errorHandler);
