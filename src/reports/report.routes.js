@@ -13,6 +13,7 @@ import {
   validateChangeReportStatus,
   validateAssignReport,
   validateUpdateLocation,
+  validateDateRangeQuery,
 } from '../../middlewares/validation.js';
 import {
   createReport,
@@ -43,7 +44,7 @@ router.get('/stats', validateJWT, validateAdmin, getReportStats);
 
 router.get('/geo-stats', validateJWT, validateAdmin, getGeoStats);
 
-router.get('/', validateJWT, validateAdmin, getAllReports);
+router.get('/', validateJWT, validateAdmin, validateDateRangeQuery, getAllReports);
 
 router.patch('/:reportId/status', validateJWT, validateAdmin, validateChangeReportStatus, changeReportStatus);
 
@@ -60,9 +61,9 @@ router.post(
   createReport
 );
 
-router.get('/my-reports', validateJWT, getMyReports);
+router.get('/my-reports', validateJWT, validateDateRangeQuery, getMyReports);
 
-router.get('/search', validateJWT, searchReports);
+router.get('/search', validateJWT, validateDateRangeQuery, searchReports);
 
 router.get('/nearby', validateJWT, getNearbyReports);
 
