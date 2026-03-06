@@ -34,6 +34,7 @@ import authRoutes from '../src/auth/auth.routes.js';
 import userRoutes from '../src/users/user.routes.js';
 import profileRoutes from '../src/profiles/profile.routes.js';
 import reportRoutes      from '../src/reports/report.routes.js';
+import statsRoutes        from '../src/reports/stats.routes.js';
 import commentRoutes      from '../src/reports/comment.routes.js';
 import notificationRoutes from '../src/reports/notification.routes.js';
 import aiRoutes from '../src/reports/ai.routes.js';
@@ -56,6 +57,7 @@ const routes = (app) => {
   app.use(`${BASE_PATH}/reports`,       reportRoutes);
   app.use(`${BASE_PATH}/reports`,       aiRoutes);
   app.use(`${BASE_PATH}/reports`,       commentRoutes);
+  app.use(`${BASE_PATH}/stats`,         statsRoutes);
   app.use(`${BASE_PATH}/notifications`, notificationRoutes);
 
   // Health check
