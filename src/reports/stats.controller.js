@@ -2,9 +2,6 @@ import { parseDateRange }                            from '../../helpers/date-he
 import { getDashboardMetrics, getReportTrends, getResolutionTimeSeries } from '../../helpers/stats-db.js';
 import { buildDashboardResponse, buildTrendsResponse } from '../../utils/stats-helpers.js';
 import { GROUPBY_OPTIONS }                           from '../../helpers/stats-constants.js';
-import { getReportTrends, getResolutionTimeSeries } from '../../helpers/stats-db.js';
-import { buildTrendsResponse } from '../../utils/stats-helpers.js';
-import { GROUPBY_OPTIONS } from '../../helpers/stats-constants.js';
 import { getZoneRanking as getZoneRankingDB, getTopZonesByAddress } from '../../helpers/zone-db.js';
 import { buildZoneRankingResponse }  from '../../utils/stats-helpers.js';
 import { ZONE_RADIUS_OPTIONS } from '../../helpers/stats-constants.js';
