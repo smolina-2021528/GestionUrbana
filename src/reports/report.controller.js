@@ -39,6 +39,7 @@ import {
 import { getUserRoleNames } from "../../helpers/role-db.js";
 import { analyzeReportImage } from "../../helpers/gemini-service.js";
 import { geocodeAddress }     from "../../helpers/nominatim-service.js";
+import { parseDateRange }     from "../../helpers/date-helpers.js";
 
 // POST /api/reports
 // Crea un nuevo reporte con sus imágenes dentro de una transacción.
@@ -51,7 +52,6 @@ export const createReport = async (req, res) => {
     let aiGenerated = false;
     let resolvedPriority = DEFAULT_PRIORITY;
 
-    // ── Auto-completado con Gemini ───────────────────────────────────────────
     const missingFields = !title || !description || !category;
     const hasImage      = req.files && req.files.length > 0;
 
@@ -60,13 +60,11 @@ export const createReport = async (req, res) => {
         const firstImagePath = req.files[0].path;
         const aiResult = await analyzeReportImage(firstImagePath);
 
-        // Mezclar: el usuario manda primero, Gemini rellena lo que falta
         title       = title       || aiResult.title;
         description = description || aiResult.description;
         category    = category    || aiResult.category;
 
         // Gemini también sugiere prioridad — solo se aplica si el usuario
-        // no la envió (el modelo acepta priority en el body de forma opcional)
         if (!req.body.priority) {
           resolvedPriority = aiResult.priority;
         }
@@ -96,7 +94,6 @@ export const createReport = async (req, res) => {
       });
     }
 
-    // ── Auto-geocodificación con Nominatim ───────────────────────────────────
     // Si se envió address pero no coordenadas, intentar resolverlas
     let locationData = buildLocationData(latitude, longitude, address);
     let locationResolved = !!(latitude && longitude);
@@ -113,7 +110,6 @@ export const createReport = async (req, res) => {
       }
     }
 
-    // ── Crear reporte ────────────────────────────────────────────────────────
     const report = await Report.create(
       {
         Title: title,
@@ -227,10 +223,14 @@ export const getAllReports = async (req, res) => {
 
     const offset = (page - 1) * limit;
 
+    const { startDate, endDate } = parseDateRange(req.query);
+
     const filters = {};
     if (category) filters.category = category;
     if (priority) filters.priority = priority;
     if (status) filters.status = status;
+    if (startDate) filters.startDate = startDate;
+    if (endDate) filters.endDate = endDate;
 
     const { count, rows } = await findAllReports(filters, { limit, offset });
 
@@ -238,7 +238,7 @@ export const getAllReports = async (req, res) => {
 
     const totalPages = Math.ceil(count / limit);
 
-    return res.status(200).json({
+    const response = {
       success: true,
       data: reports,
       pagination: {
@@ -247,7 +247,16 @@ export const getAllReports = async (req, res) => {
         limit,
         totalPages,
       },
-    });
+    };
+
+    if (startDate || endDate) {
+      response.filters = {
+        startDate: startDate ? startDate.toISOString() : null,
+        endDate:   endDate   ? endDate.toISOString()   : null,
+      };
+    }
+
+    return res.status(200).json(response);
   } catch (error) {
     console.error("Error en getAllReports:", error);
     return res.status(500).json({
@@ -331,16 +340,20 @@ export const getMyReports = async (req, res) => {
 
     const offset = (page - 1) * limit;
 
+    const { startDate, endDate } = parseDateRange(req.query);
+
     const { count, rows } = await findReportsByUser(req.userId, {
       limit,
       offset,
+      startDate,
+      endDate,
     });
 
     const reports = rows.map((report) => buildReportGeoResponse(report));
 
     const totalPages = Math.ceil(count / limit);
 
-    return res.status(200).json({
+    const response = {
       success: true,
       data: reports,
       pagination: {
@@ -349,7 +362,16 @@ export const getMyReports = async (req, res) => {
         limit,
         totalPages,
       },
-    });
+    };
+
+    if (startDate || endDate) {
+      response.filters = {
+        startDate: startDate ? startDate.toISOString() : null,
+        endDate:   endDate   ? endDate.toISOString()   : null,
+      };
+    }
+
+    return res.status(200).json(response);
   } catch (error) {
     console.error("Error en getMyReports:", error);
 
@@ -384,7 +406,6 @@ export const updateReport = async (req, res) => {
     if (description) updateData.Description = description;
     if (category) updateData.Category = category;
 
-    // ── Auto-geocodificación con Nominatim ───────────────────────────────────
     let locationData     = buildLocationData(latitude, longitude, address);
     let locationResolved = !!(latitude && longitude);
 
@@ -487,7 +508,7 @@ export const changeReportStatus = async (req, res) => {
       });
     }
 
-    const currentStatus = report.Status; // ya existía
+    const currentStatus = report.Status; 
 
     const allowedTransitions = {
       PENDIENTE: ["EN_PROCESO", "RECHAZADO"],
@@ -512,7 +533,7 @@ export const changeReportStatus = async (req, res) => {
       });
     }
 
-    const previousStatus = currentStatus; // ← capturar antes del update
+    const previousStatus = currentStatus; 
 
     const updatedReport = await updateReportStatus(
       reportId,
@@ -692,15 +713,19 @@ export const searchReports = async (req, res) => {
 
     const offset = (parsedPage - 1) * parsedLimit;
 
+    const { startDate, endDate } = parseDateRange(req.query);
+
     const { count, rows } = await searchReportsByText(q.trim(), {
       limit: parsedLimit,
       offset,
+      startDate,
+      endDate,
     });
 
     const reports = rows.map((report) => buildReportGeoResponse(report));
     const totalPages = Math.ceil(count / parsedLimit);
 
-    return res.status(200).json({
+    const response = {
       success: true,
       data: reports,
       pagination: {
@@ -709,7 +734,16 @@ export const searchReports = async (req, res) => {
         limit: parsedLimit,
         totalPages,
       },
-    });
+    };
+
+    if (startDate || endDate) {
+      response.filters = {
+        startDate: startDate ? startDate.toISOString() : null,
+        endDate:   endDate   ? endDate.toISOString()   : null,
+      };
+    }
+
+    return res.status(200).json(response);
   } catch (error) {
     console.error("Error en searchReports:", error);
     return res.status(500).json({
@@ -1006,7 +1040,6 @@ export const updateReportLocation = async (req, res) => {
 };
 
 // DELETE /api/reports/:reportId/location
-// Elimina la ubicación de un reporte en estado PENDIENTE por privacidad o error.
 export const removeReportLocation = async (req, res) => {
   try {
     const report = req.report;
@@ -1172,14 +1205,10 @@ export const getHeatmap = async (req, res) => {
 };
 
 // POST /gestionurbana/v1/reports/:reportId/ai/reprocess
-// Marca un reporte existente como PENDING para un nuevo ciclo de análisis IA.
-// Protegido con validateJWT + validateAdmin + requireAIEnabled.
-// Por ahora retorna 202 "queued" sin ejecutar Gemini — pipeline listo para integrarlo.
 export const reprocessReportAI = async (req, res) => {
   const { reportId } = req.params;
 
   try {
-    // ── 1. Verificar que el reporte existe ──────────────────────────────────
     const report = await findReportById(reportId);
 
     if (!report) {
@@ -1189,7 +1218,6 @@ export const reprocessReportAI = async (req, res) => {
       });
     }
 
-    // ── 2. Marcar el reporte como PENDING en los campos de IA ───────────────
     const updated = await markReportAIPending(reportId);
 
     if (!updated) {
@@ -1200,7 +1228,6 @@ export const reprocessReportAI = async (req, res) => {
     }
 
     // ── 3. Responder 202 Accepted — el análisis se ejecutará de forma asíncrona
-    //       (Gemini se integrará aquí en la siguiente iteración del pipeline)
     return res.status(202).json({
       success: true,
       message: "El reporte ha sido encolado para reprocessamiento con IA.",
