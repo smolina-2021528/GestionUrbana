@@ -164,14 +164,25 @@ export const exportReports = async (req, res) => {
         res.setHeader('Content-Type', contentType);
         res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
 
-        if (isBuffer) {
-            // XLSX — workbook.xlsx.write() escribe al stream y luego cerramos
-            await content.xlsx.write(res);
-            return res.end();
+if (isBuffer) {
+    try {
+        await content.xlsx.write(res);
+        return res.end();
+    } catch (xlsxError) {
+        console.error('Error escribiendo archivo XLSX al stream:', xlsxError);
+        // Si los headers ya fueron enviados no podemos mandar un JSON de error
+        if (!res.headersSent) {
+            return res.status(500).json({
+                success: false,
+                message: 'Error al generar el archivo Excel.',
+            });
         }
+        res.destroy(xlsxError);
+        return;
+    }
+}
 
-        // CSV — string directo
-        return res.send(content);
+return res.send(content);
 
     } catch (error) {
         console.error('Error en exportReports:', error);
