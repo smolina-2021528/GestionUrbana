@@ -24,14 +24,14 @@ const buildReportWhere = ({ startDate, endDate, category, priority, status } = {
   const where = {};
 
   if (startDate || endDate) {
-    where.created_at = {};
-    if (startDate) where.created_at[Op.gte] = new Date(startDate);
-    if (endDate) where.created_at[Op.lte] = new Date(endDate);
+    where.CreatedAt = {};
+    if (startDate) where.CreatedAt[Op.gte] = new Date(startDate);
+    if (endDate)   where.CreatedAt[Op.lte] = new Date(endDate);
   }
 
   if (category) where.Category = category;
   if (priority) where.Priority = priority;
-  if (status) where.Status = status;
+  if (status)   where.Status   = status;
 
   return where;
 };
