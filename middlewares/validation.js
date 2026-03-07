@@ -486,8 +486,7 @@ export const validateDateRangeQuery = [
 // ── Validaciones para el endpoint de exportación
 export const validateExportQuery = [
   query('format')
-    .notEmpty()
-    .withMessage('El formato de exportación es obligatorio')
+    .optional()
     .isIn(EXPORT_FORMATS)
     .withMessage(`format debe ser uno de: ${EXPORT_FORMATS.join(', ')}`),
 
