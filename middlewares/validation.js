@@ -66,7 +66,13 @@ export const validateRegister = [
     .notEmpty()
     .withMessage('La contraseña es obligatoria')
     .isLength({ min: 8, max: 255 })
-    .withMessage('La contraseña debe tener entre 8 y 255 caracteres'),
+    .withMessage('La contraseña debe tener entre 8 y 255 caracteres')
+    .matches(/[A-Z]/)
+    .withMessage('La contraseña debe contener al menos una letra mayúscula')
+    .matches(/[a-z]/)
+    .withMessage('La contraseña debe contener al menos una letra minúscula')
+    .matches(/[0-9]/)
+    .withMessage('La contraseña debe contener al menos un número'),
 
   body('phone')
     .notEmpty()
@@ -124,8 +130,14 @@ export const validateResetPassword = [
   body('newPassword')
     .notEmpty()
     .withMessage('La nueva contraseña es obligatoria')
-    .isLength({ min: 8 })
-    .withMessage('La nueva contraseña debe tener al menos 8 caracteres'),
+    .isLength({ min: 8, max: 255 })
+    .withMessage('La nueva contraseña debe tener entre 8 y 255 caracteres')
+    .matches(/[A-Z]/)
+    .withMessage('La nueva contraseña debe contener al menos una letra mayúscula')
+    .matches(/[a-z]/)
+    .withMessage('La nueva contraseña debe contener al menos una letra minúscula')
+    .matches(/[0-9]/)
+    .withMessage('La nueva contraseña debe contener al menos un número'),
 
   handleValidationErrors,
 ];
@@ -177,8 +189,14 @@ export const validateChangePassword = [
   body('newPassword')
     .notEmpty()
     .withMessage('La nueva contraseña es obligatoria')
-    .isLength({ min: 8 })
-    .withMessage('La nueva contraseña debe tener al menos 8 caracteres'),
+    .isLength({ min: 8, max: 255 })
+    .withMessage('La nueva contraseña debe tener entre 8 y 255 caracteres')
+    .matches(/[A-Z]/)
+    .withMessage('La nueva contraseña debe contener al menos una letra mayúscula')
+    .matches(/[a-z]/)
+    .withMessage('La nueva contraseña debe contener al menos una letra minúscula')
+    .matches(/[0-9]/)
+    .withMessage('La nueva contraseña debe contener al menos un número'),
 
   handleValidationErrors,
 ];
