@@ -74,26 +74,29 @@ const truncToPeriod = (date, groupBy) => {
     return d;
 };
 
+const toPeriodKey = (date, groupBy) => {
+    const d = truncToPeriod(new Date(date), groupBy);
+    return d.toISOString();
+};
+
 export const buildTrendsResponse = (rows, groupBy = 'day', range = {}) => {
     const validGroupBy = ['day', 'week', 'month'];
     const safeGroupBy = validGroupBy.includes(groupBy) ? groupBy : 'day';
 
-    // Construir un mapa de período ISO → total a partir de las filas reales
+    // Construir el mapa normalizando las keys para asegurar que coincidan con el formato generado por toPeriodKey
     const dataMap = new Map();
     for (const row of rows) {
-        const key = new Date(row.period).toISOString();
+        const key = toPeriodKey(row.period, safeGroupBy);
         dataMap.set(key, parseInt(row.total, 10));
     }
 
-    // Si no se proporcionan fechas de rango, devolver solo las filas recibidas
     if (!range.startDate && !range.endDate) {
         return rows.map((row) => ({
-            period: new Date(row.period).toISOString(),
+            period: toPeriodKey(row.period, safeGroupBy),
             total: parseInt(row.total, 10),
         }));
     }
 
-    // Rellenar períodos faltantes dentro del rango ────────────────────────────
     const result = [];
     let current = truncToPeriod(new Date(range.startDate), safeGroupBy);
     const end = range.endDate ? new Date(range.endDate) : new Date();
