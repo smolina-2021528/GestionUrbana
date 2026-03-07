@@ -70,7 +70,6 @@ export const seedAdmin = async () => {
     console.log(`Admin seed | Email:    ${ADMIN_EMAIL}`);
     console.log(`Admin seed | Username: ${ADMIN_USERNAME}`);
     console.log(`Admin seed | Password: ${ADMIN_PASSWORD}`);
-    console.log('Admin seed | ⚠️  Cambia estas credenciales en producción (.env)');
   } catch (error) {
     if (t && !t.finished) await t.rollback();
     console.error('Admin seed | Error creando administrador:', error.message);

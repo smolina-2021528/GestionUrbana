@@ -30,9 +30,15 @@ export const generateJWT = (userId, extraClaims = {}, options = {}) => {
 };
 
 // Verifica y decodifica un JWT
+// Se validan issuer y audience para evitar que tokens de otros contextos sean aceptados
 export const verifyJWT = (token) => {
   return new Promise((resolve, reject) => {
-    jwt.verify(token, config.jwt.secret, (err, decoded) => {
+    const verifyOptions = {
+      issuer:   config.jwt.issuer,
+      audience: config.jwt.audience,
+    };
+
+    jwt.verify(token, config.jwt.secret, verifyOptions, (err, decoded) => {
       if (err) {
         console.error('Error verificando JWT:', err);
         reject(err);
@@ -43,7 +49,7 @@ export const verifyJWT = (token) => {
   });
 };
 
-// Genera un token de verificación de email o reset de contraseña (NO es JWT de acceso)
+// Genera un token de verificación de email o reset de contraseña
 export const generateVerificationToken = (userId, type, expiresIn = '24h') => {
   return new Promise((resolve, reject) => {
     const payload = {
