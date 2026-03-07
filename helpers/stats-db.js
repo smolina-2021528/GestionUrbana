@@ -88,8 +88,20 @@ export const getDashboardMetrics = async (filters = {}) => {
     ? `WHERE ${resolvedCondition.join(' AND ')}`
     : '';
 
-  const commentDateWhere = rawConditions.length
-    ? `AND ${rawConditions.map((c) => c.replace(/r\./g, 'rep.')).join(' AND ')}`
+  const commentConditions = [];
+  const commentReplacements = {};
+
+  if (startDate) {
+    commentConditions.push('rep.created_at >= :startDate');
+    commentReplacements.startDate = new Date(startDate);
+  }
+  if (endDate) {
+    commentConditions.push('rep.created_at <= :endDate');
+    commentReplacements.endDate = new Date(endDate);
+  }
+
+  const commentDateWhere = commentConditions.length
+    ? `AND ${commentConditions.join(' AND ')}`
     : '';
 
   // Ejecutar todas las queries en paralelo ────────────────────────────────────
@@ -147,16 +159,13 @@ export const getDashboardMetrics = async (filters = {}) => {
 
     // 8. Total de comentarios públicos en el rango
     sequelize.query(
-      `SELECT COUNT(*) AS total
-       FROM report_comments rc
-       JOIN reports rep ON rc.report_id = rep.id
-       WHERE rc.is_internal = false
-       ${commentDateWhere.replace(/:(\w+)/g, (_, key) => {
-        // Inline replacement preview — actual replacement handled by Sequelize below
-        return `:${key}`;
-      })}`,
-      { replacements: rawReplacements, type: QueryTypes.SELECT }
-    ),
+  `SELECT COUNT(*) AS total
+   FROM report_comments rc
+   JOIN reports rep ON rc.report_id = rep.id
+   WHERE rc.is_internal = false
+   ${commentDateWhere}`,
+  { replacements: commentReplacements, type: QueryTypes.SELECT }
+),
 
     // 9. Total de seguidores activos (filas en report_followers)
     ReportFollower.count(),
