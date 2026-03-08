@@ -313,8 +313,8 @@ export const forgotPassword = async (req, res) => {
       console.error('Error enviando email de reset:', err)
     );
 
-    // En desarrollo exponemos el token para facilitar las pruebas sin SMTP
-    const isDev = process.env.NODE_ENV !== 'production';
+    // Solo en entorno estrictamente 'development' se expone el token para facilitar testing
+    const isDev = process.env.NODE_ENV === 'development';
     return res.status(200).json({
       success: true,
       message: 'Si el email existe, recibirás un enlace de recuperación de contraseña.',
@@ -368,5 +368,31 @@ export const getProfile = async (req, res) => {
   } catch (error) {
     console.error('Error en getProfile:', error);
     return res.status(500).json({ success: false, message: 'Error interno del servidor.' });
+  }
+};
+
+/* =========================
+   LOGOUT
+   ========================= */
+import { revokeToken } from '../../helpers/token-blacklist.js';
+
+export const logout = async (req, res) => {
+  try {
+    const { jti, exp } = req.tokenPayload ?? {};
+
+    if (jti && exp) {
+      revokeToken(jti, exp);
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Sesión cerrada exitosamente.',
+    });
+  } catch (error) {
+    console.error('Error en logout:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error interno al cerrar sesión.',
+    });
   }
 };

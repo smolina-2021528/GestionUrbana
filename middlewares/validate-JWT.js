@@ -1,5 +1,6 @@
 import { verifyJWT } from '../helpers/generate-jwt.js';
 import { findUserById } from '../helpers/user-db.js';
+import { isTokenRevoked } from '../helpers/token-blacklist.js';
 
 // Middleware que valida el JWT en cada petición protegida
 export const validateJWT = async (req, res, next) => {
@@ -22,6 +23,14 @@ export const validateJWT = async (req, res, next) => {
 
     const decoded = await verifyJWT(token);
 
+    // Verificar que el token no haya sido revocado por logout
+    if (isTokenRevoked(decoded.jti)) {
+      return res.status(401).json({
+        success: false,
+        message: 'Token revocado. Por favor inicia sesión nuevamente.',
+      });
+    }
+
     const user = await findUserById(decoded.sub);
     if (!user) {
       return res.status(401).json({
@@ -38,9 +47,10 @@ export const validateJWT = async (req, res, next) => {
       });
     }
 
-    req.user = user;
-    req.userId = user.Id.toString();
-    req.userRole = user.UserRoles?.[0]?.Role?.Name ?? null;
+    req.user         = user;
+    req.userId       = user.Id.toString();
+    req.userRole     = user.UserRoles?.[0]?.Role?.Name ?? null;
+    req.tokenPayload = decoded;
 
     next();
   } catch (error) {

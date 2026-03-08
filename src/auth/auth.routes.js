@@ -2,6 +2,7 @@ import { Router } from 'express';
 import {
   register,
   login,
+  logout,
   verifyEmail,
   resendVerification,
   forgotPassword,
@@ -72,10 +73,14 @@ router.post(
 );
 
 /* ============================================================
-   RUTAS PROTEGIDAS (requieren JWT válido)
+  RUTAS PROTEGIDAS (requieren JWT válido)
    ============================================================ */
 
 // GET /gestionurbana/v1/auth/profile
 router.get('/profile', validateJWT, getProfile);
+
+// POST /gestionurbana/v1/auth/logout
+// Invalida el JWT actual agregando su jti a la blacklist en memoria.
+router.post('/logout', validateJWT, logout);
 
 export default router;
