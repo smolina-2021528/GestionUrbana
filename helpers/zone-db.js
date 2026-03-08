@@ -174,13 +174,6 @@ export const getTopZonesByAddress = async (filters = {}) => {
 
 // ─── getZoneHeatmapByGrid ─────────────────────────────────────────────────────
 
-/**
- * Divide el mapa en una grilla regular usando ST_SnapToGrid y cuenta reportes
- * por celda. Más eficiente que el heatmap punto a punto para el frontend porque
- * reduce miles de puntos a cientos de celdas precalculadas.
- *
- * La celda por defecto es 1 km² a la latitud de Guatemala (GRID_CELL_DEGREES).
- */
 export const getZoneHeatmapByGrid = async (filters = {}) => {
     const { category, priority, status, startDate, endDate, cellDegrees } = filters;
 

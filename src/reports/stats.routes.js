@@ -6,6 +6,7 @@ import {
     validateDateRangeQuery,
     validateZoneRankingQuery,
     validateExportQuery,
+    validateHeatmapGridQuery,
 } from '../../middlewares/validation.js';
 import {
     getDashboard,
@@ -13,6 +14,7 @@ import {
     getZoneRanking,
     exportReports,
     getStatusTransitions,
+    getHeatmapGrid,
 } from './stats.controller.js';
 
 const router = Router();
@@ -65,6 +67,17 @@ router.get(
     validateAdmin,
     validateDateRangeQuery,
     getStatusTransitions,
+);
+
+// GET /stats/heatmap-grid
+// Heatmap de reportes en celdas regulares.
+// Parámetros: cellDegrees (0.001–0.1, default 0.009 ≈ 1km), category, priority, status, startDate, endDate
+router.get(
+    '/heatmap-grid',
+    validateJWT,
+    validateAdmin,
+    validateHeatmapGridQuery,
+    getHeatmapGrid,
 );
 
 export default router;

@@ -14,7 +14,7 @@ import {
     buildZoneRankingResponse,
     buildExportFilename,
 } from '../../utils/stats-helpers.js';
-import { getZoneRanking as getZoneRankingDB, getTopZonesByAddress } from '../../helpers/zone-db.js';
+import { getZoneRanking as getZoneRankingDB, getTopZonesByAddress, getZoneHeatmapByGrid } from '../../helpers/zone-db.js';
 
 // GET /stats/dashboard
 export const getDashboard = async (req, res) => {
@@ -221,6 +221,43 @@ export const getStatusTransitions = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: 'Error al obtener las transiciones de estado.',
+        });
+    }
+};
+
+// GET /stats/heatmap-grid
+export const getHeatmapGrid = async (req, res) => {
+    try {
+        const { category, priority, status, cellDegrees } = req.query;
+        const { startDate, endDate } = parseDateRange(req.query);
+
+        const rows = await getZoneHeatmapByGrid({
+            category,
+            priority,
+            status,
+            startDate,
+            endDate,
+            cellDegrees,
+        });
+
+        return res.status(200).json({
+            success: true,
+            filters: {
+                category:    category    ?? null,
+                priority:    priority    ?? null,
+                status:      status      ?? null,
+                startDate:   startDate   ? startDate.toISOString() : null,
+                endDate:     endDate     ? endDate.toISOString()   : null,
+                cellDegrees: parseFloat(cellDegrees) || 0.009,
+            },
+            data:  rows,
+            total: rows.length,
+        });
+    } catch (error) {
+        console.error('Error en getHeatmapGrid:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Error al obtener el mapa de calor por grilla.',
         });
     }
 };

@@ -582,3 +582,29 @@ export const validateZoneRankingQuery = [
 
   handleValidationErrors,
 ];
+
+// Validaciones para GET /stats/heatmap-grid
+export const validateHeatmapGridQuery = [
+  query('cellDegrees')
+    .optional()
+    .isFloat({ min: 0.001, max: 0.1 })
+    .withMessage('cellDegrees debe ser un número decimal entre 0.001 y 0.1 (grados)')
+    .toFloat(),
+
+  query('category')
+    .optional()
+    .isIn(REPORT_CATEGORIES)
+    .withMessage(`category debe ser uno de: ${REPORT_CATEGORIES.join(', ')}`),
+
+  query('priority')
+    .optional()
+    .isIn(REPORT_PRIORITIES)
+    .withMessage(`priority debe ser uno de: ${REPORT_PRIORITIES.join(', ')}`),
+
+  query('status')
+    .optional()
+    .isIn(REPORT_STATUSES)
+    .withMessage(`status debe ser uno de: ${REPORT_STATUSES.join(', ')}`),
+
+  handleValidationErrors,
+];
