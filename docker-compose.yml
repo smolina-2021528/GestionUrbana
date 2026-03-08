@@ -1,28 +1,37 @@
 version: "3.9"
 
+# ─────────────────────────────────────────────────────────────────────────────
+# GestionUrbana — Docker Compose sin MongoDB
+#
+# Decisión arquitectural: la planificación inicial usaba MongoDB Atlas
+# para almacenamiento de reportes. Durante el desarrollo se migró por los siguientes motivos:
+#   1. PostGIS provee operadores geoespaciales nativos sin dependencias extra
+#      que MongoDB no soporta.
+#   2. Las relaciones entre entidades (usuarios, reportes, imágenes, historial,
+#      notificaciones) se modelan de forma más natural con SQL y claves foráneas.
+#
+# El servicio mongo_db fue eliminado de este archivo porque ningún módulo
+# del backend lo utiliza. No se instala mongoose ni ningún driver de MongoDB.
+# ─────────────────────────────────────────────────────────────────────────────
+
 services:
   postgres_db:
     image: postgis/postgis:16-3.4
     container_name: gestion_urbana_postgres
     restart: always
     environment:
-      POSTGRES_USER: ${DB_USER}
+      POSTGRES_USER:     ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_DB:       ${DB_NAME}
     ports:
       - "5436:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-
-  mongo_db:
-    image: mongo:latest
-    container_name: gestion_urbana_mongo
-    restart: always
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres_data:
-  mongo_data:
