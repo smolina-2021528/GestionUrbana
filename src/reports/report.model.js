@@ -246,3 +246,42 @@ export const createSpatialIndex = async () => {
     console.error('PostGIS | Error creando índice espacial:', error.message);
   }
 };
+
+// Índices compuestos para consultas comunes (category+status, priority+created_at, etc.)   
+export const createCompositeIndexes = async () => {
+  const indexes = [
+    {
+      name: 'reports_category_status_idx',
+      sql:  'CREATE INDEX IF NOT EXISTS reports_category_status_idx ON reports (category, status);',
+    },
+    {
+      name: 'reports_priority_created_idx',
+      sql:  'CREATE INDEX IF NOT EXISTS reports_priority_created_idx ON reports (priority, created_at DESC);',
+    },
+    {
+      name: 'reports_status_created_idx',
+      sql:  'CREATE INDEX IF NOT EXISTS reports_status_created_idx ON reports (status, created_at DESC);',
+    },
+    {
+      name: 'reports_user_created_idx',
+      sql:  'CREATE INDEX IF NOT EXISTS reports_user_created_idx ON reports (user_id, created_at DESC);',
+    },
+    {
+      name: 'reports_assigned_idx',
+      sql:  'CREATE INDEX IF NOT EXISTS reports_assigned_idx ON reports (assigned_to) WHERE assigned_to IS NOT NULL;',
+    },
+    {
+      name: 'reports_ai_status_idx',
+      sql:  "CREATE INDEX IF NOT EXISTS reports_ai_status_idx ON reports (ai_status) WHERE ai_status IS NOT NULL;",
+    },
+  ];
+
+  for (const { name, sql } of indexes) {
+    try {
+      await sequelize.query(sql, { type: QueryTypes.RAW });
+      console.log(`DB | Índice compuesto verificado/creado: ${name}`);
+    } catch (error) {
+      console.error(`DB | Error creando índice ${name}:`, error.message);
+    }
+  }
+};
