@@ -37,7 +37,8 @@ import reportRoutes      from '../src/reports/report.routes.js';
 import statsRoutes        from '../src/reports/stats.routes.js';
 import commentRoutes      from '../src/reports/comment.routes.js';
 import notificationRoutes from '../src/reports/notification.routes.js';
-import aiRoutes from '../src/reports/ai.routes.js';
+import aiRoutes         from '../src/reports/ai.routes.js';
+import duplicateRoutes  from '../src/reports/duplicate.routes.js';
 
 const BASE_PATH = '/gestionurbana/v1';
 
@@ -56,6 +57,7 @@ const routes = (app) => {
   app.use(`${BASE_PATH}/profile`,       profileRoutes);
   app.use(`${BASE_PATH}/reports`,       reportRoutes);
   app.use(`${BASE_PATH}/reports`,       aiRoutes);
+  app.use(`${BASE_PATH}/reports`,       duplicateRoutes);
   app.use(`${BASE_PATH}/reports`,       commentRoutes);
   app.use(`${BASE_PATH}/stats`,         statsRoutes);
   app.use(`${BASE_PATH}/notifications`, notificationRoutes);
@@ -88,8 +90,9 @@ export const initServer = async () => {
     const { seedAdmin } = await import('../helpers/admin-seed.js');
     await seedAdmin();
 
-    const { createSpatialIndex } = await import('../src/reports/report.model.js');
+    const { createSpatialIndex, createCompositeIndexes } = await import('../src/reports/report.model.js');
     await createSpatialIndex();
+    await createCompositeIndexes();
 
     middlewares(app);
     routes(app);

@@ -582,7 +582,6 @@ export const validateZoneRankingQuery = [
 
   handleValidationErrors,
 ];
-
 // Validaciones para GET /stats/heatmap-grid
 export const validateHeatmapGridQuery = [
   query('cellDegrees')
@@ -605,6 +604,41 @@ export const validateHeatmapGridQuery = [
     .optional()
     .isIn(REPORT_STATUSES)
     .withMessage(`status debe ser uno de: ${REPORT_STATUSES.join(', ')}`),
+
+  handleValidationErrors,
+];
+
+// ── Validaciones para POST /reports/check-duplicates 
+export const validateCheckDuplicates = [
+  body('title')
+    .trim()
+    .notEmpty()
+    .withMessage('El título es obligatorio')
+    .isLength({ min: 3, max: 150 })
+    .withMessage('El título debe tener entre 3 y 150 caracteres'),
+
+  body('description')
+    .trim()
+    .notEmpty()
+    .withMessage('La descripción es obligatoria')
+    .isLength({ min: 10, max: 2000 })
+    .withMessage('La descripción debe tener entre 10 y 2000 caracteres'),
+
+  body('category')
+    .notEmpty()
+    .withMessage('La categoría es obligatoria')
+    .isIn(REPORT_CATEGORIES)
+    .withMessage(`La categoría debe ser una de: ${REPORT_CATEGORIES.join(', ')}`),
+
+  body('latitude')
+    .optional({ nullable: true })
+    .isFloat({ min: -90, max: 90 })
+    .withMessage('La latitud debe estar entre -90 y 90'),
+
+  body('longitude')
+    .optional({ nullable: true })
+    .isFloat({ min: -180, max: 180 })
+    .withMessage('La longitud debe estar entre -180 y 180'),
 
   handleValidationErrors,
 ];
