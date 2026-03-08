@@ -38,6 +38,7 @@ import {
 } from "../../helpers/report-constants.js";
 import { getUserRoleNames } from "../../helpers/role-db.js";
 import { analyzeReportImage } from "../../helpers/gemini-service.js";
+import { cacheDelete }         from "../../helpers/ai-cache.js";
 import { geocodeAddress }     from "../../helpers/nominatim-service.js";
 import { parseDateRange }     from "../../helpers/date-helpers.js";
 
@@ -221,8 +222,8 @@ export const getAllReports = async (req, res) => {
       category,
       priority,
       status,
-      sortBy    = 'date',
-      sortOrder = 'DESC',
+      sortBy    = 'date',   // 'date' | 'priority'
+      sortOrder = 'DESC',   // 'ASC' | 'DESC'
     } = req.query;
 
     page  = parseInt(page);
@@ -259,6 +260,8 @@ export const getAllReports = async (req, res) => {
     });
 
     // Si se pidió ordenar por prioridad, aplicamos orden en memoria
+    // (ALTA=1, MEDIA=2, BAJA=3) para garantizar coherencia aunque la BD
+    // no maneje el CASE WHEN de la misma forma en todos los motores.
     const orderedRows =
       safeSortBy === 'priority'
         ? [...rows].sort((a, b) => {
@@ -1240,6 +1243,7 @@ export const getHeatmap = async (req, res) => {
 };
 
 // POST /gestionurbana/v1/reports/:reportId/ai/reprocess
+// Ejecuta el análisis de IA de forma síncrona sobre la primera imagen del reporte.
 // Si el reporte no tiene imágenes, retorna 422.
 export const reprocessReportAI = async (req, res) => {
   const { reportId } = req.params;
@@ -1269,6 +1273,9 @@ export const reprocessReportAI = async (req, res) => {
 
     // 4. Usar la URL de Cloudinary de la primera imagen
     const imageUrl = images[0].ImageUrl;
+
+    // Limpiar caché para forzar un análisis fresco en el reprocesamiento
+    cacheDelete(imageUrl);
 
     let geminiResult;
     try {

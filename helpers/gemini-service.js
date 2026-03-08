@@ -6,6 +6,7 @@ import {
     AI_REPORT_CATEGORIES,
     AI_REPORT_PRIORITIES,
 } from './ai-constants.js';
+import { cacheGet, cacheSet } from './ai-cache.js';
 
 // Mapeo de extensiones a MIME types soportados
 const MIME_TYPES = {
@@ -67,10 +68,14 @@ const validateGeminiResponse = (parsed) => {
     };
 };
 
-/**
- * Analiza una imagen de reporte usando Gemini Vision.
- */
+// Función principal para analizar la imagen de un reporte usando Gemini
 export const analyzeReportImage = async (imagePath) => {
+    // 1. Intentar servir desde caché
+    const cached = cacheGet(imagePath);
+    if (cached) {
+        return cached;
+    }
+
     const mimeType  = getMimeType(imagePath);
     const imageData = fs.readFileSync(imagePath);
     const base64    = imageData.toString('base64');
@@ -99,5 +104,10 @@ export const analyzeReportImage = async (imagePath) => {
         );
     }
 
-    return validateGeminiResponse(parsed);
+    const validated = validateGeminiResponse(parsed);
+
+    // 2. Guardar en caché antes de retornar
+    cacheSet(imagePath, validated);
+
+    return validated;
 };
