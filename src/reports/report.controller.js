@@ -210,33 +210,67 @@ export const getReportById = async (req, res) => {
 };
 
 // GET /api/reports
+// Mapa de prioridades para ordenamiento: ALTA primero
+const PRIORITY_ORDER = { ALTA: 1, MEDIA: 2, BAJA: 3 };
+
 export const getAllReports = async (req, res) => {
   try {
-    let { page = 1, limit = 10, category, priority, status } = req.query;
+    let {
+      page     = 1,
+      limit    = 10,
+      category,
+      priority,
+      status,
+      sortBy    = 'date',
+      sortOrder = 'DESC',
+    } = req.query;
 
-    page = parseInt(page);
+    page  = parseInt(page);
     limit = parseInt(limit);
 
-    if (isNaN(page) || page < 1) page = 1;
+    if (isNaN(page)  || page  < 1) page  = 1;
     if (isNaN(limit) || limit < 1) limit = 10;
     if (limit > 50) limit = 50;
 
     const offset = (page - 1) * limit;
+
+    // Validar sortOrder
+    const safeSortOrder = ['ASC', 'DESC'].includes(sortOrder.toUpperCase())
+      ? sortOrder.toUpperCase()
+      : 'DESC';
+
+    // Validar sortBy
+    const safeSortBy = ['date', 'priority'].includes(sortBy) ? sortBy : 'date';
 
     const { startDate, endDate } = parseDateRange(req.query);
 
     const filters = {};
     if (category) filters.category = category;
     if (priority) filters.priority = priority;
-    if (status) filters.status = status;
+    if (status)   filters.status   = status;
     if (startDate) filters.startDate = startDate;
-    if (endDate) filters.endDate = endDate;
+    if (endDate)   filters.endDate   = endDate;
 
-    const { count, rows } = await findAllReports(filters, { limit, offset });
+    const { count, rows } = await findAllReports(filters, {
+      limit,
+      offset,
+      sortBy:    safeSortBy,
+      sortOrder: safeSortOrder,
+    });
 
-    const reports = rows.map((report) => buildReportGeoResponse(report));
+    // Si se pidió ordenar por prioridad, aplicamos orden en memoria
+    const orderedRows =
+      safeSortBy === 'priority'
+        ? [...rows].sort((a, b) => {
+            const diff =
+              (PRIORITY_ORDER[a.Priority] ?? 9) -
+              (PRIORITY_ORDER[b.Priority] ?? 9);
+            return safeSortOrder === 'ASC' ? diff : -diff;
+          })
+        : rows;
 
-    const totalPages = Math.ceil(count / limit);
+    const reports     = orderedRows.map((report) => buildReportGeoResponse(report));
+    const totalPages  = Math.ceil(count / limit);
 
     const response = {
       success: true,
@@ -247,6 +281,7 @@ export const getAllReports = async (req, res) => {
         limit,
         totalPages,
       },
+      sort: { sortBy: safeSortBy, sortOrder: safeSortOrder },
     };
 
     if (startDate || endDate) {
@@ -1205,10 +1240,12 @@ export const getHeatmap = async (req, res) => {
 };
 
 // POST /gestionurbana/v1/reports/:reportId/ai/reprocess
+// Si el reporte no tiene imágenes, retorna 422.
 export const reprocessReportAI = async (req, res) => {
   const { reportId } = req.params;
 
   try {
+    // 1. Verificar que el reporte existe
     const report = await findReportById(reportId);
 
     if (!report) {
@@ -1218,29 +1255,66 @@ export const reprocessReportAI = async (req, res) => {
       });
     }
 
-    const updated = await markReportAIPending(reportId);
-
-    if (!updated) {
-      return res.status(500).json({
+    // 2. Verificar que tiene al menos una imagen
+    const images = report.Images ?? [];
+    if (images.length === 0) {
+      return res.status(422).json({
         success: false,
-        message: "No se pudo actualizar el estado de IA del reporte.",
+        message: "El reporte no tiene imágenes para analizar con IA.",
       });
     }
 
-    // ── 3. Responder 202 Accepted — el análisis se ejecutará de forma asíncrona
-    return res.status(202).json({
-      success: true,
-      message: "El reporte ha sido encolado para reprocessamiento con IA.",
-      data: {
-        reportId,
-        aiStatus: "PENDING",
+    // 3. Marcar como PENDING antes de procesar
+    await markReportAIPending(reportId);
+
+    // 4. Usar la URL de Cloudinary de la primera imagen
+    const imageUrl = images[0].ImageUrl;
+
+    let geminiResult;
+    try {
+      geminiResult = await analyzeReportImage(imageUrl);
+    } catch (aiError) {
+      // Marcar como FAILED si Gemini falla
+      await Report.update(
+        { AiStatus: "FAILED", AiProcessedAt: new Date() },
+        { where: { Id: reportId } }
+      );
+      return res.status(422).json({
+        success: false,
+        stage: "gemini",
+        message: aiError.message,
+      });
+    }
+
+    // 5. Actualizar el reporte con los resultados de IA
+    await Report.update(
+      {
+        AiStatus:      "OK",
+        AiCategory:    geminiResult.category,
+        AiPriority:    geminiResult.priority,
+        AiConfidence:  null,
+        AiReasoning:   null,
+        AiProcessedAt: new Date(),
+        AiRaw:         JSON.stringify(geminiResult),
+        // Actualizar categoría y prioridad del reporte con los valores de IA
+        Category: geminiResult.category,
+        Priority: geminiResult.priority,
       },
+      { where: { Id: reportId } }
+    );
+
+    const updatedReport = await findReportById(reportId);
+
+    return res.status(200).json({
+      success: true,
+      message: "Reporte reanalizadо con IA exitosamente.",
+      data: buildReportGeoResponse(updatedReport),
     });
   } catch (error) {
     console.error("Error en reprocessReportAI:", error);
     return res.status(500).json({
       success: false,
-      message: "Error interno al encolar el reporte para análisis IA.",
+      message: "Error interno al reanalizar el reporte con IA.",
     });
   }
 };

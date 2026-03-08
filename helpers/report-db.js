@@ -76,11 +76,11 @@ export const findReportsByUser = async (userId, options = {}) => {
     }
 };
 
-// Lista reportes con filtros opcionales y paginación
+// Lista reportes con filtros opcionales, paginación y ordenamiento
 export const findAllReports = async (filters = {}, options = {}) => {
     try {
         const { category, priority, status, startDate, endDate } = filters;
-        const { limit = 10, offset = 0 } = options;
+        const { limit = 10, offset = 0, sortBy = 'date', sortOrder = 'DESC' } = options;
 
         const where = {};
         if (category) where.Category = category;
@@ -88,11 +88,16 @@ export const findAllReports = async (filters = {}, options = {}) => {
         if (status)   where.Status   = status;
         Object.assign(where, buildDateWhereClause(startDate, endDate));
 
+        const primaryOrder =
+            sortBy === 'priority'
+                ? ['priority', sortOrder]
+                : ['created_at', sortOrder];
+
         const reports = await Report.findAndCountAll({
             where,
             include: getReportIncludes(),
             order: [
-                ['created_at', 'DESC'],
+                primaryOrder,
                 [{ model: ReportImage, as: 'Images' }, 'order', 'ASC'],
             ],
             limit,
