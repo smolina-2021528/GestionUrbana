@@ -1,6 +1,6 @@
-import { findReportById } from '../helpers/report-db.js';
-import { getUserRoleNames } from '../../auth-service/helpers/role-db.js';
-import { ADMIN_ROLE } from '../../auth-service/helpers/role-constants.js';
+﻿import { findReportById } from '../helpers/report-db.js';
+import { getUserRoleNames } from '../helpers/role-db.js';
+import { ADMIN_ROLE } from '../helpers/role-constants.js';
 
 // Middleware que verifica que el reporte le pertenece al usuario autenticado.
 // Si el usuario es ADMIN, siempre puede continuar.
@@ -41,3 +41,4 @@ try {
     return res.status(500).json({ success: false, message: 'Error interno del servidor.' });
 }
 };
+

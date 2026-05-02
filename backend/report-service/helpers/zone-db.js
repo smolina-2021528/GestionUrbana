@@ -1,21 +1,21 @@
-import { QueryTypes } from 'sequelize';
-import { sequelize } from '../../auth-service/configs/db.js';
+﻿import { QueryTypes } from 'sequelize';
+import { sequelize } from '../configs/db.js';
 import { ZONE_RADIUS_OPTIONS } from './stats-constants.js';
 
-// Radio por defecto si no se recibe uno válido (metros)
+// Radio por defecto si no se recibe uno vÃ¡lido (metros)
 const DEFAULT_RADIUS = 1000;
 
-// Número máximo de zonas a retornar cuando no se especifica limit
+// NÃºmero mÃ¡ximo de zonas a retornar cuando no se especifica limit
 const DEFAULT_LIMIT = 10;
 
-// Tamaño de celda de la grilla en grados decimales.
-// ~0.009° ≈ 1 km a la latitud de Guatemala (14°N).
+// TamaÃ±o de celda de la grilla en grados decimales.
+// ~0.009Â° â‰ˆ 1 km a la latitud de Guatemala (14Â°N).
 const GRID_CELL_DEGREES = 0.009;
 
-// ─── Helpers internos ─────────────────────────────────────────────────────────
+// â”€â”€â”€ Helpers internos â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
- * Valida y normaliza el radio de búsqueda.
+ * Valida y normaliza el radio de bÃºsqueda.
  * Solo acepta valores de la whitelist definida en ZONE_RADIUS_OPTIONS.
  */
 const sanitizeRadius = (radius) => {
@@ -24,7 +24,7 @@ const sanitizeRadius = (radius) => {
 };
 
 /**
- * Valida y normaliza el límite de resultados (1–20).
+ * Valida y normaliza el lÃ­mite de resultados (1â€“20).
  */
 const sanitizeLimit = (limit) => {
     const parsed = parseInt(limit, 10);
@@ -32,13 +32,13 @@ const sanitizeLimit = (limit) => {
     return Math.min(parsed, 20);
 };
 
-// ─── getZoneRanking ───────────────────────────────────────────────────────────
+// â”€â”€â”€ getZoneRanking â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
- * Identifica los clústeres de reportes más densos usando ST_ClusterDBSCAN.
+ * Identifica los clÃºsteres de reportes mÃ¡s densos usando ST_ClusterDBSCAN.
  *
- * ST_ClusterDBSCAN asigna un cluster_id a cada punto según su densidad
- * espacial. Los puntos que no alcanzan minpoints quedan en el clúster -1
+ * ST_ClusterDBSCAN asigna un cluster_id a cada punto segÃºn su densidad
+ * espacial. Los puntos que no alcanzan minpoints quedan en el clÃºster -1
  * (ruido); se excluyen del ranking filtrando cluster_id >= 0.
  */
 export const getZoneRanking = async (filters = {}) => {
@@ -65,12 +65,12 @@ export const getZoneRanking = async (filters = {}) => {
 
     const extraSQL = extraConditions.join('\n    ');
 
-    // eps en ST_ClusterDBSCAN espera metros cuando la geometría usa SRID 4326
-    // proyectado a geografía, pero la función trabaja en unidades del SRID.
+    // eps en ST_ClusterDBSCAN espera metros cuando la geometrÃ­a usa SRID 4326
+    // proyectado a geografÃ­a, pero la funciÃ³n trabaja en unidades del SRID.
     // Para SRID 4326 (grados) convertimos metros a grados aproximados:
-    // 1° 111,320 m → dividimos el radio por 111320.
+    // 1Â° 111,320 m â†’ dividimos el radio por 111320.
     // Usamos ST_Transform a SRID 3857 (metros) para que eps sea exactamente
-    // el valor en metros recibido, lo que da resultados más precisos.
+    // el valor en metros recibido, lo que da resultados mÃ¡s precisos.
     const sql = `
     WITH clustered AS (
       SELECT
@@ -123,7 +123,7 @@ export const getZoneRanking = async (filters = {}) => {
     }));
 };
 
-// ─── getTopZonesByAddress ─────────────────────────────────────────────────────
+// â”€â”€â”€ getTopZonesByAddress â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Agrupa reportes por los primeros 30 caracteres de su campo address.
@@ -172,12 +172,12 @@ export const getTopZonesByAddress = async (filters = {}) => {
     }));
 };
 
-// ─── getZoneHeatmapByGrid ─────────────────────────────────────────────────────
+// â”€â”€â”€ getZoneHeatmapByGrid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export const getZoneHeatmapByGrid = async (filters = {}) => {
     const { category, priority, status, startDate, endDate, cellDegrees } = filters;
 
-    // Validar el tamaño de celda: solo permitir valores razonables (0.001°–0.1°)
+    // Validar el tamaÃ±o de celda: solo permitir valores razonables (0.001Â°â€“0.1Â°)
     const rawCell = parseFloat(cellDegrees);
     const safeCell = (!isNaN(rawCell) && rawCell >= 0.001 && rawCell <= 0.1)
         ? rawCell
@@ -211,7 +211,7 @@ export const getZoneHeatmapByGrid = async (filters = {}) => {
 
     // ST_SnapToGrid recibe (geometry, xsize, ysize) en las unidades del SRID.
     // SRID 4326  unidades en grados. Snapeamos tanto X (lng) como Y (lat)
-    // al mismo tamaño de celda para obtener celdas cuadradas.
+    // al mismo tamaÃ±o de celda para obtener celdas cuadradas.
     // ST_X / ST_Y extraen las coordenadas del punto snapeado como lng/lat.
     const sql = `
     SELECT
@@ -237,3 +237,4 @@ export const getZoneHeatmapByGrid = async (filters = {}) => {
         dominantCategory: row.dominant_category ?? null,
     }));
 };
+

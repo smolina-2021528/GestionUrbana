@@ -1,7 +1,7 @@
-import { Router } from 'express';
+﻿import { Router } from 'express';
 
-import { validateJWT } from '../../../auth-service/middlewares/validate-JWT.js';
-import { validateAdmin } from '../../report-service/middlewares/validate-admin.js';
+import { validateJWT } from '../../middlewares/validate-JWT.js';
+import { validateAdmin } from '../../middlewares/validate-admin.js';
 import { validateReportOwner } from '../../middlewares/validate-report-owner.js';
 import { validateReportImages } from '../../middlewares/validate-report-images.js';
 import { requireAIEnabled } from '../../middlewares/require-ai-enabled.js';
@@ -14,7 +14,7 @@ import {
   validateAssignReport,
   validateUpdateLocation,
   validateDateRangeQuery,
-} from '../../../auth-service/middlewares/validation.js';
+} from '../../middlewares/validation.js';
 import {
   createReport,
   getMyReports,

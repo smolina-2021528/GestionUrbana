@@ -1,10 +1,10 @@
-import { analyzeReportImage }              from '../../report-service/helpers/gemini-service.js';
+﻿import { analyzeReportImage }              from '../../report-service/helpers/gemini-service.js';
 import { geocodeAddress }                  from '../../report-service/helpers/nominatim-service.js';
 import { deleteTempFile }                  from '../../report-service/helpers/ai-file-helper.js';
 import { uploadReportImage, deleteImage }  from '../../report-service/helpers/cloudinary-service.js';
 import { createAiReport }                  from '../../report-service/helpers/ai-report-db.js';
 import { findReportById }                  from '../../report-service/helpers/report-db.js';
-import { sequelize }                       from '../../auth-service/configs/db.js';
+import { sequelize }                       from '../../configs/db.js';
 import {
     buildAnalysisResponse,
     buildAiErrorResponse,
@@ -12,11 +12,11 @@ import {
 } from '../../report-service/helpers/ai-helpers.js';
 
 export const analyzeReport = async (req, res) => {
-    // Verificar que se subió exactamente una imagen
+    // Verificar que se subiÃ³ exactamente una imagen
     if (!req.file) {
         return res.status(400).json({
             success: false,
-            message: 'Se requiere exactamente una imagen para el análisis.',
+            message: 'Se requiere exactamente una imagen para el anÃ¡lisis.',
         });
     }
 
@@ -41,7 +41,7 @@ export const analyzeReport = async (req, res) => {
             geocodeAddress(address.trim()),
         ]);
     } catch (error) {
-        // Solo Gemini puede lanzar — Nominatim nunca lo hace.
+        // Solo Gemini puede lanzar â€” Nominatim nunca lo hace.
         deleteTempFile(req.file.path);
         return res.status(422).json(
             buildAiErrorResponse('gemini', error.message)
@@ -58,7 +58,7 @@ export const analyzeReport = async (req, res) => {
 };
 
 export const aiCreateReport = async (req, res) => {
-    // Verificar que se subió exactamente una imagen
+    // Verificar que se subiÃ³ exactamente una imagen
     if (!req.file) {
         return res.status(400).json({
             success: false,
@@ -81,7 +81,7 @@ export const aiCreateReport = async (req, res) => {
             trimmedAddress ? geocodeAddress(trimmedAddress) : Promise.resolve(null),
         ]);
     } catch (error) {
-        // Gemini falló: limpiar temporal y abortar
+        // Gemini fallÃ³: limpiar temporal y abortar
         deleteTempFile(req.file.path);
         return res.status(422).json(
             buildAiErrorResponse('gemini', error.message)
@@ -105,7 +105,7 @@ export const aiCreateReport = async (req, res) => {
     // Limpiar archivo temporal
     deleteTempFile(req.file.path);
 
-    //Transacción: crear reporte y hacer commit
+    //TransacciÃ³n: crear reporte y hacer commit
     const transaction = await sequelize.transaction();
 
     let reportId;
@@ -149,3 +149,4 @@ export const aiCreateReport = async (req, res) => {
         buildAiReportResponse(fullReport)
     );
 };
+

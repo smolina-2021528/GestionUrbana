@@ -1,9 +1,9 @@
-import { Router } from 'express';
+﻿import { Router } from 'express';
 
-import { validateJWT } from '../../auth-service/middlewares/validate-JWT.js';
+import { validateJWT } from '../../middlewares/validate-JWT.js';
 import { uploadSingleImage, handleReportUploadError } from '../../report-service/helpers/file-upload.js';
 import { validateSingleReportImage } from '../../report-service/middlewares/validate-report-images.js';
-import { validateAnalyzeReport, validateAiCreateReport } from '../../auth-service/middlewares/validation.js';
+import { validateAnalyzeReport, validateAiCreateReport } from '../../middlewares/validation.js';
 import { analyzeReport, aiCreateReport } from './ai.controller.js';
 
 const router = Router();

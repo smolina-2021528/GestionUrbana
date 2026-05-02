@@ -1,9 +1,9 @@
-import { Op } from 'sequelize';
-import { sequelize } from '../auth-service/configs/db.js';
+﻿import { Op } from 'sequelize';
+import { sequelize } from '../configs/db.js';
 import { Report } from '../src/reports/report.model.js';
 import { ReportImage } from '../src/reports/report-image.model.js';
 import { ReportStatusHistory } from '../src/reports/report-status-history.model.js';
-import { User } from '../auth-service/src/users/user.model.js';
+import { User } from '../src/users/user-ref.model.js';
 import { buildGeoPoint } from '../utils/geo-helpers.js';
 import { buildDateWhereClause } from './date-helpers.js';
 
@@ -51,7 +51,7 @@ export const findReportById = async (reportId) => {
     }
 };
 
-// Lista los reportes de un usuario con paginación
+// Lista los reportes de un usuario con paginaciÃ³n
 export const findReportsByUser = async (userId, options = {}) => {
     try {
         const { limit = 10, offset = 0, startDate, endDate } = options;
@@ -76,7 +76,7 @@ export const findReportsByUser = async (userId, options = {}) => {
     }
 };
 
-// Lista reportes con filtros opcionales, paginación y ordenamiento
+// Lista reportes con filtros opcionales, paginaciÃ³n y ordenamiento
 export const findAllReports = async (filters = {}, options = {}) => {
     try {
         const { category, priority, status, startDate, endDate } = filters;
@@ -110,7 +110,7 @@ export const findAllReports = async (filters = {}, options = {}) => {
     }
 };
 
-// Crea el registro del reporte (sin imágenes, se manejan por separado)
+// Crea el registro del reporte (sin imÃ¡genes, se manejan por separado)
 export const createReport = async (data, transaction) => {
     try {
         const report = await Report.create(data, { transaction });
@@ -189,7 +189,7 @@ export const searchReportsByText = async (query, options = {}) => {
     }
 };
 
-// Elimina un reporte (hard delete). Retorna las imágenes antes de eliminar
+// Elimina un reporte (hard delete). Retorna las imÃ¡genes antes de eliminar
 // para que el controlador pueda borrarlas de Cloudinary
 export const deleteReport = async (reportId, transaction) => {
     try {
@@ -320,7 +320,7 @@ export const findReportsByBoundingBox = async (swLat, swLng, neLat, neLng, optio
         return reports;
     } catch (error) {
         console.error('Error buscando reportes por bounding box:', error);
-        throw new Error('Error al buscar reportes por área');
+        throw new Error('Error al buscar reportes por Ã¡rea');
     }
 };
 
@@ -339,3 +339,5 @@ export const buildLocationData = (latitude, longitude, address) => {
 
     return data;
 };
+
+

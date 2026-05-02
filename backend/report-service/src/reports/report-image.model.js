@@ -1,6 +1,6 @@
 import { DataTypes } from 'sequelize';
-import { sequelize } from '../../../auth-service/configs/db.js';
-import { generateUserId } from '../../../auth-service/helpers/uuid-generator.js';
+import { sequelize } from '../../configs/db.js';
+import { generateUserId } from '../../helpers/uuid-generator.js';
 import { Report } from './report.model.js';
 
 export const ReportImage = sequelize.define(
@@ -16,7 +16,10 @@ export const ReportImage = sequelize.define(
       type: DataTypes.STRING(16),
       allowNull: false,
       field: 'report_id',
-      references: { model: Report, key: 'id' },
+      references: {
+        model: 'reports',
+        key: 'id',
+      },
     },
     ImageUrl: {
       type: DataTypes.STRING(512),
@@ -49,6 +52,5 @@ export const ReportImage = sequelize.define(
   }
 );
 
-// Asociaciones
-Report.hasMany(ReportImage,      { foreignKey: 'report_id', as: 'Images' });
-ReportImage.belongsTo(Report,    { foreignKey: 'report_id', as: 'Report' });
+Report.hasMany(ReportImage, { foreignKey: 'report_id', as: 'Images' });
+ReportImage.belongsTo(Report, { foreignKey: 'report_id', as: 'Report' });

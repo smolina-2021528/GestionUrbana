@@ -1,11 +1,11 @@
-import { QueryTypes, Op } from 'sequelize';
-import { sequelize } from '../auth-service/configs/db.js';
+﻿import { QueryTypes, Op } from 'sequelize';
+import { sequelize } from '../configs/db.js';
 import { Report } from '../src/reports/report.model.js';
 import { ReportImage } from '../src/reports/report-image.model.js';
 import { ReportComment } from '../src/reports/report-comment.model.js';
 import { ReportFollower } from '../src/reports/report-follower.model.js';
 import { ReportStatusHistory } from '../src/reports/report-status-history.model.js';
-import { User } from '../auth-service/src/users/user.model.js';
+import { User } from '../src/users/user-ref.model.js';
 import {
   REPORT_STATUSES,
   REPORT_CATEGORIES,
@@ -14,10 +14,10 @@ import {
 import { EXPORT_MAX_ROWS } from './stats-constants.js';
 import { buildDateWhereClause } from './date-helpers.js';
 
-// ─── Helpers internos ─────────────────────────────────────────────────────────
+// â”€â”€â”€ Helpers internos â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
- * Construye la cláusula WHERE de Sequelize para un rango de fechas
+ * Construye la clÃ¡usula WHERE de Sequelize para un rango de fechas
  * sobre la columna created_at, con filtros opcionales de category y priority.
  */
 const buildReportWhere = ({ startDate, endDate, category, priority, status } = {}) => {
@@ -37,7 +37,7 @@ const buildReportWhere = ({ startDate, endDate, category, priority, status } = {
 };
 
 /**
- * Devuelve { startDate, endDate } con los últimos N días si no se reciben fechas.
+ * Devuelve { startDate, endDate } con los Ãºltimos N dÃ­as si no se reciben fechas.
  */
 const defaultDateRange = (startDate, endDate, days = 30) => {
   if (startDate || endDate) return { startDate, endDate };
@@ -50,7 +50,7 @@ const defaultDateRange = (startDate, endDate, days = 30) => {
   return { startDate: start, endDate: end };
 };
 
-// ─── getDashboardMetrics ──────────────────────────────────────────────────────
+// â”€â”€â”€ getDashboardMetrics â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Query principal del dashboard.
@@ -58,11 +58,11 @@ const defaultDateRange = (startDate, endDate, days = 30) => {
 export const getDashboardMetrics = async (filters = {}) => {
   const { startDate, endDate, category, priority } = filters;
 
-  // Cláusulas WHERE compartidas
+  // ClÃ¡usulas WHERE compartidas
   const baseWhere = buildReportWhere({ startDate, endDate, category, priority });
   const resolvedWhere = buildReportWhere({ startDate, endDate, category, priority, status: 'RESUELTO' });
 
-  // Parámetros para la query raw de tiempo promedio de resolución
+  // ParÃ¡metros para la query raw de tiempo promedio de resoluciÃ³n
   const rawConditions = [];
   const rawReplacements = {};
 
@@ -104,7 +104,7 @@ export const getDashboardMetrics = async (filters = {}) => {
     ? `AND ${commentConditions.join(' AND ')}`
     : '';
 
-  // Ejecutar todas las queries en paralelo ────────────────────────────────────
+  // Ejecutar todas las queries en paralelo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const [
     total,
     pendiente,
@@ -133,7 +133,7 @@ export const getDashboardMetrics = async (filters = {}) => {
     Report.count({ where: { ...baseWhere, Status: 'RESUELTO' } }),
     Report.count({ where: { ...baseWhere, Status: 'RECHAZADO' } }),
 
-    // 3. Conteo por categoría
+    // 3. Conteo por categorÃ­a
     Report.count({ where: { ...baseWhere, Category: 'INFRAESTRUCTURA' } }),
     Report.count({ where: { ...baseWhere, Category: 'SEGURIDAD' } }),
     Report.count({ where: { ...baseWhere, Category: 'LIMPIEZA' } }),
@@ -143,7 +143,7 @@ export const getDashboardMetrics = async (filters = {}) => {
     Report.count({ where: { ...baseWhere, Priority: 'MEDIA' } }),
     Report.count({ where: { ...baseWhere, Priority: 'BAJA' } }),
 
-    // 5. Tiempo promedio de resolución en horas (query raw)
+    // 5. Tiempo promedio de resoluciÃ³n en horas (query raw)
     sequelize.query(
       `SELECT AVG(EXTRACT(EPOCH FROM (r.resolved_at - r.created_at)) / 3600) AS avg_hours
        FROM reports r
@@ -151,13 +151,13 @@ export const getDashboardMetrics = async (filters = {}) => {
       { replacements: rawReplacements, type: QueryTypes.SELECT }
     ),
 
-    // 6. Reportes con ubicación
+    // 6. Reportes con ubicaciÃ³n
     Report.count({ where: { ...baseWhere, Location: { [Op.ne]: null } } }),
 
-    // 7. Reportes sin ubicación
+    // 7. Reportes sin ubicaciÃ³n
     Report.count({ where: { ...baseWhere, Location: null } }),
 
-    // 8. Total de comentarios públicos en el rango
+    // 8. Total de comentarios pÃºblicos en el rango
     sequelize.query(
   `SELECT COUNT(*) AS total
    FROM report_comments rc
@@ -171,7 +171,7 @@ export const getDashboardMetrics = async (filters = {}) => {
     ReportFollower.count(),
   ]);
 
-  // Calcular métricas derivadas ───────────────────────────────────────────────
+  // Calcular mÃ©tricas derivadas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const resolutionRate =
     total > 0 ? parseFloat(((resuelto / total) * 100).toFixed(2)) : 0;
 
@@ -183,7 +183,7 @@ export const getDashboardMetrics = async (filters = {}) => {
 
   const totalCommentsCount = parseInt(totalComments?.[0]?.total ?? 0, 10);
 
-  // Construir respuesta estructurada ─────────────────────────────────────────
+  // Construir respuesta estructurada â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   return {
     overview: {
       total,
@@ -219,22 +219,22 @@ export const getDashboardMetrics = async (filters = {}) => {
   };
 };
 
-// ─── getReportTrends ──────────────────────────────────────────────────────────
+// â”€â”€â”€ getReportTrends â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
- * Evolución temporal de reportes creados agrupados por período.
+ * EvoluciÃ³n temporal de reportes creados agrupados por perÃ­odo.
  */
 export const getReportTrends = async (filters = {}) => {
   let { startDate, endDate, groupBy = 'day', category, status } = filters;
 
-  // Default: últimos 30 días si no vienen fechas
+  // Default: Ãºltimos 30 dÃ­as si no vienen fechas
   ({ startDate, endDate } = defaultDateRange(startDate, endDate, 30));
 
   // Validar groupBy
   const validGroupBy = ['day', 'week', 'month'];
   const safeGroupBy = validGroupBy.includes(groupBy) ? groupBy : 'day';
 
-  // Construir condiciones WHERE dinámicas
+  // Construir condiciones WHERE dinÃ¡micas
   const conditions = ['created_at BETWEEN :startDate AND :endDate'];
   const replacements = { startDate: new Date(startDate), endDate: new Date(endDate), groupBy: safeGroupBy };
 
@@ -249,7 +249,7 @@ export const getReportTrends = async (filters = {}) => {
 
   const whereSQL = conditions.join(' AND ');
 
-  // DATE_TRUNC no acepta parámetros bind para el nombre del período,
+  // DATE_TRUNC no acepta parÃ¡metros bind para el nombre del perÃ­odo,
   // por lo que interpolamos safeGroupBy directamente (ya validado contra whitelist).
   const rows = await sequelize.query(
     `SELECT DATE_TRUNC('${safeGroupBy}', created_at) AS period,
@@ -267,10 +267,10 @@ export const getReportTrends = async (filters = {}) => {
   }));
 };
 
-// ─── getResolutionTimeSeries ──────────────────────────────────────────────────
+// â”€â”€â”€ getResolutionTimeSeries â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
- * Evolución del tiempo promedio de resolución agrupado por período.
+ * EvoluciÃ³n del tiempo promedio de resoluciÃ³n agrupado por perÃ­odo.
  */
 export const getResolutionTimeSeries = async (filters = {}) => {
   let { startDate, endDate, groupBy = 'day', category } = filters;
@@ -313,11 +313,11 @@ export const getResolutionTimeSeries = async (filters = {}) => {
   }));
 };
 
-// ─── getStatusTransitionStats ─────────────────────────────────────────────────
+// â”€â”€â”€ getStatusTransitionStats â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
- * Cuántos reportes pasaron de cada estado a cada otro en el rango.
- * Útil para detectar cuellos de botella en el flujo de trabajo. 
+ * CuÃ¡ntos reportes pasaron de cada estado a cada otro en el rango.
+ * Ãštil para detectar cuellos de botella en el flujo de trabajo. 
  */
 export const getStatusTransitionStats = async (filters = {}) => {
   const { startDate, endDate } = filters;
@@ -356,34 +356,34 @@ export const getStatusTransitionStats = async (filters = {}) => {
   }));
 };
 
-// ─── getReportsForExport ──────────────────────────────────────────────────────
+// â”€â”€â”€ getReportsForExport â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
- * Query optimizada para exportación masiva de reportes.
- * Carga solo los campos e includes mínimos necesarios y respeta el límite
+ * Query optimizada para exportaciÃ³n masiva de reportes.
+ * Carga solo los campos e includes mÃ­nimos necesarios y respeta el lÃ­mite
  * de filas definido en EXPORT_MAX_ROWS para proteger al servidor.
  */
 export const getReportsForExport = async (filters = {}) => {
   const { category, priority, status, startDate, endDate } = filters;
 
-  // Construir cláusula WHERE ─────────────────────────────────────────────────
+  // Construir clÃ¡usula WHERE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const where = {};
   if (category) where.Category = category;
   if (priority) where.Priority = priority;
   if (status) where.Status = status;
   Object.assign(where, buildDateWhereClause(startDate, endDate));
 
-  // Obtener el total real y las filas en paralelo ────────────────────────────
+  // Obtener el total real y las filas en paralelo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const [total, rows] = await Promise.all([
 
-    // Total sin límite — necesario para saber si se truncó
+    // Total sin lÃ­mite â€” necesario para saber si se truncÃ³
     Report.count({ where }),
 
-    // Filas limitadas a EXPORT_MAX_ROWS con includes mínimos
+    // Filas limitadas a EXPORT_MAX_ROWS con includes mÃ­nimos
     Report.findAll({
       where,
 
-      // Subquery inline para el conteo de comentarios públicos
+      // Subquery inline para el conteo de comentarios pÃºblicos
       attributes: {
         include: [
           [
@@ -432,3 +432,5 @@ export const getReportsForExport = async (filters = {}) => {
     truncated: total > EXPORT_MAX_ROWS,
   };
 };
+
+

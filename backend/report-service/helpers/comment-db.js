@@ -1,8 +1,8 @@
-import { ReportComment } from '../src/reports/report-comment.model.js';
-import { User } from '../auth-service/src/users/user.model.js';
+﻿import { ReportComment } from '../src/reports/report-comment.model.js';
+import { User } from '../src/users/user-ref.model.js';
 
 /**
- * Retorna el array de includes estándar para un comentario: 
+ * Retorna el array de includes estÃ¡ndar para un comentario: 
  * el autor (Author) con solo Id, Name, Surname y Username.
  */
 const getCommentIncludes = () => [
@@ -87,7 +87,7 @@ export const deleteComment = async (commentId, transaction) => {
 };
 
 /**
- * Retorna el número total de comentarios públicos de un reporte.
+ * Retorna el nÃºmero total de comentarios pÃºblicos de un reporte.
  */
 export const countCommentsByReport = async (reportId) => {
     try {

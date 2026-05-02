@@ -1,6 +1,6 @@
-import { Router } from 'express';
+﻿import { Router } from 'express';
 
-import { validateJWT } from '../../auth-service/middlewares/validate-JWT.js';
+import { validateJWT } from '../../middlewares/validate-JWT.js';
 import {
   getMyNotifications,
   markNotificationAsRead,
@@ -19,3 +19,5 @@ router.patch('/:notificationId/read', validateJWT, markNotificationAsRead);
 router.delete('/:notificationId', validateJWT, deleteNotification);
 
 export default router;
+
+

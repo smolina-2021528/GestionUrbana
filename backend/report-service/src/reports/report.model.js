@@ -1,7 +1,6 @@
 import { DataTypes, QueryTypes } from 'sequelize';
-import { sequelize } from '../../../auth-service/configs/db.js';
-import { generateUserId } from '../../../auth-service/helpers/uuid-generator.js';
-import { User } from '../../../auth-service/src/users/user.model.js';
+import { sequelize } from '../../configs/db.js';
+import { generateUserId } from '../../helpers/uuid-generator.js';
 import {
   REPORT_CATEGORIES,
   REPORT_PRIORITIES,
@@ -10,7 +9,6 @@ import {
   DEFAULT_STATUS,
 } from '../../helpers/report-constants.js';
 
-// ── Valores válidos para el ciclo de vida del análisis IA ─────────────────────
 export const AI_STATUS_VALUES = ['PENDING', 'OK', 'FAILED'];
 
 export const Report = sequelize.define(
@@ -27,10 +25,10 @@ export const Report = sequelize.define(
       allowNull: false,
       field: 'title',
       validate: {
-        notEmpty: { msg: 'El título es obligatorio.' },
+        notEmpty: { msg: 'El titulo es obligatorio.' },
         len: {
           args: [3, 150],
-          msg: 'El título debe tener entre 3 y 150 caracteres.',
+          msg: 'El titulo debe tener entre 3 y 150 caracteres.',
         },
       },
     },
@@ -39,10 +37,10 @@ export const Report = sequelize.define(
       allowNull: false,
       field: 'description',
       validate: {
-        notEmpty: { msg: 'La descripción es obligatoria.' },
+        notEmpty: { msg: 'La descripcion es obligatoria.' },
         len: {
           args: [10, 2000],
-          msg: 'La descripción debe tener entre 10 y 2000 caracteres.',
+          msg: 'La descripcion debe tener entre 10 y 2000 caracteres.',
         },
       },
     },
@@ -51,10 +49,10 @@ export const Report = sequelize.define(
       allowNull: false,
       field: 'category',
       validate: {
-        notEmpty: { msg: 'La categoría es obligatoria.' },
+        notEmpty: { msg: 'La categoria es obligatoria.' },
         isIn: {
           args: [REPORT_CATEGORIES],
-          msg: `La categoría debe ser una de: ${REPORT_CATEGORIES.join(', ')}.`,
+          msg: `La categoria debe ser una de: ${REPORT_CATEGORIES.join(', ')}.`,
         },
       },
     },
@@ -86,21 +84,25 @@ export const Report = sequelize.define(
       type: DataTypes.STRING(16),
       allowNull: false,
       field: 'user_id',
-      references: { model: User, key: 'id' },
+      references: {
+        model: 'users',
+        key: 'id',
+      },
     },
     AssignedTo: {
       type: DataTypes.STRING(16),
       allowNull: true,
       field: 'assigned_to',
-      references: { model: User, key: 'id' },
+      references: {
+        model: 'users',
+        key: 'id',
+      },
     },
     ResolvedAt: {
       type: DataTypes.DATE,
       allowNull: true,
       field: 'resolved_at',
     },
-
-    // ── Geolocalización ────────────────────────────────────────────────────────
     Latitude: {
       type: DataTypes.DECIMAL(10, 8),
       allowNull: true,
@@ -129,9 +131,6 @@ export const Report = sequelize.define(
       allowNull: true,
       field: 'address',
     },
-
-    // ── Análisis IA ────────────────────────────────────────────────────────────
-    // AiStatus: ciclo de vida del análisis.
     AiStatus: {
       type: DataTypes.STRING(10),
       allowNull: true,
@@ -144,8 +143,6 @@ export const Report = sequelize.define(
         },
       },
     },
-
-    // Categoría (INFRAESTRUCTURA / SEGURIDAD / LIMPIEZA)
     AiCategory: {
       type: DataTypes.STRING(50),
       allowNull: true,
@@ -158,8 +155,6 @@ export const Report = sequelize.define(
         },
       },
     },
-
-    // Prioridad (ALTA / MEDIA / BAJA)
     AiPriority: {
       type: DataTypes.STRING(20),
       allowNull: true,
@@ -172,42 +167,34 @@ export const Report = sequelize.define(
         },
       },
     },
-
     AiConfidence: {
       type: DataTypes.FLOAT,
       allowNull: true,
       defaultValue: null,
       field: 'ai_confidence',
       validate: {
-        min: { args: [0], msg: 'ai_confidence debe ser ≥ 0.' },
-        max: { args: [1], msg: 'ai_confidence debe ser ≤ 1.' },
+        min: { args: [0], msg: 'ai_confidence debe ser mayor o igual a 0.' },
+        max: { args: [1], msg: 'ai_confidence debe ser menor o igual a 1.' },
       },
     },
-
-    // Se puede mapear desde el campo "description" abreviado o un campo extra
     AiReasoning: {
       type: DataTypes.STRING(500),
       allowNull: true,
       defaultValue: null,
       field: 'ai_reasoning',
     },
-
-    // Timestamp exacto en que el análisis IA finalizó (OK o FAILED).
     AiProcessedAt: {
       type: DataTypes.DATE,
       allowNull: true,
       defaultValue: null,
       field: 'ai_processed_at',
     },
-
     AiRaw: {
       type: DataTypes.TEXT,
       allowNull: true,
       defaultValue: null,
       field: 'ai_raw',
     },
-
-    // ── Timestamps ─────────────────────────────────────────────────────────────
     CreatedAt: {
       type: DataTypes.DATE,
       allowNull: false,
@@ -229,10 +216,6 @@ export const Report = sequelize.define(
   }
 );
 
-Report.belongsTo(User, { foreignKey: 'user_id', as: 'Citizen' });
-Report.belongsTo(User, { foreignKey: 'assigned_to', as: 'AssignedMunicipal' });
-User.hasMany(Report, { foreignKey: 'user_id', as: 'Reports' });
-
 export const createSpatialIndex = async () => {
   try {
     await sequelize.query(
@@ -241,47 +224,47 @@ export const createSpatialIndex = async () => {
        USING GIST (location);`,
       { type: QueryTypes.RAW }
     );
-    console.log('PostGIS | Índice espacial GIST verificado/creado en reports.location');
+
+    console.log('PostGIS | Indice espacial GIST verificado/creado en reports.location');
   } catch (error) {
-    console.error('PostGIS | Error creando índice espacial:', error.message);
+    console.error('PostGIS | Error creando indice espacial:', error.message);
   }
 };
 
-// Índices compuestos para consultas comunes (category+status, priority+created_at, etc.)   
 export const createCompositeIndexes = async () => {
   const indexes = [
     {
       name: 'reports_category_status_idx',
-      sql:  'CREATE INDEX IF NOT EXISTS reports_category_status_idx ON reports (category, status);',
+      sql: 'CREATE INDEX IF NOT EXISTS reports_category_status_idx ON reports (category, status);',
     },
     {
       name: 'reports_priority_created_idx',
-      sql:  'CREATE INDEX IF NOT EXISTS reports_priority_created_idx ON reports (priority, created_at DESC);',
+      sql: 'CREATE INDEX IF NOT EXISTS reports_priority_created_idx ON reports (priority, created_at DESC);',
     },
     {
       name: 'reports_status_created_idx',
-      sql:  'CREATE INDEX IF NOT EXISTS reports_status_created_idx ON reports (status, created_at DESC);',
+      sql: 'CREATE INDEX IF NOT EXISTS reports_status_created_idx ON reports (status, created_at DESC);',
     },
     {
       name: 'reports_user_created_idx',
-      sql:  'CREATE INDEX IF NOT EXISTS reports_user_created_idx ON reports (user_id, created_at DESC);',
+      sql: 'CREATE INDEX IF NOT EXISTS reports_user_created_idx ON reports (user_id, created_at DESC);',
     },
     {
       name: 'reports_assigned_idx',
-      sql:  'CREATE INDEX IF NOT EXISTS reports_assigned_idx ON reports (assigned_to) WHERE assigned_to IS NOT NULL;',
+      sql: 'CREATE INDEX IF NOT EXISTS reports_assigned_idx ON reports (assigned_to) WHERE assigned_to IS NOT NULL;',
     },
     {
       name: 'reports_ai_status_idx',
-      sql:  "CREATE INDEX IF NOT EXISTS reports_ai_status_idx ON reports (ai_status) WHERE ai_status IS NOT NULL;",
+      sql: "CREATE INDEX IF NOT EXISTS reports_ai_status_idx ON reports (ai_status) WHERE ai_status IS NOT NULL;",
     },
   ];
 
   for (const { name, sql } of indexes) {
     try {
       await sequelize.query(sql, { type: QueryTypes.RAW });
-      console.log(`DB | Índice compuesto verificado/creado: ${name}`);
+      console.log(`DB | Indice compuesto verificado/creado: ${name}`);
     } catch (error) {
-      console.error(`DB | Error creando índice ${name}:`, error.message);
+      console.error(`DB | Error creando indice ${name}:`, error.message);
     }
   }
 };

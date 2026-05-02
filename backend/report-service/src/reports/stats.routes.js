@@ -1,13 +1,13 @@
-import { Router } from 'express';
+﻿import { Router } from 'express';
 
-import { validateJWT }   from '../../../auth-service/middlewares/validate-JWT.js';
-import { validateAdmin } from '../../report-service/middlewares/validate-admin.js';
+import { validateJWT }   from '../../middlewares/validate-JWT.js';
+import { validateAdmin } from '../../middlewares/validate-admin.js';
 import {
     validateDateRangeQuery,
     validateZoneRankingQuery,
     validateExportQuery,
     validateHeatmapGridQuery,
-} from '../../../auth-service/middlewares/validation.js';
+} from '../../middlewares/validation.js';
 import {
     getDashboard,
     getTrends,
@@ -20,7 +20,7 @@ import {
 const router = Router();
 
 // GET /stats/dashboard
-// Métricas agregadas del dashboard: totales, por estado, categoría y prioridad.
+// MÃ©tricas agregadas del dashboard: totales, por estado, categorÃ­a y prioridad.
 router.get(
     '/dashboard',
     validateJWT,
@@ -30,7 +30,7 @@ router.get(
 );
 
 // GET /stats/trends
-// Serie temporal de reportes creados y tiempos de resolución.
+// Serie temporal de reportes creados y tiempos de resoluciÃ³n.
 router.get(
     '/trends',
     validateJWT,
@@ -40,7 +40,7 @@ router.get(
 );
 
 // GET /stats/zones
-// Ranking de zonas con mayor concentración de reportes (espacial + por dirección).
+// Ranking de zonas con mayor concentraciÃ³n de reportes (espacial + por direcciÃ³n).
 router.get(
     '/zones',
     validateJWT,
@@ -60,7 +60,7 @@ router.get(
 );
 
 // GET /stats/transitions
-// Estadísticas de transiciones entre estados de los reportes.
+// EstadÃ­sticas de transiciones entre estados de los reportes.
 router.get(
     '/transitions',
     validateJWT,
@@ -71,7 +71,7 @@ router.get(
 
 // GET /stats/heatmap-grid
 // Heatmap de reportes en celdas regulares.
-// Parámetros: cellDegrees (0.001–0.1, default 0.009 ≈ 1km), category, priority, status, startDate, endDate
+// ParÃ¡metros: cellDegrees (0.001â€“0.1, default 0.009 â‰ˆ 1km), category, priority, status, startDate, endDate
 router.get(
     '/heatmap-grid',
     validateJWT,

@@ -1,7 +1,6 @@
 import { DataTypes } from 'sequelize';
-import { sequelize } from '../../../auth-service/configs/db.js';
-import { generateUserId } from '../../../auth-service/helpers/uuid-generator.js';
-import { User } from '../../../auth-service/src/users/user.model.js';
+import { sequelize } from '../../configs/db.js';
+import { generateUserId } from '../../helpers/uuid-generator.js';
 import { Report } from './report.model.js';
 import { REPORT_STATUSES } from '../../helpers/report-constants.js';
 
@@ -18,11 +17,14 @@ export const ReportStatusHistory = sequelize.define(
       type: DataTypes.STRING(16),
       allowNull: false,
       field: 'report_id',
-      references: { model: Report, key: 'id' },
+      references: {
+        model: 'reports',
+        key: 'id',
+      },
     },
     PreviousStatus: {
       type: DataTypes.STRING(20),
-      allowNull: true,   // null cuando es el estado inicial del reporte
+      allowNull: true,
       field: 'previous_status',
     },
     NewStatus: {
@@ -40,7 +42,10 @@ export const ReportStatusHistory = sequelize.define(
       type: DataTypes.STRING(16),
       allowNull: false,
       field: 'changed_by',
-      references: { model: User, key: 'id' },
+      references: {
+        model: 'users',
+        key: 'id',
+      },
     },
     Notes: {
       type: DataTypes.TEXT,
@@ -56,11 +61,16 @@ export const ReportStatusHistory = sequelize.define(
   },
   {
     tableName: 'report_status_history',
-    timestamps: false,   // solo createdAt, gestionado manualmente arriba
+    timestamps: false,
   }
 );
 
-// Asociaciones
-Report.hasMany(ReportStatusHistory,          { foreignKey: 'report_id',  as: 'StatusHistory' });
-ReportStatusHistory.belongsTo(Report,        { foreignKey: 'report_id',  as: 'Report' });
-ReportStatusHistory.belongsTo(User,          { foreignKey: 'changed_by', as: 'ChangedByUser' });
+Report.hasMany(ReportStatusHistory, {
+  foreignKey: 'report_id',
+  as: 'StatusHistory',
+});
+
+ReportStatusHistory.belongsTo(Report, {
+  foreignKey: 'report_id',
+  as: 'Report',
+});

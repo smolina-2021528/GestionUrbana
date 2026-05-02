@@ -1,7 +1,7 @@
-import { Router } from 'express';
+﻿import { Router } from 'express';
 
-import { validateJWT } from '../../auth-service/middlewares/validate-JWT.js';
-import { validateCreateComment, validateGetComments } from '../../auth-service/middlewares/validation.js';
+import { validateJWT } from '../../middlewares/validate-JWT.js';
+import { validateCreateComment, validateGetComments } from '../../middlewares/validation.js';
 import {
   createComment,
   getCommentsByReport,
