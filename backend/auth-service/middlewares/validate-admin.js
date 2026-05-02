@@ -1,13 +1,13 @@
-import { getUserRoleNames } from '../auth-service/helpers/role-db.js';
-import { ADMIN_ROLE } from '../auth-service/helpers/role-constants.js';
+﻿import { getUserRoleNames } from '../helpers/role-db.js';
+import { ADMIN_ROLE } from '../helpers/role-constants.js';
 
 // Middleware que verifica si el usuario autenticado tiene el rol ADMIN_ROLE
-// Debe usarse DESPUÉS de validateJWT
+// Debe usarse DESPUÃ‰S de validateJWT
 export const validateAdmin = async (req, res, next) => {
   try {
     const userId = req.userId;
 
-    // Usar los roles ya cargados en el request o consultarlos si no están disponibles
+    // Usar los roles ya cargados en el request o consultarlos si no estÃ¡n disponibles
     const roles =
       req.user?.UserRoles?.map((ur) => ur.Role?.Name).filter(Boolean) ??
       (await getUserRoleNames(userId));
@@ -25,3 +25,5 @@ export const validateAdmin = async (req, res, next) => {
     return res.status(500).json({ success: false, message: 'Error interno del servidor.' });
   }
 };
+
+

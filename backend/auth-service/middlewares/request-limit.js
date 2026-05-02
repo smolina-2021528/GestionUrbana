@@ -1,5 +1,5 @@
-import rateLimit from 'express-rate-limit';
-import { config } from '../auth-service/configs/config.js';
+﻿import rateLimit from 'express-rate-limit';
+import { config } from '../configs/config.js';
 
 // Rate limiter general para todos los endpoints de la API
 export const requestLimit = rateLimit({
@@ -10,13 +10,13 @@ export const requestLimit = rateLimit({
   handler: (req, res) => {
     res.status(429).json({
       success: false,
-      message: 'Demasiadas peticiones desde esta IP, intenta de nuevo más tarde.',
+      message: 'Demasiadas peticiones desde esta IP, intenta de nuevo mÃ¡s tarde.',
       retryAfter: Math.ceil(config.rateLimit.windowMs / 1000),
     });
   },
 });
 
-// Rate limiter específico para endpoints de autenticación (más restrictivo)
+// Rate limiter especÃ­fico para endpoints de autenticaciÃ³n (mÃ¡s restrictivo)
 export const authRateLimit = rateLimit({
   windowMs: config.rateLimit.authWindowMs,
   max: config.rateLimit.authMaxRequests,
@@ -26,13 +26,13 @@ export const authRateLimit = rateLimit({
     console.log(`Rate limit de auth excedido para IP: ${req.ip} en ${req.path}`);
     res.status(429).json({
       success: false,
-      message: 'Demasiados intentos de autenticación. Intenta de nuevo más tarde.',
+      message: 'Demasiados intentos de autenticaciÃ³n. Intenta de nuevo mÃ¡s tarde.',
       retryAfter: Math.ceil(config.rateLimit.authWindowMs / 1000),
     });
   },
 });
 
-// Rate limiter para endpoints de email (más restrictivo para evitar spam)
+// Rate limiter para endpoints de email (mÃ¡s restrictivo para evitar spam)
 export const emailRateLimit = rateLimit({
   windowMs: config.rateLimit.emailWindowMs,
   max: config.rateLimit.emailMaxRequests,
@@ -47,3 +47,4 @@ export const emailRateLimit = rateLimit({
     });
   },
 });
+

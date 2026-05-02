@@ -1,6 +1,6 @@
-import fs from 'fs';
+﻿import fs from 'fs';
 import path from 'path';
-import { geminiModel } from '../report-service/configs/gemini-config.js';
+import { geminiModel } from '../configs/gemini-config.js';
 import {
     GEMINI_ANALYZE_PROMPT,
     AI_REPORT_CATEGORIES,
@@ -17,8 +17,8 @@ const MIME_TYPES = {
 };
 
 /**
- * Detecta el MIME type a partir de la extensión del archivo.
- * Lanza un error si la extensión no está soportada.
+ * Detecta el MIME type a partir de la extensiÃ³n del archivo.
+ * Lanza un error si la extensiÃ³n no estÃ¡ soportada.
  */
 const getMimeType = (filePath) => {
     const ext = path.extname(filePath).toLowerCase();
@@ -39,17 +39,17 @@ const getMimeType = (filePath) => {
  */
 const validateGeminiResponse = (parsed) => {
     if (!parsed || typeof parsed !== 'object') {
-        throw new Error('Gemini no retornó un JSON válido');
+        throw new Error('Gemini no retornÃ³ un JSON vÃ¡lido');
     }
 
     const { title, description, category, priority } = parsed;
 
     if (!title || typeof title !== 'string' || title.trim() === '') {
-        throw new Error('Gemini no retornó un JSON válido: falta el campo "title"');
+        throw new Error('Gemini no retornÃ³ un JSON vÃ¡lido: falta el campo "title"');
     }
 
     if (!description || typeof description !== 'string' || description.trim() === '') {
-        throw new Error('Gemini no retornó un JSON válido: falta el campo "description"');
+        throw new Error('Gemini no retornÃ³ un JSON vÃ¡lido: falta el campo "description"');
     }
 
     const normalizedCategory = AI_REPORT_CATEGORIES.includes(category)
@@ -68,9 +68,9 @@ const validateGeminiResponse = (parsed) => {
     };
 };
 
-// Función principal para analizar la imagen de un reporte usando Gemini
+// FunciÃ³n principal para analizar la imagen de un reporte usando Gemini
 export const analyzeReportImage = async (imagePath) => {
-    // 1. Intentar servir desde caché
+    // 1. Intentar servir desde cachÃ©
     const cached = cacheGet(imagePath);
     if (cached) {
         return cached;
@@ -100,13 +100,13 @@ export const analyzeReportImage = async (imagePath) => {
         parsed = JSON.parse(cleanedText);
     } catch {
         throw new Error(
-            `Gemini no retornó un JSON válido. Respuesta recibida: "${rawText.slice(0, 200)}"`
+            `Gemini no retornÃ³ un JSON vÃ¡lido. Respuesta recibida: "${rawText.slice(0, 200)}"`
         );
     }
 
     const validated = validateGeminiResponse(parsed);
 
-    // 2. Guardar en caché antes de retornar
+    // 2. Guardar en cachÃ© antes de retornar
     cacheSet(imagePath, validated);
 
     return validated;

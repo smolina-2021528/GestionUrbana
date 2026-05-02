@@ -1,6 +1,6 @@
-import jwt from 'jsonwebtoken';
+﻿import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
-import { config } from '../auth-service/configs/config.js';
+import { config } from '../configs/config.js';
 
 // Genera un JWT de acceso con el userId y claims adicionales (ej: roles)
 export const generateJWT = (userId, extraClaims = {}, options = {}) => {
@@ -49,7 +49,7 @@ export const verifyJWT = (token) => {
   });
 };
 
-// Genera un token de verificación de email o reset de contraseña
+// Genera un token de verificaciÃ³n de email o reset de contraseÃ±a
 export const generateVerificationToken = (userId, type, expiresIn = '24h') => {
   return new Promise((resolve, reject) => {
     const payload = {
@@ -67,7 +67,7 @@ export const generateVerificationToken = (userId, type, expiresIn = '24h') => {
 
     jwt.sign(payload, config.jwt.secret, signOptions, (err, token) => {
       if (err) {
-        console.error('Error generando token de verificación:', err);
+        console.error('Error generando token de verificaciÃ³n:', err);
         reject(err);
       } else {
         resolve(token);

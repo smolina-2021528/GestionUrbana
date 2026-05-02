@@ -1,8 +1,8 @@
-import argon2 from 'argon2';
+﻿import argon2 from 'argon2';
 import crypto from 'crypto';
-import { config } from '../auth-service/configs/config.js';
+import { config } from '../configs/config.js';
 
-// Hashea una contraseña con Argon2id (configuración compatible con .NET)
+// Hashea una contraseÃ±a con Argon2id (configuraciÃ³n compatible con .NET)
 export const hashPassword = async (password) => {
   try {
     return await argon2.hash(password, {
@@ -14,22 +14,22 @@ export const hashPassword = async (password) => {
       saltLength: 16,
     });
   } catch (error) {
-    throw new Error('Error al hashear la contraseña');
+    throw new Error('Error al hashear la contraseÃ±a');
   }
 };
 
-// Verifica una contraseña contra su hash (soporta hashes generados por .NET)
+// Verifica una contraseÃ±a contra su hash (soporta hashes generados por .NET)
 export const verifyPassword = async (hashedPassword, plainPassword) => {
   try {
-    // Verificación directa con argon2
+    // VerificaciÃ³n directa con argon2
     try {
       const result = await argon2.verify(hashedPassword, plainPassword);
       if (result) return true;
     } catch (directError) {
-      // Continuar con verificación manual si falla
+      // Continuar con verificaciÃ³n manual si falla
     }
 
-    // Verificación manual para hashes generados en .NET
+    // VerificaciÃ³n manual para hashes generados en .NET
     if (hashedPassword.startsWith('$argon2id$v=19$')) {
       const parts = hashedPassword.split('$');
       if (parts.length === 6) {
@@ -62,29 +62,29 @@ export const verifyPassword = async (hashedPassword, plainPassword) => {
 
     return false;
   } catch (error) {
-    console.error('Error verificando contraseña:', error.message);
+    console.error('Error verificando contraseÃ±a:', error.message);
     return false;
   }
 };
 
-// Valida la fortaleza de una contraseña según las políticas del sistema
+// Valida la fortaleza de una contraseÃ±a segÃºn las polÃ­ticas del sistema
 export const validatePasswordStrength = (password) => {
   const errors = [];
 
   if (password.length < config.security.passwordMinLength) {
-    errors.push(`La contraseña debe tener al menos ${config.security.passwordMinLength} caracteres`);
+    errors.push(`La contraseÃ±a debe tener al menos ${config.security.passwordMinLength} caracteres`);
   }
 
   if (!/[A-Z]/.test(password)) {
-    errors.push('La contraseña debe tener al menos una letra mayúscula');
+    errors.push('La contraseÃ±a debe tener al menos una letra mayÃºscula');
   }
 
   if (!/[a-z]/.test(password)) {
-    errors.push('La contraseña debe tener al menos una letra minúscula');
+    errors.push('La contraseÃ±a debe tener al menos una letra minÃºscula');
   }
 
   if (!/[0-9]/.test(password)) {
-    errors.push('La contraseña debe tener al menos un número');
+    errors.push('La contraseÃ±a debe tener al menos un nÃºmero');
   }
 
   return {
@@ -92,3 +92,4 @@ export const validatePasswordStrength = (password) => {
     errors,
   };
 };
+

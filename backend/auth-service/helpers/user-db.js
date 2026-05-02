@@ -1,11 +1,11 @@
-import {
+﻿import {
   User,
   UserProfile,
   UserEmail,
   UserPasswordReset,
 } from '../src/users/user.model.js';
 import { UserRole, Role } from '../src/auth/role.model.js';
-import { USER_ROLE } from '../auth-service/helpers/role-constants.js';
+import { USER_ROLE } from './role-constants.js';
 import { hashPassword } from '../utils/password-utils.js';
 import { Op } from 'sequelize';
 
@@ -124,7 +124,7 @@ export const createNewUser = async (userData) => {
         { transaction }
       );
     } else {
-      console.warn(`USER_ROLE no encontrado en la BD durante la creación del usuario ${user.Id}`);
+      console.warn(`USER_ROLE no encontrado en la BD durante la creaciÃ³n del usuario ${user.Id}`);
     }
 
     await transaction.commit();
@@ -137,7 +137,7 @@ export const createNewUser = async (userData) => {
   }
 };
 
-// Actualiza el token de verificación de email
+// Actualiza el token de verificaciÃ³n de email
 export const updateEmailVerificationToken = async (userId, token, expiry) => {
   try {
     await UserEmail.update(
@@ -148,8 +148,8 @@ export const updateEmailVerificationToken = async (userId, token, expiry) => {
       { where: { UserId: userId } }
     );
   } catch (error) {
-    console.error('Error actualizando token de verificación:', error);
-    throw new Error('Error al actualizar token de verificación');
+    console.error('Error actualizando token de verificaciÃ³n:', error);
+    throw new Error('Error al actualizar token de verificaciÃ³n');
   }
 };
 
@@ -179,7 +179,7 @@ export const markEmailAsVerified = async (userId) => {
   }
 };
 
-// Actualiza el token de reset de contraseña
+// Actualiza el token de reset de contraseÃ±a
 export const updatePasswordResetToken = async (userId, token, expiry) => {
   try {
     await UserPasswordReset.update(
@@ -209,7 +209,7 @@ export const findUserByEmail = async (email) => {
   }
 };
 
-// Busca un usuario por token de verificación de email (token no expirado)
+// Busca un usuario por token de verificaciÃ³n de email (token no expirado)
 export const findUserByEmailVerificationToken = async (token) => {
   try {
     const user = await User.findOne({
@@ -228,12 +228,12 @@ export const findUserByEmailVerificationToken = async (token) => {
     });
     return user;
   } catch (error) {
-    console.error('Error buscando usuario por token de verificación:', error);
+    console.error('Error buscando usuario por token de verificaciÃ³n:', error);
     throw new Error('Error al buscar usuario');
   }
 };
 
-// Busca un usuario por token de reset de contraseña (token no expirado)
+// Busca un usuario por token de reset de contraseÃ±a (token no expirado)
 export const findUserByPasswordResetToken = async (token) => {
   try {
     const user = await User.findOne({
@@ -257,7 +257,7 @@ export const findUserByPasswordResetToken = async (token) => {
   }
 };
 
-// Actualiza la contraseña y limpia el token de reset
+// Actualiza la contraseÃ±a y limpia el token de reset
 export const updateUserPassword = async (userId, hashedPassword) => {
   const transaction = await User.sequelize.transaction();
   try {
@@ -274,7 +274,8 @@ export const updateUserPassword = async (userId, hashedPassword) => {
     await transaction.commit();
   } catch (error) {
     await transaction.rollback();
-    console.error('Error actualizando contraseña:', error);
-    throw new Error('Error al actualizar contraseña');
+    console.error('Error actualizando contraseÃ±a:', error);
+    throw new Error('Error al actualizar contraseÃ±a');
   }
 };
+

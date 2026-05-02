@@ -1,4 +1,4 @@
-import { getFullImageUrl } from '../helpers/cloudinary-service.js';
+﻿import { getFullImageUrl } from '../../shared/cloudinary-service.js';
 
 // Construye la respuesta normalizada de un usuario (DTO de salida)
 export const buildUserResponse = (user) => {
@@ -22,3 +22,4 @@ export const buildUserResponse = (user) => {
     updatedAt: user.UpdatedAt,
   };
 };
+

@@ -1,7 +1,7 @@
-import {
+﻿import {
     NOMINATIM_BASE_URL,
     buildNominatimHeaders,
-} from '../report-service/configs/nominatim-config.js';
+} from '../configs/nominatim-config.js';
 
 export const geocodeAddress = async (address) => {
     try {
@@ -44,7 +44,7 @@ export const geocodeAddress = async (address) => {
             address: first.display_name ?? address,
         };
     } catch (error) {
-        console.warn('[nominatim-service] Error al geocodificar dirección:', error.message);
+        console.warn('[nominatim-service] Error al geocodificar direcciÃ³n:', error.message);
         return null;
     }
 };

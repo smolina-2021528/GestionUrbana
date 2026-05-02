@@ -1,5 +1,5 @@
-import { Role } from '../src/auth/role.model.js';
-import { ALLOWED_ROLES } from '../auth-service/helpers/role-constants.js';
+﻿import { Role } from '../src/auth/role.model.js';
+import { ALLOWED_ROLES } from './role-constants.js';
 
 // Siembra los roles base del sistema si no existen
 export const seedRoles = async () => {
@@ -11,3 +11,4 @@ export const seedRoles = async () => {
   }
   console.log('Role seed | Roles verificados/creados correctamente');
 };
+

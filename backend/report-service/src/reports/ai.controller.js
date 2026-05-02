@@ -1,15 +1,15 @@
-﻿import { analyzeReportImage }              from '../../report-service/helpers/gemini-service.js';
-import { geocodeAddress }                  from '../../report-service/helpers/nominatim-service.js';
-import { deleteTempFile }                  from '../../report-service/helpers/ai-file-helper.js';
-import { uploadReportImage, deleteImage }  from '../../report-service/helpers/cloudinary-service.js';
-import { createAiReport }                  from '../../report-service/helpers/ai-report-db.js';
-import { findReportById }                  from '../../report-service/helpers/report-db.js';
+﻿import { analyzeReportImage }              from '../../helpers/gemini-service.js';
+import { geocodeAddress }                  from '../../helpers/nominatim-service.js';
+import { deleteTempFile }                  from '../../helpers/ai-file-helper.js';
+import { uploadReportImage, deleteImage }  from '../../../shared/cloudinary-service.js';
+import { createAiReport }                  from '../../helpers/ai-report-db.js';
+import { findReportById }                  from '../../helpers/report-db.js';
 import { sequelize }                       from '../../configs/db.js';
 import {
     buildAnalysisResponse,
     buildAiErrorResponse,
     buildAiReportResponse,
-} from '../../report-service/helpers/ai-helpers.js';
+} from '../../helpers/ai-helpers.js';
 
 export const analyzeReport = async (req, res) => {
     // Verificar que se subiÃ³ exactamente una imagen
@@ -149,4 +149,11 @@ export const aiCreateReport = async (req, res) => {
         buildAiReportResponse(fullReport)
     );
 };
+
+
+
+
+
+
+
 

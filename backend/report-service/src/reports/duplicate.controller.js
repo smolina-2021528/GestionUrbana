@@ -1,13 +1,13 @@
-import { findReportById }          from '../../report-service/helpers/report-db.js';
+﻿import { findReportById }          from '../../helpers/report-db.js';
 import { buildReportGeoResponse }  from '../../utils/geo-helpers.js';
 import {
     findSimilarReports,
     checkDraftForDuplicates,
     SIMILARITY_THRESHOLD,
     DUPLICATE_THRESHOLD,
-} from '../../report-service/helpers/duplicate-service.js';
+} from '../../helpers/duplicate-service.js';
 
-// ─── GET /reports/:reportId/similar ──────────────────────────────────────────
+// â”€â”€â”€ GET /reports/:reportId/similar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Endpoint para obtener reportes similares a uno existente
 export const getSimilarReports = async (req, res) => {
     try {
@@ -25,7 +25,7 @@ export const getSimilarReports = async (req, res) => {
         if (!baseReport) {
             return res.status(404).json({
                 success: false,
-                message: `No se encontró ningún reporte con id "${reportId}".`,
+                message: `No se encontrÃ³ ningÃºn reporte con id "${reportId}".`,
             });
         }
 
@@ -68,8 +68,8 @@ export const getSimilarReports = async (req, res) => {
     }
 };
 
-// ─── POST /reports/check-duplicates ──────────────────────────────────────────
-// Endpoint para verificar si un nuevo reporte (aún no guardado) podría ser un duplicado de uno existente.
+// â”€â”€â”€ POST /reports/check-duplicates â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Endpoint para verificar si un nuevo reporte (aÃºn no guardado) podrÃ­a ser un duplicado de uno existente.
 export const checkDuplicates = async (req, res) => {
     try {
         const { title, description, category, latitude, longitude } = req.body;
@@ -106,8 +106,8 @@ export const checkDuplicates = async (req, res) => {
             data: {
                 hasDuplicates,
                 message: hasDuplicates
-                    ? 'Se encontraron reportes que podrían ser duplicados. Revisa la lista antes de continuar.'
-                    : 'No se encontraron reportes duplicados. Puedes continuar con la creación.',
+                    ? 'Se encontraron reportes que podrÃ­an ser duplicados. Revisa la lista antes de continuar.'
+                    : 'No se encontraron reportes duplicados. Puedes continuar con la creaciÃ³n.',
                 candidates: candidates.map(({ report, score, isDuplicate, distanceM }) => ({
                     ...buildReportGeoResponse(report),
                     similarity: {
@@ -135,3 +135,4 @@ export const checkDuplicates = async (req, res) => {
         });
     }
 };
+
