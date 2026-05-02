@@ -4,7 +4,8 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
-
+import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec } from './swagger.js';
 import { dbConnection } from './db.js';
 import { corsOptions } from './cors-configuration.js';
 import { helmetConfiguration } from './helmet-configuration.js';
@@ -60,6 +61,9 @@ const applyRoutes = (app) => {
 
   app.use(`${BASE_PATH}/notifications`, notificationRoutes);
   app.use(`${BASE_PATH}/stats`, statsRoutes);
+
+  app.use(`${BASE_PATH}/docs`, swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
 
   app.get(`${BASE_PATH}/health`, (_req, res) => {
     res.json({
