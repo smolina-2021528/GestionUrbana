@@ -2,11 +2,12 @@
   "name": "gestion-urbana-backend",
   "version": "1.0.0",
   "description": "Backend del Sistema de Gestión Urbana Inteligente con IA",
-  "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "NODE_ENV=production node index.js",
-    "dev": "cross-env NODE_ENV=development nodemon index.js",
+    "dev": "concurrently --names \"AUTH,REPORT\" --prefix-colors \"cyan,yellow\" \"cd backend/auth-service && nodemon index.js\" \"cd backend/report-service && nodemon index.js\"",
+    "dev:auth": "cd backend/auth-service && nodemon index.js",
+    "dev:report": "cd backend/report-service && nodemon index.js",
+    "start": "concurrently --names \"AUTH,REPORT\" \"cd backend/auth-service && node index.js\" \"cd backend/report-service && node index.js\"",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"
   },
@@ -40,6 +41,7 @@
     "uuid": "^11.1.0"
   },
   "devDependencies": {
+    "concurrently": "^9.2.1",
     "cross-env": "^10.1.0",
     "nodemon": "^3.1.10"
   }
