@@ -1,7 +1,7 @@
-import { User, UserProfile } from '../users/user.model.js';
+﻿import { User, UserProfile } from '../users/user.model.js';
 import { findUserById } from '../../helpers/user-db.js';
-import { hashPassword, verifyPassword } from '../../../report-service/utils/password-utils.js';
-import { buildUserResponse } from '../../../report-service/utils/user-helpers.js';
+import { hashPassword, verifyPassword } from '../../utils/password-utils.js';
+import { buildUserResponse } from '../../utils/user-helpers.js';
 import { uploadImage, deleteImage } from '../../../shared/cloudinary-service.js';
 import { sequelize } from '../../configs/db.js';
 import crypto from 'crypto';
@@ -22,12 +22,12 @@ export const updateProfile = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Usuario no encontrado.' });
     }
 
-    // Verificar username único si se está cambiando
+    // Verificar username Ãºnico si se estÃ¡ cambiando
     if (username && username.toLowerCase() !== user.Username) {
       const existing = await User.findOne({ where: { Username: username.toLowerCase() } });
       if (existing) {
         await t.rollback();
-        return res.status(409).json({ success: false, message: 'El nombre de usuario ya está en uso.' });
+        return res.status(409).json({ success: false, message: 'El nombre de usuario ya estÃ¡ en uso.' });
       }
     }
 
@@ -40,7 +40,7 @@ export const updateProfile = async (req, res) => {
       { where: { Id: userId }, transaction: t }
     );
 
-    // Manejar imagen de perfil si se envió una nueva
+    // Manejar imagen de perfil si se enviÃ³ una nueva
     let profilePictureToStore = user.UserProfile?.ProfilePicture;
     if (req.file) {
       try {
@@ -82,7 +82,7 @@ export const updateProfile = async (req, res) => {
 };
 
 /* =========================
-   CHANGE PASSWORD (requiere contraseña actual)
+   CHANGE PASSWORD (requiere contraseÃ±a actual)
    ========================= */
 export const changePassword = async (req, res) => {
   try {
@@ -96,22 +96,24 @@ export const changePassword = async (req, res) => {
 
     const isMatch = await verifyPassword(user.Password, currentPassword);
     if (!isMatch) {
-      return res.status(400).json({ success: false, message: 'La contraseña actual es incorrecta.' });
+      return res.status(400).json({ success: false, message: 'La contraseÃ±a actual es incorrecta.' });
     }
 
     if (currentPassword === newPassword) {
       return res.status(400).json({
         success: false,
-        message: 'La nueva contraseña no puede ser igual a la actual.',
+        message: 'La nueva contraseÃ±a no puede ser igual a la actual.',
       });
     }
 
     const hashedPassword = await hashPassword(newPassword);
     await User.update({ Password: hashedPassword }, { where: { Id: userId } });
 
-    return res.status(200).json({ success: true, message: 'Contraseña actualizada exitosamente.' });
+    return res.status(200).json({ success: true, message: 'ContraseÃ±a actualizada exitosamente.' });
   } catch (error) {
     console.error('Error en changePassword:', error);
     return res.status(500).json({ success: false, message: 'Error interno del servidor.' });
   }
 };
+
+
