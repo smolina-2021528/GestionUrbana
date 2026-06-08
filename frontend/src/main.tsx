@@ -1,7 +1,8 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 
-import App from './aplicacion/App';
+import App from './app/App';
+import './styles/global.css';
 
 const contenedorRaiz = document.getElementById('root');
 

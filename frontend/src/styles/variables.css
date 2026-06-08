@@ -1,0 +1,154 @@
+:root {
+  color-scheme: light;
+
+  --color-azul-civico-50: #eef6ff;
+  --color-azul-civico-100: #d9ebff;
+  --color-azul-civico-200: #b6d8ff;
+  --color-azul-civico-300: #86bcff;
+  --color-azul-civico-400: #4f97f3;
+  --color-azul-civico-500: #2474d6;
+  --color-azul-civico-600: #165daf;
+  --color-azul-civico-700: #144d8d;
+  --color-azul-civico-800: #164274;
+  --color-azul-civico-900: #173961;
+
+  --color-verde-operativo-50: #edfdf4;
+  --color-verde-operativo-100: #d3f8e3;
+  --color-verde-operativo-200: #abefca;
+  --color-verde-operativo-300: #74dfa8;
+  --color-verde-operativo-400: #3cc77f;
+  --color-verde-operativo-500: #19a963;
+  --color-verde-operativo-600: #0d884f;
+  --color-verde-operativo-700: #0b6d41;
+  --color-verde-operativo-800: #0c5736;
+  --color-verde-operativo-900: #0b482f;
+
+  --color-amarillo-alerta-50: #fffbeb;
+  --color-amarillo-alerta-100: #fef3c7;
+  --color-amarillo-alerta-200: #fde68a;
+  --color-amarillo-alerta-300: #fbd34d;
+  --color-amarillo-alerta-400: #f9bd20;
+  --color-amarillo-alerta-500: #f09d0b;
+  --color-amarillo-alerta-600: #d97906;
+  --color-amarillo-alerta-700: #b45609;
+  --color-amarillo-alerta-800: #92420e;
+  --color-amarillo-alerta-900: #78370f;
+
+  --color-rojo-critico-50: #fff1f2;
+  --color-rojo-critico-100: #ffe4e6;
+  --color-rojo-critico-200: #fecdd3;
+  --color-rojo-critico-300: #fda4af;
+  --color-rojo-critico-400: #fb7185;
+  --color-rojo-critico-500: #f43f5e;
+  --color-rojo-critico-600: #e11d48;
+  --color-rojo-critico-700: #be123c;
+  --color-rojo-critico-800: #9f1239;
+  --color-rojo-critico-900: #881337;
+
+  --color-gris-urbano-50: #f8fafc;
+  --color-gris-urbano-100: #f1f5f9;
+  --color-gris-urbano-200: #e2e8f0;
+  --color-gris-urbano-300: #cbd5e1;
+  --color-gris-urbano-400: #94a3b8;
+  --color-gris-urbano-500: #64748b;
+  --color-gris-urbano-600: #475569;
+  --color-gris-urbano-700: #334155;
+  --color-gris-urbano-800: #1e293b;
+  --color-gris-urbano-900: #0f172a;
+
+  --color-blanco: #ffffff;
+  --color-grafito: #172033;
+  --color-negro-suave: #0b1120;
+
+  --color-principal: var(--color-azul-civico-600);
+  --color-principal-hover: var(--color-azul-civico-700);
+  --color-principal-suave: var(--color-azul-civico-50);
+
+  --color-exito: var(--color-verde-operativo-600);
+  --color-exito-suave: var(--color-verde-operativo-50);
+
+  --color-advertencia: var(--color-amarillo-alerta-600);
+  --color-advertencia-suave: var(--color-amarillo-alerta-50);
+
+  --color-error: var(--color-rojo-critico-600);
+  --color-error-suave: var(--color-rojo-critico-50);
+
+  --color-fondo: var(--color-gris-urbano-100);
+  --color-superficie: var(--color-blanco);
+  --color-superficie-secundaria: var(--color-gris-urbano-50);
+  --color-borde: var(--color-gris-urbano-200);
+
+  --color-texto: var(--color-grafito);
+  --color-texto-secundario: var(--color-gris-urbano-600);
+  --color-texto-suave: var(--color-gris-urbano-500);
+  --color-texto-invertido: var(--color-blanco);
+
+  --color-prioridad-baja: var(--color-verde-operativo-600);
+  --color-prioridad-baja-fondo: var(--color-verde-operativo-50);
+  --color-prioridad-media: var(--color-amarillo-alerta-600);
+  --color-prioridad-media-fondo: var(--color-amarillo-alerta-50);
+  --color-prioridad-alta: var(--color-rojo-critico-600);
+  --color-prioridad-alta-fondo: var(--color-rojo-critico-50);
+
+  --color-estado-pendiente: var(--color-amarillo-alerta-700);
+  --color-estado-pendiente-fondo: var(--color-amarillo-alerta-50);
+  --color-estado-en-proceso: var(--color-azul-civico-700);
+  --color-estado-en-proceso-fondo: var(--color-azul-civico-50);
+  --color-estado-resuelto: var(--color-verde-operativo-700);
+  --color-estado-resuelto-fondo: var(--color-verde-operativo-50);
+  --color-estado-rechazado: var(--color-rojo-critico-700);
+  --color-estado-rechazado-fondo: var(--color-rojo-critico-50);
+
+  --fuente-principal:
+    Inter, "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+
+  --tamano-texto-xs: 0.75rem;
+  --tamano-texto-sm: 0.875rem;
+  --tamano-texto-md: 1rem;
+  --tamano-texto-lg: 1.125rem;
+  --tamano-texto-xl: 1.25rem;
+  --tamano-texto-2xl: 1.5rem;
+  --tamano-texto-3xl: 1.875rem;
+  --tamano-texto-4xl: 2.25rem;
+
+  --peso-regular: 400;
+  --peso-medio: 500;
+  --peso-seminegrita: 600;
+  --peso-negrita: 700;
+
+  --alto-linea-ajustado: 1.2;
+  --alto-linea-normal: 1.5;
+  --alto-linea-amplio: 1.7;
+
+  --espacio-1: 0.25rem;
+  --espacio-2: 0.5rem;
+  --espacio-3: 0.75rem;
+  --espacio-4: 1rem;
+  --espacio-5: 1.25rem;
+  --espacio-6: 1.5rem;
+  --espacio-8: 2rem;
+  --espacio-10: 2.5rem;
+  --espacio-12: 3rem;
+  --espacio-16: 4rem;
+
+  --radio-xs: 0.375rem;
+  --radio-sm: 0.5rem;
+  --radio-md: 0.75rem;
+  --radio-lg: 1rem;
+  --radio-xl: 1.25rem;
+  --radio-2xl: 1.5rem;
+  --radio-completo: 999px;
+
+  --sombra-xs: 0 1px 2px rgb(15 23 42 / 0.06);
+  --sombra-sm: 0 4px 12px rgb(15 23 42 / 0.08);
+  --sombra-md: 0 12px 28px rgb(15 23 42 / 0.1);
+  --sombra-lg: 0 18px 45px rgb(15 23 42 / 0.12);
+
+  --ancho-sidebar: 17.5rem;
+  --alto-header: 4.5rem;
+  --ancho-contenido-maximo: 1280px;
+
+  --transicion-rapida: 150ms ease;
+  --transicion-normal: 220ms ease;
+}
