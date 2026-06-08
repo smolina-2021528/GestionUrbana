@@ -1,13 +1,25 @@
+import { marcaCiudadActiva } from '../design/identity/marca';
+import { textosSistema } from '../design/identity/textosSistema';
+
 export default function App() {
   return (
     <main className="contenedorInicial">
       <section className="tarjetaInicial">
-        <p className="etiquetaInicial">Sistema de gestión urbana</p>
-        <h1>Ciudad Activa</h1>
-        <p className="descripcionInicial">Ver la ciudad, entender el problema y actuar rápido.</p>
+        <div className="marcaInicial">
+          <img
+            className="logoInicial"
+            src={marcaCiudadActiva.rutaLogo}
+            alt={marcaCiudadActiva.textoAlternativoLogo}
+          />
+          <span className="etiquetaInicial">{textosSistema.general.sistema}</span>
+        </div>
+
+        <h1>{marcaCiudadActiva.nombre}</h1>
+
+        <p className="descripcionInicial">{marcaCiudadActiva.conceptoCentral}</p>
+
         <p className="notaInicial">
-          Base frontend creada correctamente con React, TypeScript, Vite y tokens visuales
-          institucionales.
+          {textosSistema.general.estadoBase}. {textosSistema.general.preparadoPara}
         </p>
       </section>
     </main>
