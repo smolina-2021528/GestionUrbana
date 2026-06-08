@@ -1,4 +1,4 @@
-import { Navigate, NavLink, Route, Routes } from 'react-router-dom';
+import { Navigate, NavLink, Route, Routes, useLocation } from 'react-router-dom';
 
 import { marcaCiudadActiva } from '../design/identity/marca';
 import { textosSistema } from '../design/identity/textosSistema';
@@ -12,10 +12,12 @@ import { MisReportesPagina } from '../modules/reports/pages/MisReportesPagina';
 import { ReportesMapaPagina } from '../modules/reports/pages/ReportesMapaPagina';
 import { UsuariosPagina } from '../modules/users/pages/UsuariosPagina';
 
+const rutasAutenticacion = ['/login', '/registro'] as const;
+
 const enlacesTemporales = [
   {
     ruta: '/login',
-    etiqueta: 'Login'
+    etiqueta: 'Ingresar'
   },
   {
     ruta: '/registro',
@@ -84,9 +86,12 @@ function NavegacionTemporal() {
 }
 
 export function RutasAplicacion() {
+  const ubicacion = useLocation();
+  const esRutaAutenticacion = rutasAutenticacion.some((ruta) => ruta === ubicacion.pathname);
+
   return (
     <>
-      <NavegacionTemporal />
+      {!esRutaAutenticacion ? <NavegacionTemporal /> : null}
 
       <Routes>
         <Route path="/" element={<Navigate replace to="/dashboard" />} />

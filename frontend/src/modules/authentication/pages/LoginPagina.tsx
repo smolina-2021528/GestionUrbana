@@ -1,43 +1,52 @@
 import { Link } from 'react-router-dom';
 
+import { LayoutAutenticacion } from '../../../app/layouts/LayoutAutenticacion';
 import { textosSistema } from '../../../design/identity/textosSistema';
 import { Boton } from '../../../shared/components/ui/Boton';
-import { Tarjeta } from '../../../shared/components/ui/Tarjeta';
 
 export function LoginPagina() {
   return (
-    <main className="paginaTemporal paginaTemporal--autenticacion">
-      <section className="bloqueHeroTemporal">
-        <span className="etiquetaInicial">{textosSistema.general.sistema}</span>
-        <h1>{textosSistema.autenticacion.tituloLogin}</h1>
-        <p>{textosSistema.autenticacion.descripcionLogin}</p>
-      </section>
-
-      <Tarjeta
-        titulo="Acceso al sistema"
-        descripcion="Formulario visual preparado para conectarse al servicio de autenticación en el Sprint 2."
+    <LayoutAutenticacion
+      titulo={textosSistema.autenticacion.tituloLogin}
+      descripcion={textosSistema.autenticacion.descripcionLogin}
+    >
+      <form
+        className="formularioAutenticacion"
+        onSubmit={(eventoFormulario) => eventoFormulario.preventDefault()}
       >
-        <form className="formularioTemporal">
-          <label className="campoTemporal">
-            <span>Correo o usuario</span>
-            <input placeholder="admin@gestionurbana.com" type="text" />
-          </label>
+        <label className="formularioAutenticacion__campo">
+          <span>Correo o usuario</span>
+          <input
+            autoComplete="username"
+            name="identificador"
+            placeholder="admin@gestionurbana.com"
+            required
+            type="text"
+          />
+        </label>
 
-          <label className="campoTemporal">
-            <span>Contraseña</span>
-            <input placeholder="Ingresa tu contraseña" type="password" />
-          </label>
+        <label className="formularioAutenticacion__campo">
+          <span>Contraseña</span>
+          <input
+            autoComplete="current-password"
+            name="password"
+            placeholder="Ingresa tu contraseña"
+            required
+            type="password"
+          />
+        </label>
 
-          <Boton anchoCompleto type="button">
+        <div className="formularioAutenticacion__acciones">
+          <Boton anchoCompleto type="submit">
             Ingresar
           </Boton>
 
-          <div className="accionesTextoTemporal">
-            <Link to="/registro">Crear cuenta ciudadana</Link>
+          <div className="formularioAutenticacion__enlaces">
+            <Link to="/registro">Crear cuenta</Link>
             <Link to="/login">Recuperar contraseña</Link>
           </div>
-        </form>
-      </Tarjeta>
-    </main>
+        </div>
+      </form>
+    </LayoutAutenticacion>
   );
 }

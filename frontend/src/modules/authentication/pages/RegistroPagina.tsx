@@ -1,59 +1,88 @@
 import { Link } from 'react-router-dom';
 
+import { LayoutAutenticacion } from '../../../app/layouts/LayoutAutenticacion';
 import { textosSistema } from '../../../design/identity/textosSistema';
 import { Boton } from '../../../shared/components/ui/Boton';
-import { Tarjeta } from '../../../shared/components/ui/Tarjeta';
 
 export function RegistroPagina() {
   return (
-    <main className="paginaTemporal paginaTemporal--autenticacion">
-      <section className="bloqueHeroTemporal">
-        <span className="etiquetaInicial">{textosSistema.general.sistema}</span>
-        <h1>{textosSistema.autenticacion.tituloRegistro}</h1>
-        <p>{textosSistema.autenticacion.descripcionRegistro}</p>
-      </section>
-
-      <Tarjeta
-        titulo="Datos de registro"
-        descripcion="Estructura visual inicial para crear una cuenta ciudadana."
+    <LayoutAutenticacion
+      titulo={textosSistema.autenticacion.tituloRegistro}
+      descripcion={textosSistema.autenticacion.descripcionRegistro}
+    >
+      <form
+        className="formularioAutenticacion formularioAutenticacion--dosColumnas"
+        onSubmit={(eventoFormulario) => eventoFormulario.preventDefault()}
       >
-        <form className="formularioTemporal formularioTemporal--dosColumnas">
-          <label className="campoTemporal">
-            <span>Nombre</span>
-            <input placeholder="Nombre" type="text" />
-          </label>
+        <label className="formularioAutenticacion__campo">
+          <span>Nombre</span>
+          <input autoComplete="given-name" name="name" placeholder="Nombre" required type="text" />
+        </label>
 
-          <label className="campoTemporal">
-            <span>Apellido</span>
-            <input placeholder="Apellido" type="text" />
-          </label>
+        <label className="formularioAutenticacion__campo">
+          <span>Apellido</span>
+          <input
+            autoComplete="family-name"
+            name="surname"
+            placeholder="Apellido"
+            required
+            type="text"
+          />
+        </label>
 
-          <label className="campoTemporal">
-            <span>Usuario</span>
-            <input placeholder="usuario" type="text" />
-          </label>
+        <label className="formularioAutenticacion__campo">
+          <span>Usuario</span>
+          <input autoComplete="username" name="username" placeholder="usuario" required type="text" />
+        </label>
 
-          <label className="campoTemporal">
-            <span>Correo electrónico</span>
-            <input placeholder="correo@ejemplo.com" type="email" />
-          </label>
+        <label className="formularioAutenticacion__campo">
+          <span>Correo electrónico</span>
+          <input
+            autoComplete="email"
+            name="email"
+            placeholder="correo@ejemplo.com"
+            required
+            type="email"
+          />
+        </label>
 
-          <label className="campoTemporal">
-            <span>Teléfono</span>
-            <input placeholder="55550000" type="tel" />
-          </label>
+        <label className="formularioAutenticacion__campo">
+          <span>Teléfono</span>
+          <input autoComplete="tel" name="phone" placeholder="55550000" required type="tel" />
+        </label>
 
-          <label className="campoTemporal">
-            <span>Contraseña</span>
-            <input placeholder="Contraseña segura" type="password" />
-          </label>
+        <label className="formularioAutenticacion__campo">
+          <span>Contraseña</span>
+          <input
+            autoComplete="new-password"
+            name="password"
+            placeholder="Contraseña segura"
+            required
+            type="password"
+          />
+        </label>
 
-          <div className="formularioTemporal__acciones">
-            <Boton type="button">Crear cuenta</Boton>
+        <label className="formularioAutenticacion__campo formularioAutenticacion__campoCompleto">
+          <span>Confirmar contraseña</span>
+          <input
+            autoComplete="new-password"
+            name="confirmarPassword"
+            placeholder="Confirma tu contraseña"
+            required
+            type="password"
+          />
+        </label>
+
+        <div className="formularioAutenticacion__acciones">
+          <Boton anchoCompleto type="submit">
+            Crear cuenta
+          </Boton>
+
+          <div className="formularioAutenticacion__enlaces">
             <Link to="/login">Ya tengo cuenta</Link>
           </div>
-        </form>
-      </Tarjeta>
-    </main>
+        </div>
+      </form>
+    </LayoutAutenticacion>
   );
 }
