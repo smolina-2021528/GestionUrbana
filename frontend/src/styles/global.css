@@ -158,40 +158,114 @@ p {
   outline-offset: 3px;
 }
 
-.contenedorInicial {
-  display: grid;
-  min-height: 100vh;
-  place-items: center;
-  padding: var(--espacio-6);
-}
-
-.tarjetaInicial {
-  width: min(100%, 920px);
-  border: 1px solid var(--color-borde);
-  border-radius: var(--radio-2xl);
-  background: rgb(255 255 255 / 0.92);
-  padding: clamp(var(--espacio-6), 5vw, var(--espacio-12));
-  box-shadow: var(--sombra-md);
-}
-
-.marcaInicial {
+.navegacionTemporal {
+  position: sticky;
+  top: 0;
+  z-index: 20;
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
+  justify-content: space-between;
   gap: var(--espacio-4);
-  margin-bottom: var(--espacio-5);
+  border-bottom: 1px solid var(--color-borde);
+  background: rgb(255 255 255 / 0.94);
+  padding: var(--espacio-3) var(--espacio-6);
+  backdrop-filter: blur(16px);
 }
 
-.logoInicial {
-  width: min(15rem, 70vw);
+.navegacionTemporal__marca {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-3);
+  min-width: 13rem;
+}
+
+.navegacionTemporal__marca strong {
+  display: block;
+  color: var(--color-texto);
+  font-size: var(--tamano-texto-sm);
+  line-height: 1.2;
+}
+
+.navegacionTemporal__marca span {
+  display: block;
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-texto-xs);
+}
+
+.navegacionTemporal__logo {
+  width: 3.25rem;
   height: auto;
-  object-fit: contain;
+}
+
+.navegacionTemporal__enlaces {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--espacio-2);
+}
+
+.navegacionTemporal__enlace {
+  border-radius: var(--radio-completo);
+  padding: 0.45rem 0.8rem;
+  color: var(--color-texto-secundario);
+  font-size: var(--tamano-texto-sm);
+  font-weight: var(--peso-medio);
+}
+
+.navegacionTemporal__enlace:hover {
+  background: var(--color-principal-suave);
+  color: var(--color-principal);
+}
+
+.navegacionTemporal__enlace.activo {
+  background: var(--color-principal);
+  color: var(--color-texto-invertido);
+}
+
+.paginaTemporal {
+  width: min(100%, var(--ancho-contenido-maximo));
+  margin: 0 auto;
+  padding: var(--espacio-8) var(--espacio-6);
+}
+
+.paginaTemporal--autenticacion {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(320px, 480px);
+  gap: var(--espacio-8);
+  align-items: center;
+  min-height: calc(100vh - 5.25rem);
+}
+
+.encabezadoPaginaTemporal {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--espacio-4);
+  margin-bottom: var(--espacio-6);
+}
+
+.encabezadoPaginaTemporal h1,
+.bloqueHeroTemporal h1 {
+  margin-bottom: var(--espacio-3);
+}
+
+.encabezadoPaginaTemporal p,
+.bloqueHeroTemporal p {
+  max-width: 46rem;
+  margin-bottom: 0;
+  font-size: var(--tamano-texto-lg);
+}
+
+.bloqueHeroTemporal {
+  max-width: 42rem;
 }
 
 .etiquetaInicial {
   display: inline-flex;
   align-items: center;
   width: fit-content;
+  margin-bottom: var(--espacio-4);
   border: 1px solid var(--color-azul-civico-100);
   border-radius: var(--radio-completo);
   background: var(--color-principal-suave);
@@ -201,22 +275,297 @@ p {
   font-weight: var(--peso-seminegrita);
 }
 
-.descripcionInicial {
-  max-width: 46rem;
+.formularioTemporal {
+  display: grid;
+  gap: var(--espacio-4);
+}
+
+.formularioTemporal--dosColumnas {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.formularioTemporal__acciones,
+.accionesFormularioTemporal {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-3);
+}
+
+.campoTemporal {
+  display: grid;
+  gap: var(--espacio-2);
+  color: var(--color-texto);
+  font-size: var(--tamano-texto-sm);
+  font-weight: var(--peso-seminegrita);
+}
+
+.accionesTextoTemporal {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--espacio-3);
+  font-size: var(--tamano-texto-sm);
+}
+
+.gridMetricasTemporal {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--espacio-4);
   margin-bottom: var(--espacio-5);
+}
+
+.metricaTemporal span {
+  display: block;
+  margin-bottom: var(--espacio-2);
   color: var(--color-texto-secundario);
-  font-size: var(--tamano-texto-lg);
+  font-size: var(--tamano-texto-sm);
+  font-weight: var(--peso-seminegrita);
 }
 
-.muestraComponentes {
-  margin-top: var(--espacio-6);
+.metricaTemporal strong {
+  display: block;
+  margin-bottom: var(--espacio-2);
+  color: var(--color-texto);
+  font-size: var(--tamano-texto-3xl);
+  line-height: 1;
 }
 
-.muestraComponentes__fila {
+.metricaTemporal p {
+  margin-bottom: 0;
+  font-size: var(--tamano-texto-sm);
+}
+
+.gridDashboardTemporal {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.7fr);
+  gap: var(--espacio-5);
+}
+
+.gridDashboardTemporal .tarjeta:last-child {
+  grid-column: 1 / -1;
+}
+
+.graficaTemporal {
+  display: flex;
+  align-items: end;
+  gap: var(--espacio-3);
+  min-height: 14rem;
+  border-radius: var(--radio-lg);
+  background:
+    linear-gradient(var(--color-borde) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-borde) 1px, transparent 1px),
+    var(--color-superficie-secundaria);
+  background-size: 100% 25%, 20% 100%;
+  padding: var(--espacio-5);
+}
+
+.graficaTemporal span {
+  flex: 1;
+  border-radius: var(--radio-md) var(--radio-md) 0 0;
+  background: var(--color-azul-civico-200);
+}
+
+.graficaTemporal span:nth-child(1) {
+  height: 35%;
+}
+
+.graficaTemporal span:nth-child(2) {
+  height: 58%;
+}
+
+.graficaTemporal span:nth-child(3) {
+  height: 46%;
+}
+
+.graficaTemporal span:nth-child(4) {
+  height: 74%;
+}
+
+.graficaTemporal span:nth-child(5) {
+  height: 62%;
+}
+
+.barraFiltrosTemporal {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) auto;
+  gap: var(--espacio-3);
+  margin-bottom: var(--espacio-4);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-xl);
+  background: var(--color-superficie);
+  padding: var(--espacio-3);
+  box-shadow: var(--sombra-xs);
+}
+
+.interruptorTemporal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espacio-2);
+  border-radius: var(--radio-md);
+  background: var(--color-superficie-secundaria);
+  padding: 0.5rem 0.75rem;
+  color: var(--color-texto-secundario);
+  font-size: var(--tamano-texto-sm);
+  font-weight: var(--peso-seminegrita);
+  white-space: nowrap;
+}
+
+.mapaPantallaTemporal {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: var(--espacio-4);
+}
+
+.mapaPantallaTemporal__mapa {
+  min-height: 34rem;
+}
+
+.mapaPlaceholderTemporal {
+  position: relative;
+  display: grid;
+  min-height: 30rem;
+  place-items: center;
+  overflow: hidden;
+  border-radius: var(--radio-lg);
+  background:
+    radial-gradient(circle at 25% 30%, rgb(13 136 79 / 0.12), transparent 6rem),
+    radial-gradient(circle at 70% 60%, rgb(36 116 214 / 0.12), transparent 7rem),
+    linear-gradient(135deg, var(--color-gris-urbano-100), var(--color-gris-urbano-200));
+}
+
+.marcadorMapaTemporal {
+  position: absolute;
+  width: 1.1rem;
+  height: 1.1rem;
+  border: 3px solid var(--color-blanco);
+  border-radius: var(--radio-completo);
+  box-shadow: var(--sombra-sm);
+}
+
+.marcadorMapaTemporal--alta {
+  top: 35%;
+  left: 52%;
+  background: var(--color-prioridad-alta);
+}
+
+.marcadorMapaTemporal--media {
+  top: 48%;
+  left: 42%;
+  background: var(--color-prioridad-media);
+}
+
+.marcadorMapaTemporal--baja {
+  top: 58%;
+  left: 62%;
+  background: var(--color-prioridad-baja);
+}
+
+.leyendaTemporal {
   display: flex;
   flex-wrap: wrap;
   gap: var(--espacio-2);
+  margin-bottom: var(--espacio-4);
+}
+
+.tarjetaReporteTemporal {
+  display: grid;
+  gap: var(--espacio-4);
+}
+
+.tarjetaReporteTemporal h2 {
+  margin-bottom: var(--espacio-2);
+  font-size: var(--tamano-texto-xl);
+}
+
+.tarjetaReporteTemporal p {
+  margin-bottom: 0;
+}
+
+.tarjetaReporteTemporal__insignias {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-2);
+}
+
+.lineaProgresoTemporal {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--espacio-2);
+}
+
+.lineaProgresoTemporal span {
+  border-top: 4px solid var(--color-borde);
+  padding-top: var(--espacio-2);
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-texto-xs);
+  font-weight: var(--peso-seminegrita);
+}
+
+.lineaProgresoTemporal span.activo {
+  border-color: var(--color-principal);
+  color: var(--color-principal);
+}
+
+.pasosReporteTemporal {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--espacio-3);
   margin-bottom: var(--espacio-5);
+}
+
+.pasosReporteTemporal__paso {
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-completo);
+  background: var(--color-superficie);
+  padding: var(--espacio-3) var(--espacio-4);
+  color: var(--color-texto-secundario);
+  font-size: var(--tamano-texto-sm);
+  font-weight: var(--peso-seminegrita);
+  text-align: center;
+}
+
+.pasosReporteTemporal__paso.activo {
+  border-color: var(--color-principal);
+  background: var(--color-principal);
+  color: var(--color-texto-invertido);
+}
+
+.crearReporteTemporal {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(320px, 0.8fr);
+  gap: var(--espacio-5);
+}
+
+.bloquesCrearReporteTemporal {
+  display: grid;
+  gap: var(--espacio-3);
+  margin-bottom: var(--espacio-5);
+}
+
+.bloquePlaceholderTemporal {
+  border: 1px dashed var(--color-borde);
+  border-radius: var(--radio-lg);
+  background: var(--color-superficie-secundaria);
+  padding: var(--espacio-4);
+}
+
+.bloquePlaceholderTemporal strong {
+  display: block;
+  margin-bottom: var(--espacio-1);
+  color: var(--color-texto);
+}
+
+.bloquePlaceholderTemporal p {
+  margin-bottom: 0;
+  font-size: var(--tamano-texto-sm);
+}
+
+.gridPerfilTemporal {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(320px, 0.7fr);
+  gap: var(--espacio-5);
 }
 
 .boton {
@@ -537,18 +886,57 @@ p {
   }
 }
 
-@media (max-width: 640px) {
-  .tarjetaInicial {
-    padding: var(--espacio-6);
+@media (max-width: 1120px) {
+  .gridMetricasTemporal {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .marcaInicial {
+  .gridDashboardTemporal,
+  .mapaPantallaTemporal,
+  .crearReporteTemporal,
+  .gridPerfilTemporal,
+  .paginaTemporal--autenticacion {
+    grid-template-columns: 1fr;
+  }
+
+  .barraFiltrosTemporal {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .interruptorTemporal {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 720px) {
+  .navegacionTemporal {
+    position: static;
     align-items: flex-start;
+    flex-direction: column;
+    padding: var(--espacio-4);
+  }
+
+  .navegacionTemporal__enlaces {
+    justify-content: flex-start;
+  }
+
+  .paginaTemporal {
+    padding: var(--espacio-6) var(--espacio-4);
+  }
+
+  .encabezadoPaginaTemporal {
     flex-direction: column;
   }
 
-  .logoInicial {
-    width: min(13rem, 80vw);
+  .gridMetricasTemporal,
+  .barraFiltrosTemporal,
+  .formularioTemporal--dosColumnas,
+  .pasosReporteTemporal {
+    grid-template-columns: 1fr;
+  }
+
+  .lineaProgresoTemporal {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .tarjeta__encabezado {
