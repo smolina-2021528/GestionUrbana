@@ -15,11 +15,11 @@ export function PerfilPagina() {
       </section>
 
       <section className="gridPerfilTemporal">
-        <Tarjeta titulo="Datos personales" descripcion="Formulario visual preparado para Sprint 2.">
+        <Tarjeta titulo="Datos personales" descripcion="Información principal del usuario.">
           <form className="formularioTemporal">
             <label className="campoTemporal">
               <span>Nombre completo</span>
-              <input placeholder="Usuario autenticado" type="text" />
+              <input placeholder="Nombre del usuario" type="text" />
             </label>
 
             <label className="campoTemporal">
@@ -31,10 +31,10 @@ export function PerfilPagina() {
           </form>
         </Tarjeta>
 
-        <Tarjeta titulo="Seguridad" descripcion="Cambio de contraseña pendiente de conexión.">
+        <Tarjeta titulo="Seguridad" descripcion="Opciones de protección de la cuenta.">
           <EstadoVacio
             titulo="Seguridad de cuenta"
-            descripcion="Aquí se integrará el formulario para cambiar contraseña y revisar estado de la sesión."
+            descripcion="Administra la contraseña y revisa la configuración de acceso."
             accion={<Boton variante="secundario">Cambiar contraseña</Boton>}
           />
         </Tarjeta>

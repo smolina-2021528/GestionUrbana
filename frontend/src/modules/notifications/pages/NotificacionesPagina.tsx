@@ -16,12 +16,12 @@ export function NotificacionesPagina() {
 
       <Tarjeta
         titulo="Notificaciones"
-        descripcion="Lista preparada para conectarse al servicio de notificaciones."
+        descripcion="Avisos relacionados con actividad y seguimiento de reportes."
         acciones={<Boton variante="fantasma">Marcar todas como leídas</Boton>}
       >
         <EstadoVacio
-          titulo="Sin notificaciones conectadas"
-          descripcion="En un sprint posterior se mostrarán avisos reales del backend y acciones para marcar como leído."
+          titulo="Sin notificaciones"
+          descripcion="Cuando existan avisos nuevos, aparecerán ordenados por fecha en esta sección."
         />
       </Tarjeta>
     </main>

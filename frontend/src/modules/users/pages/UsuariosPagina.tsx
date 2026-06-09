@@ -10,18 +10,18 @@ export function UsuariosPagina() {
         <div>
           <span className="etiquetaInicial">Administración</span>
           <h1>{textosSistema.navegacion.usuarios}</h1>
-          <p>Gestión visual reservada para administradores del sistema.</p>
+          <p>Gestiona usuarios, roles y estado de las cuentas registradas.</p>
         </div>
       </section>
 
       <Tarjeta
         titulo="Gestión de usuarios"
-        descripcion="Tabla futura para listar usuarios, roles y estado de la cuenta."
+        descripcion="Consulta usuarios registrados y administra su acceso al sistema."
         acciones={<Boton variante="secundario">Filtrar por rol</Boton>}
       >
         <EstadoVacio
-          titulo="Módulo administrativo pendiente"
-          descripcion="En el sprint de gestión administrativa se conectará la lista de usuarios, cambio de roles y activación o desactivación."
+          titulo="Sin usuarios para mostrar"
+          descripcion="Cuando existan usuarios registrados, podrás consultarlos desde esta pantalla."
         />
       </Tarjeta>
     </main>

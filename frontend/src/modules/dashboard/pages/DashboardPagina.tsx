@@ -7,7 +7,7 @@ const metricasPlaceholder = [
   {
     etiqueta: 'Reportes pendientes',
     valor: '—',
-    descripcion: 'Se conectará con estadísticas reales.'
+    descripcion: 'Casos recibidos sin cierre operativo.'
   },
   {
     etiqueta: 'En proceso',
@@ -22,7 +22,7 @@ const metricasPlaceholder = [
   {
     etiqueta: 'Alta prioridad',
     valor: '—',
-    descripcion: 'Incidencias críticas.'
+    descripcion: 'Incidencias críticas registradas.'
   }
 ] as const;
 
@@ -50,11 +50,8 @@ export function DashboardPagina() {
       </section>
 
       <section className="gridDashboardTemporal">
-        <Tarjeta
-          titulo="Tendencia de reportes"
-          descripcion="Espacio reservado para gráfica de reportes por semana."
-        >
-          <div className="graficaTemporal">
+        <Tarjeta titulo="Tendencia de reportes" descripcion="Comportamiento semanal de incidencias.">
+          <div className="graficaTemporal" aria-label="Representación visual de tendencia">
             <span />
             <span />
             <span />
@@ -63,24 +60,21 @@ export function DashboardPagina() {
           </div>
         </Tarjeta>
 
-        <Tarjeta
-          titulo="Distribución de incidencias"
-          descripcion="Espacio reservado para mini mapa o resumen geográfico."
-        >
+        <Tarjeta titulo="Distribución de incidencias" descripcion="Vista general por zona urbana.">
           <EstadoVacio
-            titulo="Mapa pendiente"
-            descripcion="La visualización geográfica se integrará cuando se implemente el módulo de reportes urbanos."
+            titulo="Sin distribución disponible"
+            descripcion="No hay información geográfica para mostrar en este momento."
           />
         </Tarjeta>
 
         <Tarjeta
           titulo="Últimos reportes recibidos"
-          descripcion="Listado visual preparado para conectarse con el backend."
+          descripcion="Actividad reciente registrada en la plataforma."
           acciones={<Boton variante="fantasma">Ver reportes</Boton>}
         >
           <EstadoVacio
-            titulo="Sin datos conectados"
-            descripcion="Este sprint solo define estructura visual. Los datos reales se integrarán en sprints posteriores."
+            titulo="Sin reportes recientes"
+            descripcion="Cuando existan reportes registrados, aparecerán en esta sección."
           />
         </Tarjeta>
       </section>

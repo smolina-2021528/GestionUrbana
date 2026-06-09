@@ -19,13 +19,13 @@ export function MisReportesPagina() {
       </section>
 
       <Tarjeta
-        titulo="Ejemplo visual de seguimiento"
-        descripcion="Esta tarjeta representa la estructura futura de un reporte ciudadano."
+        titulo="Seguimiento de reporte"
+        descripcion="Estructura de consulta para revisar el avance de una incidencia."
       >
         <article className="tarjetaReporteTemporal">
           <div>
-            <h2>Bache en calle principal</h2>
-            <p>Vista previa visual. Los datos reales se conectarán al endpoint de mis reportes.</p>
+            <h2>Reporte urbano</h2>
+            <p>Consulta el estado, prioridad, fecha de actualización y avance del caso.</p>
           </div>
 
           <div className="tarjetaReporteTemporal__insignias">
@@ -43,8 +43,8 @@ export function MisReportesPagina() {
       </Tarjeta>
 
       <EstadoVacio
-        titulo="Listado real pendiente"
-        descripcion="En un sprint posterior esta pantalla consumirá los reportes asociados al usuario autenticado."
+        titulo="Sin reportes registrados"
+        descripcion="Cuando crees reportes urbanos, podrás consultar su seguimiento desde esta pantalla."
       />
     </main>
   );

@@ -19,7 +19,9 @@ export function CrearReportePagina() {
         {pasosReporte.map((paso, indice) => (
           <span
             key={paso}
-            className={indice === 0 ? 'pasosReporteTemporal__paso activo' : 'pasosReporteTemporal__paso'}
+            className={
+              indice === 0 ? 'pasosReporteTemporal__paso activo' : 'pasosReporteTemporal__paso'
+            }
           >
             {indice + 1}. {paso}
           </span>
@@ -50,21 +52,21 @@ export function CrearReportePagina() {
           </form>
         </Tarjeta>
 
-        <Tarjeta titulo="Ubicación y evidencia" descripcion="Espacios preparados para los siguientes pasos.">
+        <Tarjeta titulo="Ubicación y evidencia" descripcion="Completa los datos necesarios del caso.">
           <div className="bloquesCrearReporteTemporal">
             <div className="bloquePlaceholderTemporal">
               <strong>Mapa de ubicación</strong>
-              <p>Permitirá marcar la ubicación exacta o usar ubicación actual.</p>
+              <p>Marca el punto exacto donde ocurre la incidencia.</p>
             </div>
 
             <div className="bloquePlaceholderTemporal">
               <strong>Fotos de evidencia</strong>
-              <p>Permitirá subir hasta 3 imágenes y revisar una vista previa.</p>
+              <p>Agrega imágenes claras del problema reportado.</p>
             </div>
 
             <div className="bloquePlaceholderTemporal">
               <strong>Resumen</strong>
-              <p>Mostrará la revisión final antes de enviar el reporte.</p>
+              <p>Revisa la información antes de enviar el reporte.</p>
             </div>
           </div>
 

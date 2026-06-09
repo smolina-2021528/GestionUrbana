@@ -14,7 +14,7 @@ export function ReportesMapaPagina() {
         </div>
       </section>
 
-      <section className="barraFiltrosTemporal" aria-label="Filtros visuales de reportes">
+      <section className="barraFiltrosTemporal" aria-label="Filtros de reportes">
         <select aria-label="Departamento">
           <option>Departamento</option>
         </select>
@@ -46,15 +46,15 @@ export function ReportesMapaPagina() {
             <div className="marcadorMapaTemporal marcadorMapaTemporal--media" />
             <div className="marcadorMapaTemporal marcadorMapaTemporal--baja" />
             <EstadoVacio
-              titulo="Mapa interactivo pendiente"
-              descripcion="En el sprint del mapa se integrará React Leaflet, OpenStreetMap, marcadores por prioridad y panel lateral."
+              titulo="Sin reportes visibles"
+              descripcion="Ajusta los filtros o revisa el área visible para consultar incidencias urbanas."
             />
           </div>
         </Tarjeta>
 
         <Tarjeta
           titulo="Detalle del reporte"
-          descripcion="Panel lateral preparado para abrirse al seleccionar un marcador."
+          descripcion="Selecciona una incidencia para consultar su información."
         >
           <div className="leyendaTemporal">
             <InsigniaPrioridad prioridad="BAJA" />
@@ -64,7 +64,7 @@ export function ReportesMapaPagina() {
 
           <EstadoVacio
             titulo="Selecciona un reporte"
-            descripcion="Al hacer clic en un marcador se mostrará título, estado, prioridad, categoría, ubicación, imágenes y acciones según permisos."
+            descripcion="El panel mostrará estado, prioridad, categoría, ubicación, evidencia y acciones disponibles."
           />
         </Tarjeta>
       </section>
