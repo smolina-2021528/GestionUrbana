@@ -19,7 +19,7 @@ export function LoginPagina() {
           <input
             autoComplete="username"
             name="identificador"
-            placeholder="admin@gestionurbana.com"
+            placeholder="correo@ejemplo.com"
             required
             type="text"
           />

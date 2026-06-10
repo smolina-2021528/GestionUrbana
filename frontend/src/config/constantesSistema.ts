@@ -137,3 +137,15 @@ export const informacionRutas: InformacionRuta[] = [
 export function obtenerInformacionRuta(rutaActual: string): InformacionRuta {
   return informacionRutas.find((ruta) => ruta.ruta === rutaActual) ?? informacionRutaPorDefecto;
 }
+
+export function obtenerRutaInicioPorRoles(roles: readonly string[]) {
+  if (roles.includes(rolesSistema.administrador)) {
+    return rutasAplicacion.dashboard;
+  }
+
+  if (roles.includes(rolesSistema.ciudadano)) {
+    return rutasAplicacion.misReportes;
+  }
+
+  return rutasAplicacion.login;
+}

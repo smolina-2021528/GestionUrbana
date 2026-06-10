@@ -13,11 +13,11 @@ import { NavLink, Outlet, useLocation } from 'react-router-dom';
 
 import {
   obtenerInformacionRuta,
-  rutasAplicacion,
-  rutasNavegacionPrincipal
+  rutasAplicacion
 } from '../../config/constantesSistema';
 import type { IconoNavegacion } from '../../config/constantesSistema';
 import { marcaCiudadActiva } from '../../design/identity/marca';
+import { usarAutenticacion } from '../../modules/authentication/hooks/usarAutenticacion';
 import { usarPermisos } from '../../shared/hooks/usarPermisos';
 import { usarTituloPagina } from '../../shared/hooks/usarTituloPagina';
 import './layoutPrincipal.css';
@@ -32,13 +32,30 @@ const iconosNavegacion: Record<IconoNavegacion, LucideIcon> = {
   perfil: CircleUserRound
 };
 
+function obtenerInicialesUsuario(nombre?: string, apellido?: string, username?: string) {
+  const inicialNombre = nombre?.trim().charAt(0);
+  const inicialApellido = apellido?.trim().charAt(0);
+
+  if (inicialNombre || inicialApellido) {
+    return `${inicialNombre ?? ''}${inicialApellido ?? ''}`.toUpperCase();
+  }
+
+  return username?.trim().slice(0, 2).toUpperCase() || 'CA';
+}
+
 export function LayoutPrincipal() {
   usarTituloPagina();
 
   const ubicacion = useLocation();
-  const { puedeVerRuta, esAdministrador } = usarPermisos();
+  const { usuario } = usarAutenticacion();
+  const { esAdministrador, obtenerRutasVisibles } = usarPermisos();
   const informacionRuta = obtenerInformacionRuta(ubicacion.pathname);
-  const enlacesVisibles = rutasNavegacionPrincipal.filter((ruta) => puedeVerRuta(ruta.roles));
+  const enlacesVisibles = obtenerRutasVisibles();
+  const inicialesUsuario = obtenerInicialesUsuario(
+    usuario?.name,
+    usuario?.surname,
+    usuario?.username
+  );
 
   return (
     <div className="layoutPrincipal">
@@ -120,9 +137,9 @@ export function LayoutPrincipal() {
 
             <NavLink className="layoutPrincipal__perfil" to={rutasAplicacion.perfil}>
               <span className="layoutPrincipal__avatar" aria-hidden="true">
-                CA
+                {inicialesUsuario}
               </span>
-              <span>Perfil</span>
+              <span>{usuario?.username ?? 'Perfil'}</span>
             </NavLink>
           </div>
         </header>
