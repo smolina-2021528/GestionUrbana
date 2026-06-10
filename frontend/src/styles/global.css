@@ -98,6 +98,19 @@ textarea:focus {
   box-shadow: 0 0 0 4px rgb(36 116 214 / 0.14);
 }
 
+input[aria-invalid="true"],
+select[aria-invalid="true"],
+textarea[aria-invalid="true"] {
+  border-color: var(--color-error);
+  background: var(--color-error-suave);
+}
+
+input[aria-invalid="true"]:focus,
+select[aria-invalid="true"]:focus,
+textarea[aria-invalid="true"]:focus {
+  box-shadow: 0 0 0 4px rgb(225 29 72 / 0.12);
+}
+
 textarea {
   min-height: 7.5rem;
   resize: vertical;
@@ -156,6 +169,12 @@ p {
 :focus-visible {
   outline: 3px solid rgb(36 116 214 / 0.35);
   outline-offset: 3px;
+}
+
+.mensajeCampoFormulario {
+  color: var(--color-error);
+  font-size: var(--tamano-texto-xs);
+  font-weight: var(--peso-seminegrita);
 }
 
 .navegacionTemporal {
