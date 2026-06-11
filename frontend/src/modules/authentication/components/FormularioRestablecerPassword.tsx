@@ -14,7 +14,13 @@ import { autenticacionServicio } from '../services/autenticacionServicio';
 const esquemaRestablecerPassword = z
   .object({
     token: z.string().trim().min(1, 'Ingresa el token de recuperación.'),
-    newPassword: z.string().min(8, 'La nueva contraseña debe tener al menos 8 caracteres.'),
+    newPassword: z
+      .string()
+      .min(8, 'La nueva contraseña debe tener al menos 8 caracteres.')
+      .max(255, 'La nueva contraseña no puede superar 255 caracteres.')
+      .regex(/[A-Z]/, 'La nueva contraseña debe contener al menos una letra mayúscula.')
+      .regex(/[a-z]/, 'La nueva contraseña debe contener al menos una letra minúscula.')
+      .regex(/[0-9]/, 'La nueva contraseña debe contener al menos un número.'),
     confirmarPassword: z.string().min(1, 'Confirma tu nueva contraseña.')
   })
   .refine((datos) => datos.newPassword === datos.confirmarPassword, {
@@ -73,7 +79,7 @@ export function FormularioRestablecerPassword() {
   };
 
   return (
-    <form className="formularioAutenticacion" onSubmit={handleSubmit(enviarFormulario)}>
+    <form className="formularioAutenticacion" onSubmit={handleSubmit(enviarFormulario)} noValidate>
       {mensajeExito ? (
         <Alerta variante="exito" titulo="Contraseña actualizada">
           {mensajeExito}

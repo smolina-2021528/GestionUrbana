@@ -20,7 +20,6 @@ type ValoresFormularioRecuperarPassword = z.infer<typeof esquemaRecuperarPasswor
 export function FormularioRecuperarPassword() {
   const [mensajeError, setMensajeError] = useState<string | null>(null);
   const [mensajeExito, setMensajeExito] = useState<string | null>(null);
-  const [tokenDesarrollo, setTokenDesarrollo] = useState<string | null>(null);
 
   const {
     register,
@@ -37,7 +36,6 @@ export function FormularioRecuperarPassword() {
   const enviarFormulario: SubmitHandler<ValoresFormularioRecuperarPassword> = async (valores) => {
     setMensajeError(null);
     setMensajeExito(null);
-    setTokenDesarrollo(null);
 
     try {
       const respuesta = await autenticacionServicio.solicitarRecuperacionPassword({
@@ -49,10 +47,6 @@ export function FormularioRecuperarPassword() {
           'Solicitud enviada. Revisa tu correo electrónico para continuar el proceso.'
       );
 
-      if (respuesta.debug_token) {
-        setTokenDesarrollo(respuesta.debug_token);
-      }
-
       reset();
     } catch (error) {
       setMensajeError(obtenerMensajeError(error));
@@ -60,16 +54,10 @@ export function FormularioRecuperarPassword() {
   };
 
   return (
-    <form className="formularioAutenticacion" onSubmit={handleSubmit(enviarFormulario)}>
+    <form className="formularioAutenticacion" onSubmit={handleSubmit(enviarFormulario)} noValidate>
       {mensajeExito ? (
         <Alerta variante="exito" titulo="Solicitud enviada">
           {mensajeExito}
-        </Alerta>
-      ) : null}
-
-      {tokenDesarrollo ? (
-        <Alerta variante="informacion" titulo="Token de recuperación">
-          Usa este token para probar el restablecimiento de contraseña: {tokenDesarrollo}
         </Alerta>
       ) : null}
 

@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import type { SubmitHandler } from 'react-hook-form';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -7,6 +7,7 @@ import { z } from 'zod';
 
 import { rutasAplicacion } from '../../../config/constantesSistema';
 import { Alerta } from '../../../shared/components/feedback/Alerta';
+import { Cargando } from '../../../shared/components/feedback/Cargando';
 import { Boton } from '../../../shared/components/ui/Boton';
 import { obtenerMensajeError } from '../../../shared/services/manejadorErroresApi';
 import { autenticacionServicio } from '../services/autenticacionServicio';
@@ -21,6 +22,8 @@ export function FormularioVerificarCorreo() {
   const [parametrosBusqueda] = useSearchParams();
   const [mensajeError, setMensajeError] = useState<string | null>(null);
   const [mensajeExito, setMensajeExito] = useState<string | null>(null);
+  const [verificandoAutomaticamente, setVerificandoAutomaticamente] = useState(false);
+  const tokenProcesadoRef = useRef(false);
 
   const tokenDesdeUrl = useMemo(
     () => parametrosBusqueda.get('token')?.trim() ?? '',
@@ -39,36 +42,58 @@ export function FormularioVerificarCorreo() {
     }
   });
 
-  const enviarFormulario: SubmitHandler<ValoresFormularioVerificarCorreo> = async (valores) => {
-    setMensajeError(null);
-    setMensajeExito(null);
+  const verificarToken = useCallback(
+    async (token: string) => {
+      setMensajeError(null);
+      setMensajeExito(null);
 
-    try {
-      const respuesta = await autenticacionServicio.verificarCorreo({
-        token: valores.token
-      });
+      try {
+        const respuesta = await autenticacionServicio.verificarCorreo({
+          token
+        });
 
-      setMensajeExito(
-        respuesta.message || 'Tu correo electrónico fue verificado correctamente.'
-      );
+        setMensajeExito(respuesta.message || 'Tu correo electrónico fue verificado correctamente.');
 
-      reset({
-        token: ''
-      });
-    } catch (error) {
-      setMensajeError(obtenerMensajeError(error));
+        reset({
+          token: ''
+        });
+      } catch (error) {
+        setMensajeError(obtenerMensajeError(error));
+      }
+    },
+    [reset]
+  );
+
+  useEffect(() => {
+    if (!tokenDesdeUrl || tokenProcesadoRef.current) {
+      return;
     }
+
+    tokenProcesadoRef.current = true;
+    setVerificandoAutomaticamente(true);
+
+    verificarToken(tokenDesdeUrl).finally(() => {
+      setVerificandoAutomaticamente(false);
+    });
+  }, [tokenDesdeUrl, verificarToken]);
+
+  const enviarFormulario: SubmitHandler<ValoresFormularioVerificarCorreo> = async (valores) => {
+    await verificarToken(valores.token);
   };
 
-  return (
-    <form className="formularioAutenticacion" onSubmit={handleSubmit(enviarFormulario)}>
-      {tokenDesdeUrl ? (
-        <Alerta variante="informacion" titulo="Token detectado">
-          Se encontró un token de verificación en el enlace. Puedes confirmar la verificación para
-          continuar.
+  if (verificandoAutomaticamente) {
+    return (
+      <div className="grupoFormulariosAutenticacion">
+        <Alerta variante="informacion" titulo="Verificando correo">
+          Estamos validando tu enlace de verificación.
         </Alerta>
-      ) : null}
+        <Cargando texto="Verificando cuenta..." />
+      </div>
+    );
+  }
 
+  return (
+    <form className="formularioAutenticacion" onSubmit={handleSubmit(enviarFormulario)} noValidate>
       {mensajeExito ? (
         <Alerta variante="exito" titulo="Correo verificado">
           {mensajeExito}
@@ -81,24 +106,28 @@ export function FormularioVerificarCorreo() {
         </Alerta>
       ) : null}
 
-      <label className="formularioAutenticacion__campo">
-        <span>Token de verificación</span>
-        <input
-          autoComplete="one-time-code"
-          placeholder="Ingresa el token recibido"
-          type="text"
-          {...register('token')}
-          aria-invalid={Boolean(errors.token)}
-        />
-        {errors.token?.message ? (
-          <small className="mensajeCampoFormulario">{errors.token.message}</small>
-        ) : null}
-      </label>
+      {!mensajeExito ? (
+        <label className="formularioAutenticacion__campo">
+          <span>Token de verificación</span>
+          <input
+            autoComplete="one-time-code"
+            placeholder="Ingresa el token recibido"
+            type="text"
+            {...register('token')}
+            aria-invalid={Boolean(errors.token)}
+          />
+          {errors.token?.message ? (
+            <small className="mensajeCampoFormulario">{errors.token.message}</small>
+          ) : null}
+        </label>
+      ) : null}
 
       <div className="formularioAutenticacion__acciones">
-        <Boton anchoCompleto disabled={isSubmitting} type="submit">
-          {isSubmitting ? 'Verificando...' : 'Verificar correo'}
-        </Boton>
+        {!mensajeExito ? (
+          <Boton anchoCompleto disabled={isSubmitting} type="submit">
+            {isSubmitting ? 'Verificando...' : 'Verificar correo'}
+          </Boton>
+        ) : null}
 
         <div className="formularioAutenticacion__enlaces">
           <Link to={rutasAplicacion.login}>Volver a login</Link>

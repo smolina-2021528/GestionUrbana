@@ -1,11 +1,11 @@
-import type { ComponentPropsWithoutRef, ReactNode } from 'react';
+import type { HTMLAttributes, ReactNode } from 'react';
 
-type PropiedadesTarjeta = {
+type PropiedadesTarjeta = HTMLAttributes<HTMLElement> & {
   titulo?: string;
   descripcion?: string;
   acciones?: ReactNode;
-  children: ReactNode;
-} & ComponentPropsWithoutRef<'section'>;
+  children?: ReactNode;
+};
 
 export function Tarjeta({
   titulo,
@@ -15,22 +15,22 @@ export function Tarjeta({
   className,
   ...propiedades
 }: PropiedadesTarjeta) {
-  const clases = ['tarjeta', className ?? ''].filter(Boolean).join(' ');
+  const tieneEncabezado = Boolean(titulo || descripcion || acciones);
 
   return (
-    <section className={clases} {...propiedades}>
-      {titulo || descripcion || acciones ? (
-        <header className="tarjeta__encabezado">
+    <section className={className ? `tarjeta ${className}` : 'tarjeta'} {...propiedades}>
+      {tieneEncabezado ? (
+        <div className="tarjeta__encabezado">
           <div>
             {titulo ? <h2 className="tarjeta__titulo">{titulo}</h2> : null}
             {descripcion ? <p className="tarjeta__descripcion">{descripcion}</p> : null}
           </div>
 
           {acciones ? <div className="tarjeta__acciones">{acciones}</div> : null}
-        </header>
+        </div>
       ) : null}
 
-      <div className="tarjeta__contenido">{children}</div>
+      {children ? <div className="tarjeta__contenido">{children}</div> : null}
     </section>
   );
 }
