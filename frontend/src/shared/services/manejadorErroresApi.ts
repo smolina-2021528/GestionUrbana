@@ -15,6 +15,32 @@ type RespuestaErrorBackend = {
   errors?: unknown;
 };
 
+function repararCaracteresEspeciales(texto: string) {
+  return texto
+    .replaceAll('Ã¡', 'á')
+    .replaceAll('Ã©', 'é')
+    .replaceAll('Ã­', 'í')
+    .replaceAll('Ã³', 'ó')
+    .replaceAll('Ãº', 'ú')
+    .replaceAll('ÃÁ', 'Á')
+    .replaceAll('Ã‰', 'É')
+    .replaceAll('ÃÍ', 'Í')
+    .replaceAll('Ã“', 'Ó')
+    .replaceAll('Ãš', 'Ú')
+    .replaceAll('Ã±', 'ñ')
+    .replaceAll('Ã‘', 'Ñ')
+    .replaceAll('Â¡', '¡')
+    .replaceAll('Â¿', '¿');
+}
+
+function normalizarMensaje(mensaje?: string) {
+  if (!mensaje || mensaje.trim().length === 0) {
+    return undefined;
+  }
+
+  return repararCaracteresEspeciales(mensaje.trim());
+}
+
 function obtenerMensajeDesdeRespuesta(data: unknown) {
   if (!data || typeof data !== 'object') {
     return undefined;
@@ -24,18 +50,23 @@ function obtenerMensajeDesdeRespuesta(data: unknown) {
 
   if (Array.isArray(respuesta.errors) && respuesta.errors.length > 0) {
     const primerError = respuesta.errors[0] as DetalleErrorValidacion;
+    const mensajeDetalle = normalizarMensaje(primerError.message);
 
-    if (typeof primerError.message === 'string' && primerError.message.trim().length > 0) {
-      return primerError.message;
+    if (mensajeDetalle) {
+      return mensajeDetalle;
     }
   }
 
-  if (typeof respuesta.message === 'string' && respuesta.message.trim().length > 0) {
-    return respuesta.message;
+  const mensajeRespuesta = normalizarMensaje(respuesta.message);
+
+  if (mensajeRespuesta) {
+    return mensajeRespuesta;
   }
 
-  if (typeof respuesta.error === 'string' && respuesta.error.trim().length > 0) {
-    return respuesta.error;
+  const errorRespuesta = normalizarMensaje(respuesta.error);
+
+  if (errorRespuesta) {
+    return errorRespuesta;
   }
 
   return undefined;
@@ -119,7 +150,10 @@ function construirErrorPorEstado(
 
 export function normalizarErrorApi(error: unknown): ErrorApi {
   if (esErrorApi(error)) {
-    return error;
+    return {
+      ...error,
+      mensaje: repararCaracteresEspeciales(error.mensaje)
+    };
   }
 
   if (!axios.isAxiosError(error)) {

@@ -4,15 +4,18 @@ import {
   CircleUserRound,
   ClipboardList,
   LayoutDashboard,
+  LogOut,
   MapPinned,
   Search,
   UsersRound
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { useState } from 'react';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 
 import {
   obtenerInformacionRuta,
+  obtenerRutaInicioPorRoles,
   rutasAplicacion
 } from '../../config/constantesSistema';
 import type { IconoNavegacion } from '../../config/constantesSistema';
@@ -46,22 +49,37 @@ function obtenerInicialesUsuario(nombre?: string, apellido?: string, username?: 
 export function LayoutPrincipal() {
   usarTituloPagina();
 
+  const navegar = useNavigate();
   const ubicacion = useLocation();
-  const { usuario } = usarAutenticacion();
+  const { usuario, roles, cerrarSesion } = usarAutenticacion();
   const { esAdministrador, obtenerRutasVisibles } = usarPermisos();
+  const [cerrandoSesion, setCerrandoSesion] = useState(false);
+
   const informacionRuta = obtenerInformacionRuta(ubicacion.pathname);
   const enlacesVisibles = obtenerRutasVisibles();
+  const rutaInicio = obtenerRutaInicioPorRoles(roles);
   const inicialesUsuario = obtenerInicialesUsuario(
     usuario?.name,
     usuario?.surname,
     usuario?.username
   );
 
+  const manejarCerrarSesion = async () => {
+    setCerrandoSesion(true);
+
+    try {
+      await cerrarSesion();
+      navegar(rutasAplicacion.login, { replace: true });
+    } finally {
+      setCerrandoSesion(false);
+    }
+  };
+
   return (
     <div className="layoutPrincipal">
       <aside className="layoutPrincipal__sidebar" aria-label="Navegación principal">
         <div className="layoutPrincipal__marca">
-          <NavLink className="layoutPrincipal__logoEnlace" to={rutasAplicacion.dashboard}>
+          <NavLink className="layoutPrincipal__logoEnlace" to={rutaInicio}>
             <img
               className="layoutPrincipal__logo"
               src={marcaCiudadActiva.rutaLogo}
@@ -134,6 +152,17 @@ export function LayoutPrincipal() {
             >
               <Bell size={18} strokeWidth={2.2} />
             </NavLink>
+
+            <button
+              aria-label="Cerrar sesión"
+              className="layoutPrincipal__botonIcono"
+              disabled={cerrandoSesion}
+              title="Cerrar sesión"
+              type="button"
+              onClick={manejarCerrarSesion}
+            >
+              <LogOut size={18} strokeWidth={2.2} />
+            </button>
 
             <NavLink className="layoutPrincipal__perfil" to={rutasAplicacion.perfil}>
               <span className="layoutPrincipal__avatar" aria-hidden="true">
