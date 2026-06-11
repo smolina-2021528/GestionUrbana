@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import type { SubmitHandler } from 'react-hook-form';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 
 import {
@@ -20,13 +20,8 @@ type EstadoNavegacion = {
 };
 
 const esquemaLogin = z.object({
-  identificador: z
-    .string()
-    .trim()
-    .min(1, 'Ingresa tu correo o usuario.'),
-  password: z
-    .string()
-    .min(1, 'Ingresa tu contraseña.')
+  identificador: z.string().trim().min(1, 'Ingresa tu correo o usuario.'),
+  password: z.string().min(1, 'Ingresa tu contraseña.')
 });
 
 type ValoresFormularioLogin = z.infer<typeof esquemaLogin>;
@@ -115,8 +110,8 @@ export function FormularioLogin() {
         </Boton>
 
         <div className="formularioAutenticacion__enlaces">
-          <a href={rutasAplicacion.registro}>Crear cuenta</a>
-          <a href={rutasAplicacion.login}>Recuperar contraseña</a>
+          <Link to={rutasAplicacion.registro}>Crear cuenta</Link>
+          <Link to={rutasAplicacion.recuperarPassword}>Recuperar contraseña</Link>
         </div>
       </div>
     </form>

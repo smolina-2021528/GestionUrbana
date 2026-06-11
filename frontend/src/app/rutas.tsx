@@ -12,7 +12,9 @@ import {
   rutasAplicacion
 } from '../config/constantesSistema';
 import { LoginPagina } from '../modules/authentication/pages/LoginPagina';
+import { RecuperarPasswordPagina } from '../modules/authentication/pages/RecuperarPasswordPagina';
 import { RegistroPagina } from '../modules/authentication/pages/RegistroPagina';
+import { RestablecerPasswordPagina } from '../modules/authentication/pages/RestablecerPasswordPagina';
 import { usarAutenticacion } from '../modules/authentication/hooks/usarAutenticacion';
 import { DashboardPagina } from '../modules/dashboard/pages/DashboardPagina';
 import { NotificacionesPagina } from '../modules/notifications/pages/NotificacionesPagina';
@@ -49,6 +51,11 @@ export function RutasAplicacion() {
       <Route element={<RutaPublica />}>
         <Route path={rutasAplicacion.login} element={<LoginPagina />} />
         <Route path={rutasAplicacion.registro} element={<RegistroPagina />} />
+        <Route path={rutasAplicacion.recuperarPassword} element={<RecuperarPasswordPagina />} />
+        <Route
+          path={rutasAplicacion.restablecerPassword}
+          element={<RestablecerPasswordPagina />}
+        />
       </Route>
 
       <Route element={<RutaProtegida rolesPermitidos={rolesUsuarioAutenticado} />}>
