@@ -899,6 +899,17 @@ p {
   justify-content: center;
 }
 
+
+.grupoFormulariosAutenticacion {
+  display: grid;
+  gap: var(--espacio-5);
+}
+
+.formularioAutenticacion__enlaces--alineados {
+  justify-content: flex-start;
+  margin-top: var(--espacio-3);
+}
+
 @keyframes girarIndicador {
   to {
     transform: rotate(360deg);

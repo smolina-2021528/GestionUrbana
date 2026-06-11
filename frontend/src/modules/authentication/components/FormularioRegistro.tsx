@@ -13,21 +13,40 @@ import { autenticacionServicio } from '../services/autenticacionServicio';
 
 const esquemaRegistro = z
   .object({
-    name: z.string().trim().min(1, 'Ingresa tu nombre.'),
-    surname: z.string().trim().min(1, 'Ingresa tu apellido.'),
+    name: z
+      .string()
+      .trim()
+      .min(1, 'Ingresa tu nombre.')
+      .max(25, 'El nombre no puede tener más de 25 caracteres.')
+      .regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, 'El nombre solo puede contener letras y espacios.'),
+    surname: z
+      .string()
+      .trim()
+      .min(1, 'Ingresa tu apellido.')
+      .max(25, 'El apellido no puede tener más de 25 caracteres.')
+      .regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, 'El apellido solo puede contener letras y espacios.'),
     username: z
       .string()
       .trim()
       .min(3, 'El usuario debe tener al menos 3 caracteres.')
-      .max(40, 'El usuario no debe superar 40 caracteres.'),
-    email: z.string().trim().email('Ingresa un correo electrónico válido.'),
+      .max(50, 'El usuario no debe superar 50 caracteres.'),
+    email: z
+      .string()
+      .trim()
+      .min(1, 'Ingresa tu correo electrónico.')
+      .email('Ingresa un correo electrónico válido.')
+      .max(150, 'El correo electrónico no puede tener más de 150 caracteres.'),
     phone: z
       .string()
       .trim()
-      .min(8, 'Ingresa un teléfono válido.')
-      .max(20, 'El teléfono no debe superar 20 caracteres.')
-      .regex(/^[0-9+\-\s()]+$/, 'El teléfono solo puede incluir números y signos básicos.'),
-    password: z.string().min(8, 'La contraseña debe tener al menos 8 caracteres.'),
+      .regex(/^\d{8}$/, 'El teléfono debe tener exactamente 8 dígitos.'),
+    password: z
+      .string()
+      .min(8, 'La contraseña debe tener al menos 8 caracteres.')
+      .max(255, 'La contraseña no puede superar 255 caracteres.')
+      .regex(/[A-Z]/, 'La contraseña debe contener al menos una letra mayúscula.')
+      .regex(/[a-z]/, 'La contraseña debe contener al menos una letra minúscula.')
+      .regex(/[0-9]/, 'La contraseña debe contener al menos un número.'),
     confirmarPassword: z.string().min(1, 'Confirma tu contraseña.')
   })
   .refine((datos) => datos.password === datos.confirmarPassword, {
@@ -84,6 +103,7 @@ export function FormularioRegistro() {
     <form
       className="formularioAutenticacion formularioAutenticacion--dosColumnas"
       onSubmit={handleSubmit(enviarFormulario)}
+      noValidate
     >
       {registroCompletado ? (
         <div className="formularioAutenticacion__campoCompleto">
@@ -91,6 +111,11 @@ export function FormularioRegistro() {
             Tu cuenta fue registrada. Revisa tu correo electrónico para continuar con la
             verificación.
           </Alerta>
+
+          <div className="formularioAutenticacion__enlaces formularioAutenticacion__enlaces--alineados">
+            <Link to={rutasAplicacion.verificarCorreo}>Verificar correo</Link>
+            <Link to={rutasAplicacion.login}>Ir a login</Link>
+          </div>
         </div>
       ) : null}
 
@@ -162,6 +187,8 @@ export function FormularioRegistro() {
         <span>Teléfono</span>
         <input
           autoComplete="tel"
+          inputMode="numeric"
+          maxLength={8}
           placeholder="55550000"
           type="tel"
           {...register('phone')}

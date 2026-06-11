@@ -1,6 +1,13 @@
 import axios from 'axios';
 
+import { esErrorApi } from '../types/errorApi';
 import type { ErrorApi } from '../types/errorApi';
+
+type DetalleErrorValidacion = {
+  field?: string;
+  message?: string;
+  value?: unknown;
+};
 
 type RespuestaErrorBackend = {
   message?: string;
@@ -14,6 +21,14 @@ function obtenerMensajeDesdeRespuesta(data: unknown) {
   }
 
   const respuesta = data as RespuestaErrorBackend;
+
+  if (Array.isArray(respuesta.errors) && respuesta.errors.length > 0) {
+    const primerError = respuesta.errors[0] as DetalleErrorValidacion;
+
+    if (typeof primerError.message === 'string' && primerError.message.trim().length > 0) {
+      return primerError.message;
+    }
+  }
 
   if (typeof respuesta.message === 'string' && respuesta.message.trim().length > 0) {
     return respuesta.message;
@@ -35,7 +50,11 @@ function obtenerDetallesDesdeRespuesta(data: unknown) {
   return respuesta.errors;
 }
 
-function construirErrorPorEstado(estadoHttp: number, mensajeBackend?: string, detalles?: unknown): ErrorApi {
+function construirErrorPorEstado(
+  estadoHttp: number,
+  mensajeBackend?: string,
+  detalles?: unknown
+): ErrorApi {
   if (estadoHttp === 400) {
     return {
       codigo: 'ERROR_VALIDACION',
@@ -99,6 +118,10 @@ function construirErrorPorEstado(estadoHttp: number, mensajeBackend?: string, de
 }
 
 export function normalizarErrorApi(error: unknown): ErrorApi {
+  if (esErrorApi(error)) {
+    return error;
+  }
+
   if (!axios.isAxiosError(error)) {
     return {
       codigo: 'ERROR_DESCONOCIDO',

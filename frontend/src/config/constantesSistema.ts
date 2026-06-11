@@ -3,6 +3,7 @@ import { textosSistema } from '../design/identity/textosSistema';
 export const rutasAplicacion = {
   login: '/login',
   registro: '/registro',
+  verificarCorreo: '/verificar-correo',
   recuperarPassword: '/recuperar-password',
   restablecerPassword: '/restablecer-password',
   dashboard: '/dashboard',
