@@ -53,11 +53,13 @@ export function RutasAplicacion() {
         <Route path={rutasAplicacion.login} element={<LoginPagina />} />
         <Route path={rutasAplicacion.registro} element={<RegistroPagina />} />
         <Route path={rutasAplicacion.verificarCorreo} element={<VerificarCorreoPagina />} />
+        <Route path="/verify-email" element={<VerificarCorreoPagina />} />
         <Route path={rutasAplicacion.recuperarPassword} element={<RecuperarPasswordPagina />} />
         <Route
           path={rutasAplicacion.restablecerPassword}
           element={<RestablecerPasswordPagina />}
         />
+        <Route path="/reset-password" element={<RestablecerPasswordPagina />} />
       </Route>
 
       <Route element={<RutaProtegida rolesPermitidos={rolesUsuarioAutenticado} />}>

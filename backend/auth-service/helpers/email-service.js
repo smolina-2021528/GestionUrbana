@@ -1,10 +1,24 @@
 ﻿import nodemailer from 'nodemailer';
 import { config } from '../configs/config.js';
 
+const crearUrlFrontend = (ruta, token) => {
+  const frontendUrl = (config.app.frontendUrl || 'http://localhost:5173').replace(/\/+$/, '');
+  return `${frontendUrl}${ruta}?token=${encodeURIComponent(token)}`;
+};
+
+const escaparHtml = (valor) => {
+  return String(valor ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+};
+
 // Configurar el transportador de email
 const createTransporter = () => {
   if (!config.smtp.username || !config.smtp.password) {
-    console.warn('SMTP | Credenciales no configuradas. El envÃ­o de emails no funcionarÃ¡.');
+    console.warn('SMTP | Credenciales no configuradas. El envío de emails no funcionará.');
     return null;
   }
 
@@ -18,58 +32,91 @@ const createTransporter = () => {
 
   return nodemailer.createTransport({
     host: config.smtp.host,
-    port: port,
-    secure: secure,
+    port,
+    secure,
     auth: {
       user: config.smtp.username,
-      pass: config.smtp.password,
+      pass: config.smtp.password
     },
     connectionTimeout: 10_000,
     greetingTimeout: 10_000,
     socketTimeout: 10_000,
-    tls: tlsOptions,
+    tls: tlsOptions
   });
 };
 
 const transporter = createTransporter();
 
-// Email de verificaciÃ³n de cuenta
+// Email de verificación de cuenta
 export const sendVerificationEmail = async (email, name, verificationToken) => {
   if (!transporter) throw new Error('SMTP transporter no configurado');
 
   try {
-    const frontendUrl = config.app.frontendUrl || 'http://localhost:5173';
-    const verificationUrl = `${frontendUrl}/verify-email?token=${verificationToken}`;
+    const verificationUrl = crearUrlFrontend('/verificar-correo', verificationToken);
+    const nombreSeguro = escaparHtml(name);
 
     const mailOptions = {
       from: `"${config.smtp.fromName}" <${config.smtp.fromEmail}>`,
       to: email,
-      subject: 'Verifica tu direcciÃ³n de correo - GestiÃ³n Urbana Inteligente',
+      subject: 'Verifica tu dirección de correo - Ciudad Activa',
+      text: `Bienvenido/a, ${name}.
+
+Gracias por registrarte en Ciudad Activa.
+
+Verifica tu dirección de correo ingresando al siguiente enlace:
+${verificationUrl}
+
+Este enlace expira en 24 horas.
+
+Si no creaste una cuenta, puedes ignorar este correo.`,
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e4e4e4; border-radius: 8px; overflow: hidden;">
-          <div style="background-color: #1565C0; color: white; padding: 20px; text-align: center;">
-            <h1 style="margin: 0; font-size: 24px;">ðŸ™ï¸ GestiÃ³n Urbana Inteligente</h1>
-          </div>
-          <div style="padding: 30px; color: #333; line-height: 1.6;">
-            <h2>Â¡Bienvenido/a, ${name}!</h2>
-            <p>Gracias por registrarte en el Sistema de GestiÃ³n Urbana Inteligente. Por favor verifica tu direcciÃ³n de correo haciendo clic en el siguiente botÃ³n:</p>
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="${verificationUrl}" style="background-color: #1565C0; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;">
-                Verificar mi correo
-              </a>
+        <!doctype html>
+        <html lang="es">
+          <head>
+            <meta charset="UTF-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <title>Verifica tu correo</title>
+          </head>
+          <body style="margin: 0; padding: 0; background-color: #f5f7fb; font-family: Arial, sans-serif;">
+            <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e4e4e4; border-radius: 8px; overflow: hidden;">
+              <div style="background-color: #1565C0; color: white; padding: 24px; text-align: center;">
+                <h1 style="margin: 0; font-size: 24px;">Ciudad Activa</h1>
+              </div>
+
+              <div style="padding: 32px; color: #333333; line-height: 1.6;">
+                <h2 style="margin-top: 0;">¡Bienvenido/a, ${nombreSeguro}!</h2>
+
+                <p>
+                  Gracias por registrarte en Ciudad Activa. Por favor verifica tu dirección de correo haciendo clic en el siguiente botón:
+                </p>
+
+                <div style="text-align: center; margin: 32px 0;">
+                  <a href="${verificationUrl}" style="display: inline-block; background-color: #1565C0; color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;">
+                    Verificar mi correo
+                  </a>
+                </div>
+
+                <p>Si no puedes hacer clic en el botón, copia y pega esta URL en tu navegador:</p>
+
+                <p style="word-break: break-all; color: #1565C0;">
+                  ${verificationUrl}
+                </p>
+
+                <p>Este enlace expira en <strong>24 horas</strong>.</p>
+
+                <p style="color: #666666; font-size: 14px;">
+                  Si no creaste una cuenta, puedes ignorar este correo.
+                </p>
+              </div>
             </div>
-            <p>Si no puedes hacer clic en el botÃ³n, copia y pega esta URL en tu navegador:</p>
-            <p style="word-break: break-all; color: #1565C0;">${verificationUrl}</p>
-            <p>Este enlace expira en <strong>24 horas</strong>.</p>
-            <p style="color: #666; font-size: 14px;">Si no creaste una cuenta, puedes ignorar este correo.</p>
-          </div>
-        </div>
-      `,
+          </body>
+        </html>
+      `
     };
 
     await transporter.sendMail(mailOptions);
   } catch (error) {
-    console.error('Error enviando correo de verificaciÃ³n:', error);
+    console.error('Error enviando correo de verificación:', error);
     throw error;
   }
 };
@@ -79,29 +126,54 @@ export const sendWelcomeEmail = async (email, name) => {
   if (!transporter) throw new Error('SMTP transporter no configurado');
 
   try {
+    const nombreSeguro = escaparHtml(name);
+
     const mailOptions = {
       from: `"${config.smtp.fromName}" <${config.smtp.fromEmail}>`,
       to: email,
-      subject: 'Â¡Cuenta activada! Bienvenido/a a GestiÃ³n Urbana Inteligente',
+      subject: '¡Cuenta activada! Bienvenido/a a Ciudad Activa',
+      text: `Tu cuenta está activa, ${name}.
+
+Tu cuenta ha sido verificada correctamente. Ya puedes iniciar sesión y comenzar a reportar incidencias urbanas.`,
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e4e4e4; border-radius: 8px; overflow: hidden;">
-          <div style="background-color: #2E7D32; color: white; padding: 20px; text-align: center;">
-            <h1 style="margin: 0; font-size: 24px;">ðŸ™ï¸ GestiÃ³n Urbana Inteligente</h1>
-          </div>
-          <div style="padding: 30px; color: #333; line-height: 1.6;">
-            <h2>Â¡Tu cuenta estÃ¡ activa, ${name}!</h2>
-            <p>Tu cuenta ha sido verificada y activada exitosamente. Ya puedes iniciar sesiÃ³n y comenzar a reportar problemas urbanos en tu ciudad.</p>
-            <p>Con nuestra plataforma puedes:</p>
-            <ul>
-              <li>ðŸ“ Reportar problemas urbanos con geolocalizaciÃ³n</li>
-              <li>ðŸ¤– Recibir clasificaciÃ³n automÃ¡tica con IA</li>
-              <li>ðŸ“Š Seguir el estado de tus reportes en tiempo real</li>
-            </ul>
-            <p>Â¡Juntos hacemos una ciudad mejor!</p>
-            <p style="color: #666; font-size: 14px;">El equipo de GestiÃ³n Urbana Inteligente</p>
-          </div>
-        </div>
-      `,
+        <!doctype html>
+        <html lang="es">
+          <head>
+            <meta charset="UTF-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <title>Cuenta activada</title>
+          </head>
+          <body style="margin: 0; padding: 0; background-color: #f5f7fb; font-family: Arial, sans-serif;">
+            <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e4e4e4; border-radius: 8px; overflow: hidden;">
+              <div style="background-color: #2E7D32; color: white; padding: 24px; text-align: center;">
+                <h1 style="margin: 0; font-size: 24px;">Ciudad Activa</h1>
+              </div>
+
+              <div style="padding: 32px; color: #333333; line-height: 1.6;">
+                <h2 style="margin-top: 0;">¡Tu cuenta está activa, ${nombreSeguro}!</h2>
+
+                <p>
+                  Tu cuenta ha sido verificada correctamente. Ya puedes iniciar sesión y comenzar a reportar incidencias urbanas.
+                </p>
+
+                <p>Con Ciudad Activa puedes:</p>
+
+                <ul>
+                  <li>Reportar problemas urbanos con ubicación.</li>
+                  <li>Dar seguimiento al estado de tus reportes.</li>
+                  <li>Ayudar a mejorar la atención de incidencias en la ciudad.</li>
+                </ul>
+
+                <p>¡Juntos hacemos una ciudad mejor!</p>
+
+                <p style="color: #666666; font-size: 14px;">
+                  El equipo de Ciudad Activa
+                </p>
+              </div>
+            </div>
+          </body>
+        </html>
+      `
     };
 
     await transporter.sendMail(mailOptions);
@@ -111,75 +183,134 @@ export const sendWelcomeEmail = async (email, name) => {
   }
 };
 
-// Email de recuperaciÃ³n de contraseÃ±a
+// Email de recuperación de contraseña
 export const sendPasswordResetEmail = async (email, name, resetToken) => {
   if (!transporter) throw new Error('SMTP transporter no configurado');
 
   try {
-    const frontendUrl = config.app.frontendUrl || 'http://localhost:5173';
-    const resetUrl = `${frontendUrl}/reset-password?token=${resetToken}`;
+    const resetUrl = crearUrlFrontend('/restablecer-password', resetToken);
+    const nombreSeguro = escaparHtml(name);
 
     const mailOptions = {
       from: `"${config.smtp.fromName}" <${config.smtp.fromEmail}>`,
       to: email,
-      subject: 'RecuperaciÃ³n de contraseÃ±a - GestiÃ³n Urbana Inteligente',
+      subject: 'Recuperación de contraseña - Ciudad Activa',
+      text: `Hola ${name}.
+
+Recibimos una solicitud para restablecer la contraseña de tu cuenta.
+
+Puedes continuar desde el siguiente enlace:
+${resetUrl}
+
+Este enlace expira en 1 hora.
+
+Si no solicitaste este cambio, ignora este correo.`,
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e4e4e4; border-radius: 8px; overflow: hidden;">
-          <div style="background-color: #C62828; color: white; padding: 20px; text-align: center;">
-            <h1 style="margin: 0; font-size: 24px;">ðŸ™ï¸ GestiÃ³n Urbana Inteligente</h1>
-          </div>
-          <div style="padding: 30px; color: #333; line-height: 1.6;">
-            <h2>RecuperaciÃ³n de contraseÃ±a</h2>
-            <p>Hola ${name}, recibimos una solicitud para restablecer la contraseÃ±a de tu cuenta. Haz clic en el botÃ³n a continuaciÃ³n:</p>
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="${resetUrl}" style="background-color: #C62828; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;">
-                Restablecer contraseÃ±a
-              </a>
+        <!doctype html>
+        <html lang="es">
+          <head>
+            <meta charset="UTF-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <title>Recuperación de contraseña</title>
+          </head>
+          <body style="margin: 0; padding: 0; background-color: #f5f7fb; font-family: Arial, sans-serif;">
+            <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e4e4e4; border-radius: 8px; overflow: hidden;">
+              <div style="background-color: #C62828; color: white; padding: 24px; text-align: center;">
+                <h1 style="margin: 0; font-size: 24px;">Ciudad Activa</h1>
+              </div>
+
+              <div style="padding: 32px; color: #333333; line-height: 1.6;">
+                <h2 style="margin-top: 0;">Recuperación de contraseña</h2>
+
+                <p>
+                  Hola ${nombreSeguro}, recibimos una solicitud para restablecer la contraseña de tu cuenta. Haz clic en el botón para continuar:
+                </p>
+
+                <div style="text-align: center; margin: 32px 0;">
+                  <a href="${resetUrl}" style="display: inline-block; background-color: #C62828; color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;">
+                    Restablecer contraseña
+                  </a>
+                </div>
+
+                <p>Si no puedes hacer clic en el botón, copia y pega esta URL:</p>
+
+                <p style="word-break: break-all; color: #C62828;">
+                  ${resetUrl}
+                </p>
+
+                <p>Este enlace expira en <strong>1 hora</strong>.</p>
+
+                <p style="color: #666666; font-size: 14px;">
+                  Si no solicitaste este cambio, ignora este correo y tu contraseña seguirá siendo la misma.
+                </p>
+              </div>
             </div>
-            <p>Si no puedes hacer clic en el botÃ³n, copia y pega esta URL:</p>
-            <p style="word-break: break-all; color: #C62828;">${resetUrl}</p>
-            <p>Este enlace expira en <strong>1 hora</strong>.</p>
-            <p style="color: #666; font-size: 14px;">Si no solicitaste este cambio, ignora este correo y tu contraseÃ±a seguirÃ¡ siendo la misma.</p>
-          </div>
-        </div>
-      `,
+          </body>
+        </html>
+      `
     };
 
     await transporter.sendMail(mailOptions);
   } catch (error) {
-    console.error('Error enviando correo de reset de contraseÃ±a:', error);
+    console.error('Error enviando correo de recuperación de contraseña:', error);
     throw error;
   }
 };
 
-// Email de confirmaciÃ³n tras cambiar la contraseÃ±a
+// Email de confirmación tras cambiar la contraseña
 export const sendPasswordChangedEmail = async (email, name) => {
   if (!transporter) throw new Error('SMTP transporter no configurado');
 
   try {
+    const nombreSeguro = escaparHtml(name);
+
     const mailOptions = {
       from: `"${config.smtp.fromName}" <${config.smtp.fromEmail}>`,
       to: email,
-      subject: 'ContraseÃ±a actualizada - GestiÃ³n Urbana Inteligente',
+      subject: 'Contraseña actualizada - Ciudad Activa',
+      text: `Hola ${name}.
+
+Tu contraseña ha sido actualizada correctamente.
+
+Si no realizaste este cambio, contacta a soporte inmediatamente.`,
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e4e4e4; border-radius: 8px; overflow: hidden;">
-          <div style="background-color: #1565C0; color: white; padding: 20px; text-align: center;">
-            <h1 style="margin: 0; font-size: 24px;">ðŸ™ï¸ GestiÃ³n Urbana Inteligente</h1>
-          </div>
-          <div style="padding: 30px; color: #333; line-height: 1.6;">
-            <h2>ContraseÃ±a actualizada</h2>
-            <p>Hola ${name}, tu contraseÃ±a ha sido actualizada exitosamente.</p>
-            <p>Si no realizaste este cambio, contacta a soporte inmediatamente.</p>
-            <p style="color: #666; font-size: 14px;">Este es un correo automÃ¡tico, no respondas a este mensaje.</p>
-          </div>
-        </div>
-      `,
+        <!doctype html>
+        <html lang="es">
+          <head>
+            <meta charset="UTF-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <title>Contraseña actualizada</title>
+          </head>
+          <body style="margin: 0; padding: 0; background-color: #f5f7fb; font-family: Arial, sans-serif;">
+            <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e4e4e4; border-radius: 8px; overflow: hidden;">
+              <div style="background-color: #1565C0; color: white; padding: 24px; text-align: center;">
+                <h1 style="margin: 0; font-size: 24px;">Ciudad Activa</h1>
+              </div>
+
+              <div style="padding: 32px; color: #333333; line-height: 1.6;">
+                <h2 style="margin-top: 0;">Contraseña actualizada</h2>
+
+                <p>
+                  Hola ${nombreSeguro}, tu contraseña ha sido actualizada correctamente.
+                </p>
+
+                <p>
+                  Si no realizaste este cambio, contacta a soporte inmediatamente.
+                </p>
+
+                <p style="color: #666666; font-size: 14px;">
+                  Este es un correo automático, no respondas a este mensaje.
+                </p>
+              </div>
+            </div>
+          </body>
+        </html>
+      `
     };
 
     await transporter.sendMail(mailOptions);
   } catch (error) {
-    console.error('Error enviando correo de contraseÃ±a cambiada:', error);
+    console.error('Error enviando correo de contraseña cambiada:', error);
     throw error;
   }
 };
-

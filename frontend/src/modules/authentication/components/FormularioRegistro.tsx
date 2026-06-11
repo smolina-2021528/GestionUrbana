@@ -99,26 +99,33 @@ export function FormularioRegistro() {
     }
   };
 
+  if (registroCompletado) {
+    return (
+      <div className="registroExitoso">
+        <Alerta variante="exito" titulo="Cuenta creada correctamente">
+          Tu cuenta fue registrada. Revisa tu correo electrónico para continuar con la
+          verificación.
+        </Alerta>
+
+        <div className="registroExitoso__acciones">
+          <Link className="boton boton--secundario boton--md" to={rutasAplicacion.verificarCorreo}>
+            Verificar correo
+          </Link>
+
+          <Link className="boton boton--fantasma boton--md" to={rutasAplicacion.login}>
+            Volver a login
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <form
       className="formularioAutenticacion formularioAutenticacion--dosColumnas"
       onSubmit={handleSubmit(enviarFormulario)}
       noValidate
     >
-      {registroCompletado ? (
-        <div className="formularioAutenticacion__campoCompleto">
-          <Alerta variante="exito" titulo="Cuenta creada correctamente">
-            Tu cuenta fue registrada. Revisa tu correo electrónico para continuar con la
-            verificación.
-          </Alerta>
-
-          <div className="formularioAutenticacion__enlaces formularioAutenticacion__enlaces--alineados">
-            <Link to={rutasAplicacion.verificarCorreo}>Verificar correo</Link>
-            <Link to={rutasAplicacion.login}>Ir a login</Link>
-          </div>
-        </div>
-      ) : null}
-
       {mensajeError ? (
         <div className="formularioAutenticacion__campoCompleto">
           <Alerta variante="error" titulo="No fue posible crear la cuenta">

@@ -910,6 +910,34 @@ p {
   margin-top: var(--espacio-3);
 }
 
+
+.registroExitoso {
+  display: grid;
+  gap: var(--espacio-3);
+}
+
+.registroExitoso__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-3);
+}
+
+.registroExitoso__acciones .boton {
+  min-width: 10rem;
+}
+
+@media (max-width: 720px) {
+  .registroExitoso__acciones {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .registroExitoso__acciones .boton {
+    width: 100%;
+  }
+}
+
 @keyframes girarIndicador {
   to {
     transform: rotate(360deg);
