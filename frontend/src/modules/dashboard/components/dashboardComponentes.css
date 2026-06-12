@@ -1,0 +1,402 @@
+.gridMetricasDashboard {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--espacio-4);
+}
+
+.tarjetaMetricaDashboard {
+  position: relative;
+  min-height: 100%;
+  overflow: hidden;
+}
+
+.tarjetaMetricaDashboard::before {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 0.25rem;
+  background: var(--color-principal);
+  content: "";
+}
+
+.tarjetaMetricaDashboard .tarjeta__contenido {
+  height: 100%;
+}
+
+.tarjetaMetricaDashboard__contenido {
+  display: grid;
+  gap: var(--espacio-4);
+  height: 100%;
+}
+
+.tarjetaMetricaDashboard__encabezado {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--espacio-3);
+}
+
+.tarjetaMetricaDashboard__etiqueta {
+  margin-bottom: 0;
+  color: var(--color-texto-secundario);
+  font-size: var(--tamano-texto-sm);
+  font-weight: var(--peso-seminegrita);
+}
+
+.tarjetaMetricaDashboard__icono {
+  display: grid;
+  flex: 0 0 auto;
+  width: 2.25rem;
+  height: 2.25rem;
+  place-items: center;
+  border-radius: var(--radio-lg);
+  background: var(--color-principal-suave);
+  color: var(--color-principal);
+}
+
+.tarjetaMetricaDashboard__valor {
+  margin-bottom: 0;
+  color: var(--color-texto);
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  font-weight: var(--peso-negrita);
+  letter-spacing: -0.05em;
+  line-height: 1;
+}
+
+.tarjetaMetricaDashboard__descripcion {
+  margin-bottom: 0;
+  color: var(--color-texto-secundario);
+  font-size: var(--tamano-texto-sm);
+}
+
+.tarjetaMetricaDashboard__pie {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-2);
+  margin-top: auto;
+}
+
+.tarjetaMetricaDashboard__tendencia {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  border-radius: var(--radio-completo);
+  background: var(--color-superficie-secundaria);
+  padding: 0.25rem 0.6rem;
+  color: var(--color-texto-secundario);
+  font-size: var(--tamano-texto-xs);
+  font-weight: var(--peso-seminegrita);
+}
+
+.tarjetaMetricaDashboard__tendencia--positiva {
+  background: var(--color-exito-suave);
+  color: var(--color-exito);
+}
+
+.tarjetaMetricaDashboard__tendencia--negativa {
+  background: var(--color-error-suave);
+  color: var(--color-error);
+}
+
+.tarjetaMetricaDashboard__tendencia--neutral {
+  background: var(--color-superficie-secundaria);
+  color: var(--color-texto-secundario);
+}
+
+.bloqueDistribucionDashboard {
+  display: grid;
+  gap: var(--espacio-4);
+}
+
+.bloqueDistribucionDashboard__lista {
+  display: grid;
+  gap: var(--espacio-4);
+}
+
+.bloqueDistribucionDashboard__resumen {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-3);
+  border-top: 1px solid var(--color-borde);
+  padding-top: var(--espacio-4);
+}
+
+.bloqueDistribucionDashboard__resumen span {
+  color: var(--color-texto-secundario);
+  font-size: var(--tamano-texto-sm);
+}
+
+.bloqueDistribucionDashboard__resumen strong {
+  color: var(--color-texto);
+  font-size: var(--tamano-texto-lg);
+}
+
+.barraDistribucionDashboard {
+  display: grid;
+  gap: var(--espacio-2);
+}
+
+.barraDistribucionDashboard__encabezado {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--espacio-3);
+}
+
+.barraDistribucionDashboard__texto {
+  min-width: 0;
+}
+
+.barraDistribucionDashboard__etiqueta {
+  display: block;
+  margin-bottom: var(--espacio-1);
+  color: var(--color-texto);
+  font-size: var(--tamano-texto-sm);
+  font-weight: var(--peso-seminegrita);
+}
+
+.barraDistribucionDashboard__descripcion {
+  margin-bottom: 0;
+  color: var(--color-texto-secundario);
+  font-size: var(--tamano-texto-xs);
+}
+
+.barraDistribucionDashboard__valores {
+  display: grid;
+  justify-items: end;
+  gap: var(--espacio-1);
+  flex: 0 0 auto;
+  color: var(--color-texto);
+  text-align: right;
+}
+
+.barraDistribucionDashboard__valor {
+  font-size: var(--tamano-texto-sm);
+  font-weight: var(--peso-negrita);
+}
+
+.barraDistribucionDashboard__porcentaje {
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-texto-xs);
+  font-weight: var(--peso-seminegrita);
+}
+
+.barraDistribucionDashboard__pista {
+  width: 100%;
+  height: 0.65rem;
+  overflow: hidden;
+  border-radius: var(--radio-completo);
+  background: var(--color-superficie-secundaria);
+}
+
+.barraDistribucionDashboard__relleno {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-principal);
+  transition: width var(--transicion-normal);
+}
+
+.barraDistribucionDashboard__detalle {
+  margin-bottom: 0;
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-texto-xs);
+}
+
+.listaIndicadoresDashboard {
+  display: grid;
+  gap: var(--espacio-3);
+}
+
+.listaIndicadoresDashboard__lista {
+  display: grid;
+  gap: var(--espacio-3);
+  margin: 0;
+}
+
+.listaIndicadoresDashboard__item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--espacio-4);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-lg);
+  background: var(--color-superficie-secundaria);
+  padding: var(--espacio-4);
+}
+
+.listaIndicadoresDashboard__texto {
+  min-width: 0;
+}
+
+.listaIndicadoresDashboard__etiqueta {
+  display: block;
+  margin-bottom: var(--espacio-1);
+  color: var(--color-texto);
+  font-size: var(--tamano-texto-sm);
+  font-weight: var(--peso-seminegrita);
+}
+
+.listaIndicadoresDashboard__descripcion {
+  margin-bottom: 0;
+  color: var(--color-texto-secundario);
+  font-size: var(--tamano-texto-xs);
+}
+
+.listaIndicadoresDashboard__valor {
+  color: var(--color-texto);
+  font-size: var(--tamano-texto-xl);
+  font-weight: var(--peso-negrita);
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.tonoDashboard--principal::before,
+.tonoDashboard--principal .barraDistribucionDashboard__relleno {
+  background: var(--color-principal);
+}
+
+.tonoDashboard--principal .tarjetaMetricaDashboard__icono {
+  background: var(--color-principal-suave);
+  color: var(--color-principal);
+}
+
+.tonoDashboard--exito::before,
+.tonoDashboard--exito .barraDistribucionDashboard__relleno {
+  background: var(--color-exito);
+}
+
+.tonoDashboard--exito .tarjetaMetricaDashboard__icono {
+  background: var(--color-exito-suave);
+  color: var(--color-exito);
+}
+
+.tonoDashboard--advertencia::before,
+.tonoDashboard--advertencia .barraDistribucionDashboard__relleno {
+  background: var(--color-advertencia);
+}
+
+.tonoDashboard--advertencia .tarjetaMetricaDashboard__icono {
+  background: var(--color-advertencia-suave);
+  color: var(--color-advertencia);
+}
+
+.tonoDashboard--error::before,
+.tonoDashboard--error .barraDistribucionDashboard__relleno {
+  background: var(--color-error);
+}
+
+.tonoDashboard--error .tarjetaMetricaDashboard__icono {
+  background: var(--color-error-suave);
+  color: var(--color-error);
+}
+
+.tonoDashboard--neutro::before,
+.tonoDashboard--neutro .barraDistribucionDashboard__relleno {
+  background: var(--color-gris-urbano-500);
+}
+
+.tonoDashboard--neutro .tarjetaMetricaDashboard__icono {
+  background: var(--color-superficie-secundaria);
+  color: var(--color-texto-secundario);
+}
+
+.tonoDashboard--pendiente::before,
+.tonoDashboard--pendiente .barraDistribucionDashboard__relleno {
+  background: var(--color-estado-pendiente);
+}
+
+.tonoDashboard--pendiente .tarjetaMetricaDashboard__icono {
+  background: var(--color-estado-pendiente-fondo);
+  color: var(--color-estado-pendiente);
+}
+
+.tonoDashboard--enProceso::before,
+.tonoDashboard--enProceso .barraDistribucionDashboard__relleno {
+  background: var(--color-estado-en-proceso);
+}
+
+.tonoDashboard--enProceso .tarjetaMetricaDashboard__icono {
+  background: var(--color-estado-en-proceso-fondo);
+  color: var(--color-estado-en-proceso);
+}
+
+.tonoDashboard--resuelto::before,
+.tonoDashboard--resuelto .barraDistribucionDashboard__relleno {
+  background: var(--color-estado-resuelto);
+}
+
+.tonoDashboard--resuelto .tarjetaMetricaDashboard__icono {
+  background: var(--color-estado-resuelto-fondo);
+  color: var(--color-estado-resuelto);
+}
+
+.tonoDashboard--rechazado::before,
+.tonoDashboard--rechazado .barraDistribucionDashboard__relleno {
+  background: var(--color-estado-rechazado);
+}
+
+.tonoDashboard--rechazado .tarjetaMetricaDashboard__icono {
+  background: var(--color-estado-rechazado-fondo);
+  color: var(--color-estado-rechazado);
+}
+
+.tonoDashboard--prioridadAlta::before,
+.tonoDashboard--prioridadAlta .barraDistribucionDashboard__relleno {
+  background: var(--color-prioridad-alta);
+}
+
+.tonoDashboard--prioridadAlta .tarjetaMetricaDashboard__icono {
+  background: var(--color-prioridad-alta-fondo);
+  color: var(--color-prioridad-alta);
+}
+
+.tonoDashboard--prioridadMedia::before,
+.tonoDashboard--prioridadMedia .barraDistribucionDashboard__relleno {
+  background: var(--color-prioridad-media);
+}
+
+.tonoDashboard--prioridadMedia .tarjetaMetricaDashboard__icono {
+  background: var(--color-prioridad-media-fondo);
+  color: var(--color-prioridad-media);
+}
+
+.tonoDashboard--prioridadBaja::before,
+.tonoDashboard--prioridadBaja .barraDistribucionDashboard__relleno {
+  background: var(--color-prioridad-baja);
+}
+
+.tonoDashboard--prioridadBaja .tarjetaMetricaDashboard__icono {
+  background: var(--color-prioridad-baja-fondo);
+  color: var(--color-prioridad-baja);
+}
+
+@media (max-width: 1120px) {
+  .gridMetricasDashboard {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .gridMetricasDashboard {
+    grid-template-columns: 1fr;
+  }
+
+  .barraDistribucionDashboard__encabezado,
+  .listaIndicadoresDashboard__item {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .barraDistribucionDashboard__valores {
+    justify-items: start;
+    text-align: left;
+  }
+
+  .listaIndicadoresDashboard__valor {
+    white-space: normal;
+  }
+}
