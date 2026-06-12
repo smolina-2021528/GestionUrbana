@@ -67,6 +67,49 @@
   justify-content: center;
 }
 
+.reportesPagina__filtrosSimples {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--espacio-4);
+  align-items: end;
+}
+
+.reportesPagina__campoFiltro {
+  display: grid;
+  gap: var(--espacio-2);
+}
+
+.reportesPagina__campoFiltro span {
+  color: var(--color-texto-secundario);
+  font-size: var(--tamano-texto-sm);
+  font-weight: var(--peso-seminegrita);
+}
+
+.reportesPagina__campoFiltro input {
+  width: 100%;
+  min-height: 2.75rem;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  background: var(--color-superficie);
+  padding: 0.7rem 0.85rem;
+  color: var(--color-texto);
+  font: inherit;
+  outline: none;
+  transition:
+    border-color var(--transicion-rapida),
+    box-shadow var(--transicion-rapida);
+}
+
+.reportesPagina__campoFiltro input:focus {
+  border-color: var(--color-principal);
+  box-shadow: 0 0 0 3px rgb(22 93 175 / 0.12);
+}
+
+.reportesPagina__accionesFiltro {
+  display: flex;
+  justify-content: flex-end;
+}
+
 .reportesPagina__paginacion {
   background: var(--color-superficie);
 }
@@ -111,6 +154,18 @@
   }
 
   .reportesPagina__accionesEncabezado .boton {
+    width: 100%;
+  }
+
+  .reportesPagina__filtrosSimples {
+    grid-template-columns: 1fr;
+  }
+
+  .reportesPagina__accionesFiltro {
+    justify-content: stretch;
+  }
+
+  .reportesPagina__accionesFiltro .boton {
     width: 100%;
   }
 
