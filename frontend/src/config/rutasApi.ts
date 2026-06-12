@@ -25,6 +25,27 @@ export const rutasApi = {
   },
   reportes: {
     baseUrl: entorno.api.reportes,
+    listar: '/reports',
+    crear: '/reports',
+    misReportes: '/reports/my-reports',
+    buscar: '/reports/search',
+    cercanos: '/reports/nearby',
+    heatmap: '/reports/heatmap',
+    bbox: '/reports/bbox',
+    detalle: (reporteId: string) => `/reports/${encodeURIComponent(reporteId)}`,
+    actualizar: (reporteId: string) => `/reports/${encodeURIComponent(reporteId)}`,
+    eliminar: (reporteId: string) => `/reports/${encodeURIComponent(reporteId)}`,
+    cambiarEstado: (reporteId: string) => `/reports/${encodeURIComponent(reporteId)}/status`,
+    asignar: (reporteId: string) => `/reports/${encodeURIComponent(reporteId)}/assign`,
+    actualizarUbicacion: (reporteId: string) =>
+      `/reports/${encodeURIComponent(reporteId)}/location`,
+    eliminarUbicacion: (reporteId: string) =>
+      `/reports/${encodeURIComponent(reporteId)}/location`,
+    eliminarImagen: (reporteId: string, imagenId: string) =>
+      `/reports/${encodeURIComponent(reporteId)}/images/${encodeURIComponent(imagenId)}`,
+    historial: (reporteId: string) => `/reports/${encodeURIComponent(reporteId)}/history`,
+    reprocesarIA: (reporteId: string) =>
+      `/reports/${encodeURIComponent(reporteId)}/ai/reprocess`,
     estadisticas: {
       dashboard: '/stats/dashboard',
       tendencias: '/stats/trends',
