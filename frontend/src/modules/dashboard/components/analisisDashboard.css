@@ -20,9 +20,39 @@
   gap: var(--espacio-4);
 }
 
+.listaTendenciasDashboard {
+  max-height: 28rem;
+  overflow: auto;
+  padding-right: var(--espacio-1);
+}
+
+.listaTendenciasDashboard::-webkit-scrollbar,
+.listaRankingDashboard::-webkit-scrollbar,
+.listaTransicionesDashboard::-webkit-scrollbar {
+  width: 0.45rem;
+}
+
+.listaTendenciasDashboard::-webkit-scrollbar-thumb,
+.listaRankingDashboard::-webkit-scrollbar-thumb,
+.listaTransicionesDashboard::-webkit-scrollbar-thumb {
+  border-radius: var(--radio-completo);
+  background: var(--color-gris-urbano-300);
+}
+
 .itemAnaliticoDashboard {
   display: grid;
   gap: var(--espacio-2);
+  border: 1px solid transparent;
+  border-radius: var(--radio-lg);
+  padding: var(--espacio-3);
+  transition:
+    border-color var(--transicion-rapida),
+    background-color var(--transicion-rapida);
+}
+
+.itemAnaliticoDashboard:hover {
+  border-color: var(--color-borde);
+  background: var(--color-superficie-secundaria);
 }
 
 .itemAnaliticoDashboard__encabezado {
@@ -64,6 +94,10 @@
   overflow: hidden;
   border-radius: var(--radio-completo);
   background: var(--color-superficie-secundaria);
+}
+
+.itemAnaliticoDashboard:hover .itemAnaliticoDashboard__pista {
+  background: var(--color-borde);
 }
 
 .itemAnaliticoDashboard__barraRelleno {
@@ -137,9 +171,25 @@
 }
 
 @media (max-width: 720px) {
+  .listaTendenciasDashboard {
+    max-height: none;
+    overflow: visible;
+    padding-right: 0;
+  }
+
+  .itemAnaliticoDashboard {
+    padding: 0;
+  }
+
+  .itemAnaliticoDashboard:hover {
+    border-color: transparent;
+    background: transparent;
+  }
+
   .itemAnaliticoDashboard__encabezado {
     align-items: stretch;
     flex-direction: column;
+    gap: var(--espacio-2);
   }
 
   .itemAnaliticoDashboard__valor {
