@@ -24,6 +24,14 @@ export const rutasApi = {
     cambiarEstado: (usuarioId: string) => `/users/${encodeURIComponent(usuarioId)}/status`
   },
   reportes: {
-    baseUrl: entorno.api.reportes
+    baseUrl: entorno.api.reportes,
+    estadisticas: {
+      dashboard: '/stats/dashboard',
+      tendencias: '/stats/trends',
+      zonas: '/stats/zones',
+      exportar: '/stats/export',
+      transiciones: '/stats/transitions',
+      heatmapGrid: '/stats/heatmap-grid'
+    }
   }
 } as const;
