@@ -12,7 +12,7 @@ import { esErrorApi } from '../../../shared/types/errorApi';
 import { ListadoReportes } from '../components/ListadoReportes';
 import { ResumenReportes } from '../components/ResumenReportes';
 import { usarMisReportes } from '../hooks/usarMisReportes';
-import type { FiltrosMisReportes } from '../types/reportesTipos';
+import type { FiltrosMisReportes, Reporte } from '../types/reportesTipos';
 import './reportesPagina.css';
 
 const filtrosIniciales: FiltrosMisReportes = {
@@ -71,6 +71,10 @@ export function MisReportesPagina() {
 
   const irACrearReporte = () => {
     navigate(rutasAplicacion.crearReporte);
+  };
+
+  const irADetalleReporte = (reporte: Reporte) => {
+    navigate(`${rutasAplicacion.reportes}/${encodeURIComponent(reporte.id)}`);
   };
 
   const limpiarFiltros = () => {
@@ -211,6 +215,7 @@ export function MisReportesPagina() {
         tituloVacio="Aún no has registrado reportes"
         descripcionVacia="Cuando crees un reporte urbano, podrás darle seguimiento desde esta sección."
         alActualizar={actualizarReportes}
+        alVerDetalle={irADetalleReporte}
       />
 
       {!estaCargando && !mensajeError && reportes.length === 0 ? (

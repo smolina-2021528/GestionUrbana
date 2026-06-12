@@ -14,7 +14,7 @@ import { FiltrosReportes } from '../components/FiltrosReportes';
 import { ListadoReportes } from '../components/ListadoReportes';
 import { ResumenReportes } from '../components/ResumenReportes';
 import { usarReportes } from '../hooks/usarReportes';
-import type { FiltrosListadoReportes } from '../types/reportesTipos';
+import type { FiltrosListadoReportes, Reporte } from '../types/reportesTipos';
 import './reportesPagina.css';
 
 const filtrosIniciales: FiltrosListadoReportes = {
@@ -85,6 +85,10 @@ export function ReportesPagina() {
 
   const irAMisReportes = () => {
     navigate(rutasAplicacion.misReportes);
+  };
+
+  const irADetalleReporte = (reporte: Reporte) => {
+    navigate(`${rutasAplicacion.reportes}/${encodeURIComponent(reporte.id)}`);
   };
 
   const irPaginaAnterior = () => {
@@ -187,6 +191,7 @@ export function ReportesPagina() {
         tituloVacio="Sin reportes encontrados"
         descripcionVacia="No hay reportes que coincidan con los filtros actuales."
         alActualizar={actualizarReportes}
+        alVerDetalle={irADetalleReporte}
       />
 
       {paginacion && paginacion.totalPages > 1 ? (

@@ -22,6 +22,7 @@ import { NotificacionesPagina } from '../modules/notifications/pages/Notificacio
 import { PerfilPagina } from '../modules/profile/pages/PerfilPagina';
 import { CrearReportePagina } from '../modules/reports/pages/CrearReportePagina';
 import { MisReportesPagina } from '../modules/reports/pages/MisReportesPagina';
+import { ReporteDetallePagina } from '../modules/reports/pages/ReporteDetallePagina';
 import { ReportesPagina } from '../modules/reports/pages/ReportesPagina';
 import { UsuariosPagina } from '../modules/users/pages/UsuariosPagina';
 import { Cargando } from '../shared/components/feedback/Cargando';
@@ -74,6 +75,7 @@ export function RutasAplicacion() {
           />
 
           <Route path={rutasAplicacion.reportes} element={<ReportesPagina />} />
+          <Route path={`${rutasAplicacion.reportes}/:reporteId`} element={<ReporteDetallePagina />} />
           <Route path={rutasAplicacion.misReportes} element={<MisReportesPagina />} />
           <Route path={rutasAplicacion.crearReporte} element={<CrearReportePagina />} />
           <Route path={rutasAplicacion.notificaciones} element={<NotificacionesPagina />} />

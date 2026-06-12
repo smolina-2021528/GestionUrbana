@@ -141,6 +141,29 @@
   gap: var(--espacio-3);
 }
 
+.reportesPagina__estadoDetalle {
+  display: grid;
+  min-height: 16rem;
+  place-items: center;
+}
+
+.reportesPagina__alertaDetalle {
+  display: grid;
+  gap: var(--espacio-4);
+  justify-items: start;
+}
+
+.reportesPagina__alertaDetalle p {
+  margin-bottom: 0;
+  color: inherit;
+}
+
+.reportesPagina__accionesDetalle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-3);
+}
+
 @media (max-width: 860px) {
   .reportesPagina__encabezado {
     flex-direction: column;
@@ -206,7 +229,12 @@
     width: 100%;
   }
 
-  .reportesPagina__accionesVacias .boton {
+  .reportesPagina__accionesVacias .boton,
+  .reportesPagina__accionesDetalle .boton {
     width: 100%;
+  }
+
+  .reportesPagina__alertaDetalle {
+    justify-items: stretch;
   }
 }
