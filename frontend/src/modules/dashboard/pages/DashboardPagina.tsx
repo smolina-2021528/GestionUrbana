@@ -9,6 +9,9 @@ import {
   BloqueDistribucion,
   type ElementoDistribucionDashboard
 } from '../components/BloqueDistribucion';
+import { BloqueTendencia } from '../components/BloqueTendencia';
+import { BloqueTransiciones } from '../components/BloqueTransiciones';
+import { BloqueZonas } from '../components/BloqueZonas';
 import {
   GridMetricasDashboard,
   type MetricaDashboard
@@ -18,6 +21,9 @@ import {
   type IndicadorDashboard
 } from '../components/ListaIndicadoresDashboard';
 import { usarEstadisticasDashboard } from '../hooks/usarEstadisticasDashboard';
+import { usarTendenciasDashboard } from '../hooks/usarTendenciasDashboard';
+import { usarTransicionesDashboard } from '../hooks/usarTransicionesDashboard';
+import { usarZonasDashboard } from '../hooks/usarZonasDashboard';
 import type { EstadisticasDashboard } from '../types/estadisticasTipos';
 import './dashboardPagina.css';
 
@@ -61,7 +67,7 @@ function obtenerMensajeError(error: unknown): string {
     return error.mensaje;
   }
 
-  return 'No fue posible cargar los indicadores del dashboard. Intenta nuevamente.';
+  return 'No fue posible cargar los indicadores solicitados. Intenta nuevamente.';
 }
 
 function crearElementoDistribucion({
@@ -148,13 +154,48 @@ function obtenerResumenDashboard(estadisticas?: EstadisticasDashboard) {
 
 export function DashboardPagina() {
   const consultaEstadisticas = usarEstadisticasDashboard();
+  const consultaTendencias = usarTendenciasDashboard({ groupBy: 'day' });
+  const consultaZonas = usarZonasDashboard({ radius: 1000, limit: 5 });
+  const consultaTransiciones = usarTransicionesDashboard();
 
   const respuestaEstadisticas = consultaEstadisticas.data;
   const estadisticas =
     respuestaEstadisticas?.success === true ? respuestaEstadisticas.data : undefined;
 
+  const respuestaTendencias = consultaTendencias.data;
+  const tendencias =
+    respuestaTendencias?.success === true ? respuestaTendencias.data : undefined;
+
+  const respuestaZonas = consultaZonas.data;
+  const zonas = respuestaZonas?.success === true ? respuestaZonas.data : undefined;
+
+  const respuestaTransiciones = consultaTransiciones.data;
+  const transiciones =
+    respuestaTransiciones?.success === true ? respuestaTransiciones.data : undefined;
+
   const mensajeRespuestaFallida =
     respuestaEstadisticas?.success === false ? respuestaEstadisticas.message : undefined;
+
+  const mensajeErrorTendencias =
+    consultaTendencias.error !== null
+      ? obtenerMensajeError(consultaTendencias.error)
+      : respuestaTendencias?.success === false
+        ? respuestaTendencias.message
+        : undefined;
+
+  const mensajeErrorZonas =
+    consultaZonas.error !== null
+      ? obtenerMensajeError(consultaZonas.error)
+      : respuestaZonas?.success === false
+        ? respuestaZonas.message
+        : undefined;
+
+  const mensajeErrorTransiciones =
+    consultaTransiciones.error !== null
+      ? obtenerMensajeError(consultaTransiciones.error)
+      : respuestaTransiciones?.success === false
+        ? respuestaTransiciones.message
+        : undefined;
 
   const resumen = obtenerResumenDashboard(estadisticas);
 
@@ -168,6 +209,9 @@ export function DashboardPagina() {
 
   const manejarActualizar = () => {
     void consultaEstadisticas.refetch();
+    void consultaTendencias.refetch();
+    void consultaZonas.refetch();
+    void consultaTransiciones.refetch();
   };
 
   const metricasPrincipales: MetricaDashboard[] = [
@@ -353,7 +397,12 @@ export function DashboardPagina() {
 
           <Boton
             variante="secundario"
-            disabled={consultaEstadisticas.isFetching}
+            disabled={
+              consultaEstadisticas.isFetching ||
+              consultaTendencias.isFetching ||
+              consultaZonas.isFetching ||
+              consultaTransiciones.isFetching
+            }
             onClick={manejarActualizar}
           >
             Actualizar indicadores
@@ -429,6 +478,26 @@ export function DashboardPagina() {
               titulo="Indicadores operativos"
               descripcion="Datos complementarios para evaluar cobertura, participación y seguimiento."
               indicadores={indicadoresOperativos}
+            />
+          </section>
+
+          <section className="dashboardPagina__gridDistribuciones">
+            <BloqueTendencia
+              tendencias={tendencias}
+              cargando={consultaTendencias.isLoading}
+              mensajeError={mensajeErrorTendencias}
+            />
+
+            <BloqueZonas
+              zonas={zonas}
+              cargando={consultaZonas.isLoading}
+              mensajeError={mensajeErrorZonas}
+            />
+
+            <BloqueTransiciones
+              transiciones={transiciones}
+              cargando={consultaTransiciones.isLoading}
+              mensajeError={mensajeErrorTransiciones}
             />
           </section>
         </div>

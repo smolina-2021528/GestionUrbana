@@ -1,0 +1,148 @@
+.bloqueAnaliticoDashboard {
+  display: grid;
+  gap: var(--espacio-4);
+}
+
+.bloqueAnaliticoDashboard__carga {
+  display: grid;
+  min-height: 10rem;
+  place-items: center;
+}
+
+.bloqueAnaliticoDashboard__alerta {
+  margin-bottom: var(--espacio-4);
+}
+
+.listaTendenciasDashboard,
+.listaRankingDashboard,
+.listaTransicionesDashboard {
+  display: grid;
+  gap: var(--espacio-4);
+}
+
+.itemAnaliticoDashboard {
+  display: grid;
+  gap: var(--espacio-2);
+}
+
+.itemAnaliticoDashboard__encabezado {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--espacio-4);
+}
+
+.itemAnaliticoDashboard__texto {
+  min-width: 0;
+}
+
+.itemAnaliticoDashboard__titulo {
+  display: block;
+  margin-bottom: var(--espacio-1);
+  color: var(--color-texto);
+  font-size: var(--tamano-texto-sm);
+  font-weight: var(--peso-seminegrita);
+}
+
+.itemAnaliticoDashboard__descripcion {
+  margin-bottom: 0;
+  color: var(--color-texto-secundario);
+  font-size: var(--tamano-texto-xs);
+}
+
+.itemAnaliticoDashboard__valor {
+  color: var(--color-texto);
+  font-size: var(--tamano-texto-lg);
+  font-weight: var(--peso-negrita);
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.itemAnaliticoDashboard__pista {
+  width: 100%;
+  height: 0.6rem;
+  overflow: hidden;
+  border-radius: var(--radio-completo);
+  background: var(--color-superficie-secundaria);
+}
+
+.itemAnaliticoDashboard__barraRelleno {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-principal);
+  transition: width var(--transicion-normal);
+}
+
+.itemAnaliticoDashboard__detalle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-2);
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-texto-xs);
+}
+
+.itemAnaliticoDashboard__insignia {
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--radio-completo);
+  background: var(--color-superficie-secundaria);
+  padding: 0.2rem 0.55rem;
+  color: var(--color-texto-secundario);
+  font-size: var(--tamano-texto-xs);
+  font-weight: var(--peso-seminegrita);
+}
+
+.seccionRankingDashboard {
+  display: grid;
+  gap: var(--espacio-3);
+}
+
+.seccionRankingDashboard__titulo {
+  margin-bottom: 0;
+  color: var(--color-texto);
+  font-size: var(--tamano-texto-base);
+  font-weight: var(--peso-negrita);
+}
+
+.seccionRankingDashboard + .seccionRankingDashboard {
+  border-top: 1px solid var(--color-borde);
+  padding-top: var(--espacio-4);
+}
+
+.tonoDashboard--principal .itemAnaliticoDashboard__barraRelleno {
+  background: var(--color-principal);
+}
+
+.tonoDashboard--exito .itemAnaliticoDashboard__barraRelleno,
+.tonoDashboard--resuelto .itemAnaliticoDashboard__barraRelleno {
+  background: var(--color-exito);
+}
+
+.tonoDashboard--advertencia .itemAnaliticoDashboard__barraRelleno,
+.tonoDashboard--pendiente .itemAnaliticoDashboard__barraRelleno {
+  background: var(--color-advertencia);
+}
+
+.tonoDashboard--error .itemAnaliticoDashboard__barraRelleno,
+.tonoDashboard--rechazado .itemAnaliticoDashboard__barraRelleno {
+  background: var(--color-error);
+}
+
+.tonoDashboard--enProceso .itemAnaliticoDashboard__barraRelleno {
+  background: var(--color-estado-en-proceso);
+}
+
+.tonoDashboard--neutro .itemAnaliticoDashboard__barraRelleno {
+  background: var(--color-gris-urbano-500);
+}
+
+@media (max-width: 720px) {
+  .itemAnaliticoDashboard__encabezado {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .itemAnaliticoDashboard__valor {
+    white-space: normal;
+  }
+}
