@@ -1,12 +1,14 @@
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { rutasAplicacion } from '../../../config/constantesSistema';
+import { rolesSistema, rutasAplicacion } from '../../../config/constantesSistema';
 import { EstadoVacio } from '../../../shared/components/data/EstadoVacio';
 import { Alerta } from '../../../shared/components/feedback/Alerta';
 import { Cargando } from '../../../shared/components/feedback/Cargando';
 import { Boton } from '../../../shared/components/ui/Boton';
 import { Tarjeta } from '../../../shared/components/ui/Tarjeta';
 import { esErrorApi } from '../../../shared/types/errorApi';
+import { usarAutenticacion } from '../../authentication/hooks/usarAutenticacion';
+import { AccionesAdministrativasReporte } from '../components/AccionesAdministrativasReporte';
 import { DetalleReporte } from '../components/DetalleReporte';
 import { usarReporteDetalle } from '../hooks/usarReporteDetalle';
 import './reportesPagina.css';
@@ -26,6 +28,7 @@ function obtenerMensajeRespuestaFallida(mensaje?: string, error?: string) {
 export function ReporteDetallePagina() {
   const navigate = useNavigate();
   const { reporteId } = useParams<{ reporteId: string }>();
+  const { roles } = usarAutenticacion();
 
   const consultaDetalle = usarReporteDetalle(reporteId);
 
@@ -38,7 +41,11 @@ export function ReporteDetallePagina() {
       : undefined;
 
   const mensajeError =
-    consultaDetalle.error !== null ? obtenerMensajeError(consultaDetalle.error) : mensajeRespuestaFallida;
+    consultaDetalle.error !== null
+      ? obtenerMensajeError(consultaDetalle.error)
+      : mensajeRespuestaFallida;
+
+  const esAdministrador = roles.includes(rolesSistema.administrador);
 
   const volver = () => {
     navigate(-1);
@@ -50,6 +57,10 @@ export function ReporteDetallePagina() {
 
   const actualizarDetalle = () => {
     void consultaDetalle.refetch();
+  };
+
+  const manejarReporteEliminado = () => {
+    navigate(rutasAplicacion.reportes);
   };
 
   if (!reporteId) {
@@ -130,6 +141,14 @@ export function ReporteDetallePagina() {
         alActualizar={actualizarDetalle}
         actualizando={consultaDetalle.isFetching}
       />
+
+      {esAdministrador ? (
+        <AccionesAdministrativasReporte
+          reporte={reporte}
+          alCambioRealizado={actualizarDetalle}
+          alReporteEliminado={manejarReporteEliminado}
+        />
+      ) : null}
     </main>
   );
 }

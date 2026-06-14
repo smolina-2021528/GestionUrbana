@@ -1,0 +1,104 @@
+.accionesReporte {
+  display: grid;
+  gap: var(--espacio-4);
+}
+
+.accionesReporte__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--espacio-4);
+  align-items: stretch;
+}
+
+.accionesReporte__bloque {
+  display: grid;
+  gap: var(--espacio-4);
+  align-content: start;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-lg);
+  background: var(--color-superficie-secundaria);
+  padding: var(--espacio-4);
+}
+
+.accionesReporte__bloque h3 {
+  margin-bottom: var(--espacio-2);
+  color: var(--color-texto);
+  font-size: var(--tamano-texto-lg);
+  font-weight: var(--peso-negrita);
+}
+
+.accionesReporte__bloque p {
+  margin-bottom: 0;
+  color: var(--color-texto-secundario);
+  font-size: var(--tamano-texto-sm);
+}
+
+.accionesReporte__bloque--peligro {
+  border-color: rgb(220 38 38 / 0.24);
+  background: var(--color-error-suave);
+}
+
+.accionesReporte__etiqueta {
+  display: inline-flex;
+  width: fit-content;
+  margin-bottom: var(--espacio-2);
+  border-radius: var(--radio-completo);
+  background: var(--color-superficie);
+  padding: 0.25rem 0.65rem;
+  color: var(--color-texto-secundario);
+  font-size: var(--tamano-texto-xs);
+  font-weight: var(--peso-seminegrita);
+}
+
+.accionesReporte__campo {
+  display: grid;
+  gap: var(--espacio-2);
+}
+
+.accionesReporte__campo span {
+  color: var(--color-texto-secundario);
+  font-size: var(--tamano-texto-sm);
+  font-weight: var(--peso-seminegrita);
+}
+
+.accionesReporte__campo input,
+.accionesReporte__campo textarea,
+.accionesReporte__campo select {
+  width: 100%;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  background: var(--color-superficie);
+  padding: 0.8rem 0.9rem;
+  color: var(--color-texto);
+  font: inherit;
+  outline: none;
+  transition:
+    border-color var(--transicion-rapida),
+    box-shadow var(--transicion-rapida),
+    background-color var(--transicion-rapida);
+}
+
+.accionesReporte__campo textarea {
+  min-height: 7rem;
+  resize: vertical;
+}
+
+.accionesReporte__campo input:focus,
+.accionesReporte__campo textarea:focus,
+.accionesReporte__campo select:focus {
+  border-color: var(--color-principal);
+  box-shadow: 0 0 0 3px rgb(22 93 175 / 0.12);
+}
+
+.accionesReporte__campo input:disabled,
+.accionesReporte__campo textarea:disabled,
+.accionesReporte__campo select:disabled {
+  background: var(--color-superficie-secundaria);
+  cursor: not-allowed;
+}
+
+@media (max-width: 1120px) {
+  .accionesReporte__grid {
+    grid-template-columns: 1fr;
+  }
+}
