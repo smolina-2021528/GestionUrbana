@@ -54,16 +54,15 @@ const applyMiddlewares = (app) => {
 };
 
 const applyRoutes = (app) => {
-  app.use(`${BASE_PATH}/reports`, reportRoutes);
   app.use(`${BASE_PATH}/reports`, aiRoutes);
   app.use(`${BASE_PATH}/reports`, duplicateRoutes);
   app.use(`${BASE_PATH}/reports`, commentRoutes);
+  app.use(`${BASE_PATH}/reports`, reportRoutes);
 
   app.use(`${BASE_PATH}/notifications`, notificationRoutes);
   app.use(`${BASE_PATH}/stats`, statsRoutes);
 
   app.use(`${BASE_PATH}/docs`, swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-
 
   app.get(`${BASE_PATH}/health`, (_req, res) => {
     res.json({
@@ -104,4 +103,3 @@ export const initServer = async () => {
     process.exit(1);
   }
 };
-
