@@ -6,6 +6,10 @@ import type {
   FiltrosMisReportes,
   FiltrosReportesCercanos
 } from '../types/reportesTipos';
+import type {
+  FiltrosComentariosReporte,
+  FiltrosReportesSeguidos
+} from '../types/interaccionesReporteTipos';
 
 const claveBaseReportes = ['reportes'] as const;
 
@@ -35,5 +39,18 @@ export const clavesConsultaReportes = {
 
   detalle: (reporteId: string) => [...claveBaseReportes, 'detalle', reporteId] as const,
 
-  historial: (reporteId: string) => [...claveBaseReportes, 'historial', reporteId] as const
+  historial: (reporteId: string) => [...claveBaseReportes, 'historial', reporteId] as const,
+
+  comentarios: (reporteId: string, filtros?: FiltrosComentariosReporte) =>
+    [...claveBaseReportes, 'comentarios', reporteId, filtros ?? {}] as const,
+
+  comentariosReporte: (reporteId: string) =>
+    [...claveBaseReportes, 'comentarios', reporteId] as const,
+
+  seguimiento: (reporteId: string) => [...claveBaseReportes, 'seguimiento', reporteId] as const,
+
+  reportesSeguidos: (filtros?: FiltrosReportesSeguidos) =>
+    [...claveBaseReportes, 'reportes-seguidos', filtros ?? {}] as const,
+
+  listasSeguimiento: () => [...claveBaseReportes, 'reportes-seguidos'] as const
 } as const;
