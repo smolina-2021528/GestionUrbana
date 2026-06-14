@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react';
+
 import { EstadoVacio } from '../../../shared/components/data/EstadoVacio';
 import { Alerta } from '../../../shared/components/feedback/Alerta';
 import { Cargando } from '../../../shared/components/feedback/Cargando';
@@ -17,6 +19,7 @@ type PropiedadesListadoReportes = {
   compacto?: boolean;
   tituloVacio?: string;
   descripcionVacia?: string;
+  accionVacia?: ReactNode;
   alActualizar?: () => void;
   alVerDetalle?: (reporte: Reporte) => void;
 };
@@ -35,6 +38,7 @@ export function ListadoReportes({
   compacto = false,
   tituloVacio = 'Sin reportes registrados',
   descripcionVacia = 'Cuando existan reportes urbanos, se mostrarán en este listado.',
+  accionVacia,
   alActualizar,
   alVerDetalle
 }: PropiedadesListadoReportes) {
@@ -71,11 +75,12 @@ export function ListadoReportes({
         titulo={tituloVacio}
         descripcion={descripcionVacia}
         accion={
-          alActualizar ? (
+          accionVacia ??
+          (alActualizar ? (
             <Boton variante="secundario" onClick={alActualizar}>
               Actualizar reportes
             </Boton>
-          ) : undefined
+          ) : undefined)
         }
       />
     );

@@ -26,6 +26,8 @@ type FormularioCrearReporte = {
   images: File[];
 };
 
+type CampoTextoCrearReporte = Exclude<keyof FormularioCrearReporte, 'images'>;
+
 type ErroresFormularioCrearReporte = Partial<Record<keyof FormularioCrearReporte, string>>;
 
 const formularioInicial: FormularioCrearReporte = {
@@ -46,6 +48,8 @@ const etiquetasCategoria: Record<CategoriaReporte, string> = {
 
 const tiposImagenPermitidos = ['image/jpeg', 'image/png', 'image/webp'];
 const maximoImagenes = 3;
+const maximoTamanoImagenMb = 5;
+const maximoTamanoImagenBytes = maximoTamanoImagenMb * 1024 * 1024;
 
 function obtenerMensajeError(error: unknown) {
   if (esErrorApi(error)) {
@@ -141,6 +145,12 @@ function validarFormularioCrearReporte(formulario: FormularioCrearReporte) {
     errores.images = 'Solo se permiten imágenes JPEG, PNG o WebP.';
   }
 
+  const imagenMuyGrande = formulario.images.find((imagen) => imagen.size > maximoTamanoImagenBytes);
+
+  if (imagenMuyGrande) {
+    errores.images = `Cada imagen debe pesar máximo ${maximoTamanoImagenMb} MB.`;
+  }
+
   return errores;
 }
 
@@ -176,6 +186,7 @@ export function CrearReportePagina() {
   const [errores, setErrores] = useState<ErroresFormularioCrearReporte>({});
   const [mensajeError, setMensajeError] = useState<string | null>(null);
   const [mensajeExito, setMensajeExito] = useState<string | null>(null);
+  const [llaveInputImagenes, setLlaveInputImagenes] = useState(0);
 
   const totalImagenes = formulario.images.length;
 
@@ -199,7 +210,10 @@ export function CrearReportePagina() {
     return 'Sin ubicación registrada';
   }, [formulario.address, formulario.latitude, formulario.longitude]);
 
-  const actualizarCampo = (campo: keyof FormularioCrearReporte, valor: string) => {
+  const actualizarCampo = <TCampo extends CampoTextoCrearReporte>(
+    campo: TCampo,
+    valor: FormularioCrearReporte[TCampo]
+  ) => {
     setFormulario((formularioActual) => ({
       ...formularioActual,
       [campo]: valor
@@ -217,10 +231,9 @@ export function CrearReportePagina() {
 
   const cambiarCategoria = (evento: ChangeEvent<HTMLSelectElement>) => {
     const valor = evento.target.value;
+    const categoria = valor && esCategoriaReporte(valor) ? valor : '';
 
-    if (!valor || esCategoriaReporte(valor)) {
-      actualizarCampo('category', valor);
-    }
+    actualizarCampo('category', categoria);
   };
 
   const cambiarImagenes = (evento: ChangeEvent<HTMLInputElement>) => {
@@ -247,6 +260,8 @@ export function CrearReportePagina() {
       images: []
     }));
 
+    setLlaveInputImagenes((llaveActual) => llaveActual + 1);
+
     setErrores((erroresActuales) => {
       const erroresActualizados = { ...erroresActuales };
       delete erroresActualizados.images;
@@ -259,6 +274,7 @@ export function CrearReportePagina() {
     setErrores({});
     setMensajeError(null);
     setMensajeExito(null);
+    setLlaveInputImagenes((llaveActual) => llaveActual + 1);
   };
 
   const volverAMisReportes = () => {
@@ -467,6 +483,7 @@ export function CrearReportePagina() {
                 <label className="crearReportePagina__campo crearReportePagina__campoArchivo">
                   <span>Imágenes del reporte</span>
                   <input
+                    key={llaveInputImagenes}
                     type="file"
                     accept="image/jpeg,image/png,image/webp"
                     multiple
@@ -476,7 +493,10 @@ export function CrearReportePagina() {
                   {errores.images ? (
                     <small className="crearReportePagina__error">{errores.images}</small>
                   ) : (
-                    <small>Máximo 3 imágenes en formato JPEG, PNG o WebP.</small>
+                    <small>
+                      Máximo 3 imágenes en formato JPEG, PNG o WebP. Cada imagen debe pesar máximo{' '}
+                      {maximoTamanoImagenMb} MB.
+                    </small>
                   )}
                 </label>
 
@@ -543,11 +563,7 @@ export function CrearReportePagina() {
               </div>
 
               <div className="crearReportePagina__accionesFormulario">
-                <Boton
-                  type="submit"
-                  disabled={crearReporte.isPending}
-                  anchoCompleto
-                >
+                <Boton type="submit" disabled={crearReporte.isPending} anchoCompleto>
                   {crearReporte.isPending ? 'Enviando reporte...' : 'Enviar reporte'}
                 </Boton>
 

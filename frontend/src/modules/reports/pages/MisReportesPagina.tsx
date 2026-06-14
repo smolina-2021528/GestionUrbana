@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 
 import { rutasAplicacion } from '../../../config/constantesSistema';
 import { textosSistema } from '../../../design/identity/textosSistema';
-import { EstadoVacio } from '../../../shared/components/data/EstadoVacio';
 import { Alerta } from '../../../shared/components/feedback/Alerta';
 import { Cargando } from '../../../shared/components/feedback/Cargando';
 import { Boton } from '../../../shared/components/ui/Boton';
@@ -214,17 +213,17 @@ export function MisReportesPagina() {
         mostrarAsignado
         tituloVacio="Aún no has registrado reportes"
         descripcionVacia="Cuando crees un reporte urbano, podrás darle seguimiento desde esta sección."
+        accionVacia={
+          <div className="reportesPagina__accionesVacias">
+            <Boton onClick={irACrearReporte}>Crear reporte</Boton>
+            <Boton variante="secundario" onClick={actualizarReportes}>
+              Actualizar reportes
+            </Boton>
+          </div>
+        }
         alActualizar={actualizarReportes}
         alVerDetalle={irADetalleReporte}
       />
-
-      {!estaCargando && !mensajeError && reportes.length === 0 ? (
-        <EstadoVacio
-          titulo="Crea tu primer reporte urbano"
-          descripcion="Ayuda a identificar incidencias en tu ciudad para que puedan ser atendidas."
-          accion={<Boton onClick={irACrearReporte}>Crear reporte</Boton>}
-        />
-      ) : null}
 
       {paginacion && paginacion.totalPages > 1 ? (
         <Tarjeta className="reportesPagina__paginacion">
