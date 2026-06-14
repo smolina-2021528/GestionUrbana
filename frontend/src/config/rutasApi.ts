@@ -46,6 +46,17 @@ export const rutasApi = {
     historial: (reporteId: string) => `/reports/${encodeURIComponent(reporteId)}/history`,
     reprocesarIA: (reporteId: string) =>
       `/reports/${encodeURIComponent(reporteId)}/ai/reprocess`,
+    comentarios: {
+      listar: (reporteId: string) => `/reports/${encodeURIComponent(reporteId)}/comments`,
+      crear: (reporteId: string) => `/reports/${encodeURIComponent(reporteId)}/comments`,
+      eliminar: (reporteId: string, comentarioId: string) =>
+        `/reports/${encodeURIComponent(reporteId)}/comments/${encodeURIComponent(comentarioId)}`
+    },
+    seguimiento: {
+      seguir: (reporteId: string) => `/reports/${encodeURIComponent(reporteId)}/follow`,
+      dejarDeSeguir: (reporteId: string) => `/reports/${encodeURIComponent(reporteId)}/follow`,
+      seguidos: '/reports/followed'
+    },
     estadisticas: {
       dashboard: '/stats/dashboard',
       tendencias: '/stats/trends',
@@ -54,5 +65,13 @@ export const rutasApi = {
       transiciones: '/stats/transitions',
       heatmapGrid: '/stats/heatmap-grid'
     }
+  },
+  notificaciones: {
+    baseUrl: entorno.api.reportes,
+    listar: '/notifications',
+    marcarTodasLeidas: '/notifications/read-all',
+    marcarLeida: (notificacionId: string) =>
+      `/notifications/${encodeURIComponent(notificacionId)}/read`,
+    eliminar: (notificacionId: string) => `/notifications/${encodeURIComponent(notificacionId)}`
   }
 } as const;
