@@ -4,6 +4,51 @@
   gap: var(--espacio-5);
 }
 
+.seguimientoReporte {
+  display: grid;
+  gap: var(--espacio-4);
+}
+
+.seguimientoReporte__estado {
+  display: grid;
+  min-height: 5rem;
+  place-items: center;
+}
+
+.seguimientoReporte__contenido {
+  display: grid;
+  gap: var(--espacio-4);
+}
+
+.seguimientoReporte__contenido p {
+  margin-bottom: 0;
+  color: var(--color-texto-secundario);
+  font-size: var(--tamano-texto-sm);
+  line-height: var(--alto-linea-amplio);
+}
+
+.seguimientoReporte__etiqueta {
+  display: inline-flex;
+  width: fit-content;
+  margin-bottom: var(--espacio-2);
+  border-radius: var(--radio-completo);
+  background: var(--color-principal-suave);
+  padding: 0.3rem 0.75rem;
+  color: var(--color-principal);
+  font-size: var(--tamano-texto-xs);
+  font-weight: var(--peso-negrita);
+}
+
+.seguimientoReporte__alerta {
+  display: grid;
+  gap: var(--espacio-3);
+  justify-items: start;
+}
+
+.seguimientoReporte__alerta p {
+  margin-bottom: 0;
+}
+
 .formularioComentario {
   display: grid;
   gap: var(--espacio-4);
@@ -248,7 +293,8 @@
   .formularioComentario__pie .boton,
   .comentarioReporte__acciones .boton,
   .historialReporte__alerta .boton,
-  .comentariosReporte__alerta .boton {
+  .comentariosReporte__alerta .boton,
+  .seguimientoReporte__alerta .boton {
     width: 100%;
   }
 

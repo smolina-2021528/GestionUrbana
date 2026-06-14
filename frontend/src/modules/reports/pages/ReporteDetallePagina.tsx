@@ -9,7 +9,10 @@ import { Tarjeta } from '../../../shared/components/ui/Tarjeta';
 import { esErrorApi } from '../../../shared/types/errorApi';
 import { usarAutenticacion } from '../../authentication/hooks/usarAutenticacion';
 import { AccionesAdministrativasReporte } from '../components/AccionesAdministrativasReporte';
+import { BotonSeguimientoReporte } from '../components/BotonSeguimientoReporte';
+import { ComentariosReporte } from '../components/ComentariosReporte';
 import { DetalleReporte } from '../components/DetalleReporte';
+import { HistorialReporte } from '../components/HistorialReporte';
 import { usarReporteDetalle } from '../hooks/usarReporteDetalle';
 import './reportesPagina.css';
 
@@ -142,6 +145,12 @@ export function ReporteDetallePagina() {
         actualizando={consultaDetalle.isFetching}
       />
 
+      <BotonSeguimientoReporte
+        reporteId={reporteId}
+        tituloReporte={reporte.title}
+        alCambioSeguimiento={actualizarDetalle}
+      />
+
       {esAdministrador ? (
         <AccionesAdministrativasReporte
           reporte={reporte}
@@ -149,6 +158,11 @@ export function ReporteDetallePagina() {
           alReporteEliminado={manejarReporteEliminado}
         />
       ) : null}
+
+      <section className="reportesPagina__interaccionesDetalle">
+        <ComentariosReporte reporteId={reporteId} />
+        <HistorialReporte reporteId={reporteId} />
+      </section>
     </main>
   );
 }
