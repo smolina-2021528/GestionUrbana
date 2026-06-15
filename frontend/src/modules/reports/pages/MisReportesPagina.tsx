@@ -9,6 +9,7 @@ import { Boton } from '../../../shared/components/ui/Boton';
 import { Tarjeta } from '../../../shared/components/ui/Tarjeta';
 import { esErrorApi } from '../../../shared/types/errorApi';
 import { ListadoReportes } from '../components/ListadoReportes';
+import { ReportesSeguidos } from '../components/ReportesSeguidos';
 import { ResumenReportes } from '../components/ResumenReportes';
 import { usarMisReportes } from '../hooks/usarMisReportes';
 import type { FiltrosMisReportes, Reporte } from '../types/reportesTipos';
@@ -74,6 +75,10 @@ export function MisReportesPagina() {
 
   const irADetalleReporte = (reporte: Reporte) => {
     navigate(`${rutasAplicacion.reportes}/${encodeURIComponent(reporte.id)}`);
+  };
+
+  const irADetalleReportePorId = (reporteId: string) => {
+    navigate(`${rutasAplicacion.reportes}/${encodeURIComponent(reporteId)}`);
   };
 
   const limpiarFiltros = () => {
@@ -255,6 +260,8 @@ export function MisReportesPagina() {
           </div>
         </Tarjeta>
       ) : null}
+
+      <ReportesSeguidos alVerDetalle={irADetalleReportePorId} />
     </main>
   );
 }

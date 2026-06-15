@@ -1,0 +1,180 @@
+.reportesSeguidos {
+  display: grid;
+  gap: var(--espacio-4);
+}
+
+.reportesSeguidos__estado {
+  display: grid;
+  min-height: 12rem;
+  place-items: center;
+}
+
+.reportesSeguidos__actualizando {
+  width: fit-content;
+  border-radius: var(--radio-completo);
+  background: var(--color-principal-suave);
+  padding: 0.35rem 0.85rem;
+  color: var(--color-principal);
+  font-size: var(--tamano-texto-xs);
+  font-weight: var(--peso-seminegrita);
+}
+
+.reportesSeguidos__alerta {
+  display: grid;
+  gap: var(--espacio-3);
+  justify-items: start;
+}
+
+.reportesSeguidos__alerta p {
+  margin-bottom: 0;
+}
+
+.reportesSeguidos__resumen {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-3);
+  color: var(--color-texto-secundario);
+  font-size: var(--tamano-texto-sm);
+  font-weight: var(--peso-seminegrita);
+}
+
+.reportesSeguidos__lista {
+  display: grid;
+  gap: var(--espacio-3);
+}
+
+.tarjetaReporteSeguido {
+  overflow: hidden;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-lg);
+  background: var(--color-superficie);
+  box-shadow: var(--sombra-xs);
+}
+
+.tarjetaReporteSeguido__contenido {
+  display: grid;
+  gap: var(--espacio-4);
+  padding: var(--espacio-4);
+}
+
+.tarjetaReporteSeguido__encabezado {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--espacio-4);
+}
+
+.tarjetaReporteSeguido__tituloGrupo {
+  min-width: 0;
+}
+
+.tarjetaReporteSeguido__categoria {
+  display: inline-flex;
+  width: fit-content;
+  margin-bottom: var(--espacio-2);
+  border-radius: var(--radio-completo);
+  background: var(--color-principal-suave);
+  padding: 0.25rem 0.65rem;
+  color: var(--color-principal);
+  font-size: var(--tamano-texto-xs);
+  font-weight: var(--peso-seminegrita);
+}
+
+.tarjetaReporteSeguido__encabezado h3 {
+  margin-bottom: 0;
+  color: var(--color-texto);
+  font-size: var(--tamano-texto-md);
+  font-weight: var(--peso-negrita);
+  line-height: var(--alto-linea-normal);
+}
+
+.tarjetaReporteSeguido__insignias {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--espacio-2);
+}
+
+.tarjetaReporteSeguido__etiquetaSimple {
+  display: inline-flex;
+  width: fit-content;
+  border-radius: var(--radio-completo);
+  background: var(--color-superficie-secundaria);
+  padding: 0.25rem 0.65rem;
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-texto-xs);
+  font-weight: var(--peso-seminegrita);
+}
+
+.tarjetaReporteSeguido__pie {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-3);
+  border-top: 1px solid var(--color-borde);
+  padding-top: var(--espacio-4);
+}
+
+.tarjetaReporteSeguido__pie span {
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-texto-sm);
+}
+
+.reportesSeguidos__paginacion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-4);
+  border-top: 1px solid var(--color-borde);
+  padding-top: var(--espacio-4);
+}
+
+.reportesSeguidos__paginacion span {
+  display: block;
+  margin-bottom: var(--espacio-1);
+  color: var(--color-texto-secundario);
+  font-size: var(--tamano-texto-xs);
+  font-weight: var(--peso-seminegrita);
+}
+
+.reportesSeguidos__paginacion strong {
+  color: var(--color-texto);
+  font-size: var(--tamano-texto-md);
+  font-weight: var(--peso-negrita);
+}
+
+.reportesSeguidos__paginacionAcciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-2);
+}
+
+@media (max-width: 720px) {
+  .tarjetaReporteSeguido__encabezado,
+  .tarjetaReporteSeguido__pie,
+  .reportesSeguidos__paginacion {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .tarjetaReporteSeguido__insignias {
+    justify-content: flex-start;
+  }
+
+  .tarjetaReporteSeguido__pie .boton,
+  .reportesSeguidos__alerta .boton {
+    width: 100%;
+  }
+
+  .reportesSeguidos__paginacionAcciones {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .reportesSeguidos__paginacionAcciones .boton {
+    width: 100%;
+  }
+}
