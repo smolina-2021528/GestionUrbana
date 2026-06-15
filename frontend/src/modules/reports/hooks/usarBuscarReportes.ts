@@ -14,11 +14,11 @@ export function usarBuscarReportes(
   opciones?: OpcionesConsultaReportes
 ) {
   const { consultaHabilitada } = usarConsultaReportesHabilitada();
-  const tieneBusqueda = filtros.q.trim().length > 0;
+  const tieneBusquedaValida = filtros.q.trim().length >= 3;
 
   return useQuery({
     queryKey: clavesConsultaReportes.busqueda(filtros),
     queryFn: () => reportesServicio.buscarReportes(filtros),
-    enabled: consultaHabilitada && tieneBusqueda && (opciones?.habilitado ?? true)
+    enabled: consultaHabilitada && tieneBusquedaValida && (opciones?.habilitado ?? true)
   });
 }

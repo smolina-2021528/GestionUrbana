@@ -29,6 +29,10 @@ import type {
 
 type ParametrosConsulta = Record<string, unknown>;
 
+function limpiarTexto(valor: string) {
+  return valor.trim();
+}
+
 function limpiarParametros(parametros?: ParametrosConsulta) {
   if (!parametros) {
     return undefined;
@@ -36,7 +40,18 @@ function limpiarParametros(parametros?: ParametrosConsulta) {
 
   const parametrosLimpios = Object.entries(parametros).reduce<ParametrosConsulta>(
     (acumulador, [llave, valor]) => {
-      if (valor === undefined || valor === null || valor === '') {
+      if (valor === undefined || valor === null) {
+        return acumulador;
+      }
+
+      if (typeof valor === 'string') {
+        const textoLimpio = limpiarTexto(valor);
+
+        if (textoLimpio.length === 0) {
+          return acumulador;
+        }
+
+        acumulador[llave] = textoLimpio;
         return acumulador;
       }
 
@@ -47,10 +62,6 @@ function limpiarParametros(parametros?: ParametrosConsulta) {
   );
 
   return Object.keys(parametrosLimpios).length > 0 ? parametrosLimpios : undefined;
-}
-
-function limpiarTexto(valor: string) {
-  return valor.trim();
 }
 
 function agregarCampoFormulario(
