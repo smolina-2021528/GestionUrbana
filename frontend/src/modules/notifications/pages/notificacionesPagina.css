@@ -1,0 +1,182 @@
+.notificacionesPagina {
+  display: grid;
+  gap: var(--espacio-6);
+}
+
+.notificacionesPagina__encabezado {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--espacio-5);
+  overflow: hidden;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-2xl);
+  background:
+    radial-gradient(circle at 8% 10%, rgb(36 116 214 / 0.16), transparent 16rem),
+    radial-gradient(circle at 90% 20%, rgb(13 136 79 / 0.12), transparent 14rem),
+    linear-gradient(135deg, var(--color-superficie) 0%, var(--color-gris-urbano-50) 100%);
+  padding: var(--espacio-6);
+  box-shadow: var(--sombra-xs);
+}
+
+.notificacionesPagina__encabezado::after {
+  position: absolute;
+  right: -4rem;
+  bottom: -5rem;
+  width: 14rem;
+  height: 14rem;
+  border: 1px solid rgb(36 116 214 / 0.12);
+  border-radius: var(--radio-completo);
+  background: rgb(36 116 214 / 0.06);
+  content: "";
+}
+
+.notificacionesPagina__encabezado > * {
+  position: relative;
+  z-index: 1;
+}
+
+.notificacionesPagina__encabezado h1 {
+  margin-bottom: var(--espacio-3);
+  font-size: clamp(1.75rem, 4vw, 2.75rem);
+  font-weight: var(--peso-negrita);
+  letter-spacing: -0.04em;
+}
+
+.notificacionesPagina__encabezado p {
+  max-width: 48rem;
+  margin-bottom: 0;
+  color: var(--color-texto-secundario);
+  font-size: var(--tamano-texto-lg);
+}
+
+.notificacionesPagina__accionesEncabezado {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--espacio-3);
+  min-width: fit-content;
+}
+
+.notificacionesPagina__resumen {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--espacio-4);
+}
+
+.notificacionesPagina__indicador {
+  display: grid;
+  gap: var(--espacio-2);
+}
+
+.notificacionesPagina__indicador span {
+  color: var(--color-texto-secundario);
+  font-size: var(--tamano-texto-sm);
+  font-weight: var(--peso-seminegrita);
+}
+
+.notificacionesPagina__indicador strong {
+  color: var(--color-texto);
+  font-size: var(--tamano-texto-3xl);
+  font-weight: var(--peso-negrita);
+  line-height: 1;
+}
+
+.notificacionesPagina__filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-3);
+}
+
+.notificacionesPagina__paginacion {
+  background: var(--color-superficie);
+}
+
+.notificacionesPagina__paginacionContenido {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-4);
+}
+
+.notificacionesPagina__paginacionContenido strong {
+  display: block;
+  color: var(--color-texto);
+  font-size: var(--tamano-texto-lg);
+}
+
+.notificacionesPagina__paginacionEtiqueta {
+  display: block;
+  margin-bottom: var(--espacio-1);
+  color: var(--color-texto-secundario);
+  font-size: var(--tamano-texto-sm);
+  font-weight: var(--peso-seminegrita);
+}
+
+.notificacionesPagina__paginacionAcciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-3);
+}
+
+@media (max-width: 860px) {
+  .notificacionesPagina__encabezado {
+    flex-direction: column;
+  }
+
+  .notificacionesPagina__accionesEncabezado {
+    align-items: stretch;
+    justify-content: flex-start;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .notificacionesPagina__accionesEncabezado .boton {
+    width: 100%;
+  }
+
+  .notificacionesPagina__resumen {
+    grid-template-columns: 1fr;
+  }
+
+  .notificacionesPagina__paginacionContenido {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .notificacionesPagina__paginacionAcciones {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .notificacionesPagina__paginacionAcciones .boton {
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .notificacionesPagina {
+    gap: var(--espacio-5);
+  }
+
+  .notificacionesPagina__encabezado {
+    padding: var(--espacio-5);
+  }
+
+  .notificacionesPagina__encabezado h1 {
+    font-size: clamp(1.6rem, 10vw, 2.2rem);
+  }
+
+  .notificacionesPagina__encabezado p {
+    font-size: var(--tamano-texto-md);
+  }
+
+  .notificacionesPagina__filtros {
+    display: grid;
+  }
+
+  .notificacionesPagina__filtros .boton {
+    width: 100%;
+  }
+}
