@@ -10,6 +10,10 @@ import { Cargando } from '../../../shared/components/feedback/Cargando';
 import { Boton } from '../../../shared/components/ui/Boton';
 import { Tarjeta } from '../../../shared/components/ui/Tarjeta';
 import { esErrorApi } from '../../../shared/types/errorApi';
+import {
+  FiltrosMapaReportes,
+  type ModoConsultaMapaReportes
+} from '../components/FiltrosMapaReportes';
 import { FiltrosReportes } from '../components/FiltrosReportes';
 import { ListadoReportes } from '../components/ListadoReportes';
 import { MapaReportes } from '../components/MapaReportes';
@@ -17,7 +21,13 @@ import type { ReporteMapaVisual } from '../components/MarcadorReporte';
 import { PanelReportesMapa } from '../components/PanelReportesMapa';
 import { ResumenReportes } from '../components/ResumenReportes';
 import { usarReportes } from '../hooks/usarReportes';
-import type { FiltrosListadoReportes, Reporte } from '../types/reportesTipos';
+import { usarReportesBoundingBox, usarReportesCercanos } from '../hooks/usarReportesMapa';
+import type {
+  FiltrosBoundingBoxReportes,
+  FiltrosListadoReportes,
+  FiltrosReportesCercanos,
+  Reporte
+} from '../types/reportesTipos';
 import './reportesPagina.css';
 
 const filtrosIniciales: FiltrosListadoReportes = {
@@ -25,6 +35,21 @@ const filtrosIniciales: FiltrosListadoReportes = {
   limit: 10,
   sortBy: 'date',
   sortOrder: 'DESC'
+};
+
+const filtrosCercanosIniciales: FiltrosReportesCercanos = {
+  lat: 14.634915,
+  lng: -90.506882,
+  radius: 3000,
+  page: 1,
+  limit: 20
+};
+
+const filtrosAreaIniciales: FiltrosBoundingBoxReportes = {
+  swLat: 14.55,
+  swLng: -90.6,
+  neLat: 14.72,
+  neLng: -90.42
 };
 
 function obtenerMensajeError(error: unknown) {
@@ -39,16 +64,27 @@ function obtenerMensajeRespuestaFallida(mensaje?: string, error?: string) {
   return mensaje ?? error ?? 'No fue posible cargar los reportes urbanos. Intenta nuevamente.';
 }
 
-function obtenerTotalConUbicacion(reportes: Reporte[]) {
+function obtenerTotalConUbicacion(reportes: ReporteMapaVisual[]) {
   return reportes.filter((reporte) => reporte.hasLocation && reporte.latitude !== null && reporte.longitude !== null)
     .length;
+}
+
+function obtenerMensajeConsultaGeograficaFallida(mensaje?: string, error?: string) {
+  return mensaje ?? error ?? 'No fue posible cargar la consulta territorial. Intenta nuevamente.';
 }
 
 export function ReportesPagina() {
   const navigate = useNavigate();
   const { roles } = usarAutenticacion();
+
   const [filtros, setFiltros] = useState<FiltrosListadoReportes>(filtrosIniciales);
+  const [modoConsultaMapa, setModoConsultaMapa] = useState<ModoConsultaMapaReportes>('CERCANOS');
+  const [filtrosCercanos, setFiltrosCercanos] =
+    useState<FiltrosReportesCercanos>(filtrosCercanosIniciales);
+  const [filtrosArea, setFiltrosArea] = useState<FiltrosBoundingBoxReportes>(filtrosAreaIniciales);
   const [reporteMapaSeleccionadoId, setReporteMapaSeleccionadoId] = useState<string | undefined>();
+  const [mensajeUbicacion, setMensajeUbicacion] = useState<string | undefined>();
+  const [solicitandoUbicacion, setSolicitandoUbicacion] = useState(false);
 
   const esAdministrador = roles.includes(rolesSistema.administrador);
 
@@ -56,11 +92,51 @@ export function ReportesPagina() {
     habilitado: esAdministrador
   });
 
+  const consultaReportesCercanos = usarReportesCercanos(filtrosCercanos, {
+    habilitado: modoConsultaMapa === 'CERCANOS'
+  });
+
+  const consultaReportesArea = usarReportesBoundingBox(filtrosArea, {
+    habilitado: modoConsultaMapa === 'AREA'
+  });
+
   const respuestaReportes = consultaReportes.data;
   const reportes = respuestaReportes?.success === true ? respuestaReportes.data ?? [] : [];
   const paginacion = respuestaReportes?.success === true ? respuestaReportes.pagination : undefined;
-  const totalReportesMapa = paginacion?.total ?? reportes.length;
-  const totalConUbicacion = obtenerTotalConUbicacion(reportes);
+
+  const respuestaCercanos = consultaReportesCercanos.data;
+  const respuestaArea = consultaReportesArea.data;
+
+  const reportesCercanos = respuestaCercanos?.success === true ? respuestaCercanos.data ?? [] : [];
+  const reportesArea = respuestaArea?.success === true ? respuestaArea.data ?? [] : [];
+
+  const reportesTerritoriales: ReporteMapaVisual[] =
+    modoConsultaMapa === 'CERCANOS' ? reportesCercanos : reportesArea;
+
+  const totalReportesMapa =
+    modoConsultaMapa === 'CERCANOS'
+      ? respuestaCercanos?.success === true
+        ? respuestaCercanos.pagination?.total ?? reportesTerritoriales.length
+        : reportesTerritoriales.length
+      : respuestaArea?.success === true
+        ? respuestaArea.total ?? reportesTerritoriales.length
+        : reportesTerritoriales.length;
+
+  const centroConsulta =
+    modoConsultaMapa === 'CERCANOS'
+      ? respuestaCercanos?.success === true
+        ? respuestaCercanos.meta?.center ?? {
+            latitude: filtrosCercanos.lat,
+            longitude: filtrosCercanos.lng
+          }
+        : {
+            latitude: filtrosCercanos.lat,
+            longitude: filtrosCercanos.lng
+          }
+      : undefined;
+
+  const radioConsulta = modoConsultaMapa === 'CERCANOS' ? filtrosCercanos.radius : undefined;
+  const totalConUbicacion = obtenerTotalConUbicacion(reportesTerritoriales);
 
   const mensajeRespuestaFallida =
     respuestaReportes?.success === false
@@ -72,8 +148,36 @@ export function ReportesPagina() {
       ? obtenerMensajeError(consultaReportes.error)
       : mensajeRespuestaFallida;
 
+  const mensajeRespuestaGeograficaFallida =
+    modoConsultaMapa === 'CERCANOS'
+      ? respuestaCercanos?.success === false
+        ? obtenerMensajeConsultaGeograficaFallida(respuestaCercanos.message, respuestaCercanos.error)
+        : undefined
+      : respuestaArea?.success === false
+        ? obtenerMensajeConsultaGeograficaFallida(respuestaArea.message, respuestaArea.error)
+        : undefined;
+
+  const mensajeErrorGeografico =
+    modoConsultaMapa === 'CERCANOS'
+      ? consultaReportesCercanos.error !== null
+        ? obtenerMensajeError(consultaReportesCercanos.error)
+        : mensajeRespuestaGeograficaFallida
+      : consultaReportesArea.error !== null
+        ? obtenerMensajeError(consultaReportesArea.error)
+        : mensajeRespuestaGeograficaFallida;
+
   const estaCargando = consultaReportes.isLoading;
   const estaActualizando = consultaReportes.isFetching && !consultaReportes.isLoading;
+
+  const estaCargandoMapa =
+    modoConsultaMapa === 'CERCANOS'
+      ? consultaReportesCercanos.isLoading
+      : consultaReportesArea.isLoading;
+
+  const estaActualizandoMapa =
+    modoConsultaMapa === 'CERCANOS'
+      ? consultaReportesCercanos.isFetching && !consultaReportesCercanos.isLoading
+      : consultaReportesArea.isFetching && !consultaReportesArea.isLoading;
 
   const cambiarFiltros = (nuevosFiltros: FiltrosListadoReportes) => {
     setFiltros({
@@ -90,6 +194,73 @@ export function ReportesPagina() {
 
   const actualizarReportes = () => {
     void consultaReportes.refetch();
+  };
+
+  const actualizarConsultaGeografica = () => {
+    if (modoConsultaMapa === 'CERCANOS') {
+      void consultaReportesCercanos.refetch();
+      return;
+    }
+
+    void consultaReportesArea.refetch();
+  };
+
+  const limpiarConsultaGeografica = () => {
+    setModoConsultaMapa('CERCANOS');
+    setFiltrosCercanos(filtrosCercanosIniciales);
+    setFiltrosArea(filtrosAreaIniciales);
+    setReporteMapaSeleccionadoId(undefined);
+    setMensajeUbicacion(undefined);
+  };
+
+  const cambiarModoConsultaMapa = (modo: ModoConsultaMapaReportes) => {
+    setModoConsultaMapa(modo);
+    setReporteMapaSeleccionadoId(undefined);
+    setMensajeUbicacion(undefined);
+  };
+
+  const cambiarFiltrosCercanos = (nuevosFiltros: FiltrosReportesCercanos) => {
+    setFiltrosCercanos(nuevosFiltros);
+    setReporteMapaSeleccionadoId(undefined);
+  };
+
+  const cambiarFiltrosArea = (nuevosFiltros: FiltrosBoundingBoxReportes) => {
+    setFiltrosArea(nuevosFiltros);
+    setReporteMapaSeleccionadoId(undefined);
+  };
+
+  const usarUbicacionActual = () => {
+    if (!navigator.geolocation) {
+      setMensajeUbicacion('Tu navegador no permite obtener la ubicación actual.');
+      return;
+    }
+
+    setSolicitandoUbicacion(true);
+    setMensajeUbicacion(undefined);
+
+    navigator.geolocation.getCurrentPosition(
+      (posicion) => {
+        setModoConsultaMapa('CERCANOS');
+        setFiltrosCercanos((filtrosActuales) => ({
+          ...filtrosActuales,
+          page: 1,
+          lat: Number(posicion.coords.latitude.toFixed(6)),
+          lng: Number(posicion.coords.longitude.toFixed(6))
+        }));
+        setReporteMapaSeleccionadoId(undefined);
+        setSolicitandoUbicacion(false);
+        setMensajeUbicacion('Ubicación detectada. Puedes consultar reportes cercanos a ese punto.');
+      },
+      () => {
+        setSolicitandoUbicacion(false);
+        setMensajeUbicacion('No fue posible obtener tu ubicación. Puedes ingresar las coordenadas manualmente.');
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 60000
+      }
+    );
   };
 
   const irACrearReporte = () => {
@@ -143,6 +314,8 @@ export function ReportesPagina() {
           </div>
 
           <div className="reportesPagina__accionesEncabezado">
+            {estaActualizandoMapa ? <Cargando texto="Actualizando mapa..." compacto /> : null}
+
             <Boton variante="secundario" onClick={irAMisReportes}>
               Ver mis reportes
             </Boton>
@@ -150,27 +323,58 @@ export function ReportesPagina() {
           </div>
         </section>
 
-        <Alerta variante="informacion" titulo="Vista territorial">
-          <p>
-            Registra tus reportes con ubicación para que puedan analizarse territorialmente y dar
-            mejor seguimiento a las incidencias urbanas.
-          </p>
-        </Alerta>
+        <FiltrosMapaReportes
+          modo={modoConsultaMapa}
+          filtrosCercanos={filtrosCercanos}
+          filtrosArea={filtrosArea}
+          bloqueado={estaCargandoMapa || estaActualizandoMapa}
+          solicitandoUbicacion={solicitandoUbicacion}
+          alCambiarModo={cambiarModoConsultaMapa}
+          alCambiarFiltrosCercanos={cambiarFiltrosCercanos}
+          alCambiarFiltrosArea={cambiarFiltrosArea}
+          alConsultar={actualizarConsultaGeografica}
+          alLimpiar={limpiarConsultaGeografica}
+          alUsarUbicacionActual={usarUbicacionActual}
+        />
+
+        {mensajeUbicacion ? (
+          <Alerta variante="informacion" titulo="Ubicación">
+            <p>{mensajeUbicacion}</p>
+          </Alerta>
+        ) : null}
 
         <section className="reportesPagina__mapaOperativo" aria-label="Vista territorial ciudadana">
           <div className="reportesPagina__mapaColumna">
             <MapaReportes
-              reportes={[]}
+              reportes={reportesTerritoriales}
+              reporteSeleccionadoId={reporteMapaSeleccionadoId}
+              centro={centroConsulta}
+              radioMetros={radioConsulta}
+              acciones={
+                <div className="reportesPagina__accionesMapa">
+                  <span>{totalConUbicacion} con ubicación</span>
+                  <span>{totalReportesMapa} en consulta</span>
+                </div>
+              }
               tituloVacio="Sin reportes con ubicación para mostrar"
-              descripcionVacia="Crea reportes con coordenadas o dirección para alimentar la vista territorial."
+              descripcionVacia="Ajusta las coordenadas, el radio o el área de consulta para visualizar incidencias urbanas."
+              alSeleccionarReporte={seleccionarReporteMapa}
             />
           </div>
 
           <div className="reportesPagina__panelColumna">
             <PanelReportesMapa
-              reportes={[]}
+              reportes={reportesTerritoriales}
+              total={totalReportesMapa}
+              reporteSeleccionadoId={reporteMapaSeleccionadoId}
+              estaCargando={estaCargandoMapa}
+              tieneError={Boolean(mensajeErrorGeografico && reportesTerritoriales.length === 0)}
+              mensajeError={mensajeErrorGeografico}
               tituloVacio="Sin incidencias visibles"
-              descripcionVacia="Tus reportes aparecerán en el seguimiento cuando estén registrados."
+              descripcionVacia="No hay reportes que coincidan con la consulta territorial actual."
+              alSeleccionarReporte={seleccionarReporteMapa}
+              alVerDetalle={irADetalleReporte}
+              alReintentar={actualizarConsultaGeografica}
             />
           </div>
         </section>
@@ -201,13 +405,84 @@ export function ReportesPagina() {
         </div>
 
         <div className="reportesPagina__accionesEncabezado">
-          {estaActualizando ? <Cargando texto="Actualizando reportes..." compacto /> : null}
+          {estaActualizando || estaActualizandoMapa ? (
+            <Cargando
+              texto={estaActualizandoMapa ? 'Actualizando mapa...' : 'Actualizando reportes...'}
+              compacto
+            />
+          ) : null}
 
-          <Boton variante="secundario" disabled={consultaReportes.isFetching} onClick={actualizarReportes}>
-            Actualizar
+          <Boton
+            variante="secundario"
+            disabled={consultaReportes.isFetching}
+            onClick={actualizarReportes}
+          >
+            Actualizar listado
           </Boton>
 
           <Boton onClick={irACrearReporte}>Crear reporte</Boton>
+        </div>
+      </section>
+
+      <FiltrosMapaReportes
+        modo={modoConsultaMapa}
+        filtrosCercanos={filtrosCercanos}
+        filtrosArea={filtrosArea}
+        bloqueado={estaCargandoMapa || estaActualizandoMapa}
+        solicitandoUbicacion={solicitandoUbicacion}
+        alCambiarModo={cambiarModoConsultaMapa}
+        alCambiarFiltrosCercanos={cambiarFiltrosCercanos}
+        alCambiarFiltrosArea={cambiarFiltrosArea}
+        alConsultar={actualizarConsultaGeografica}
+        alLimpiar={limpiarConsultaGeografica}
+        alUsarUbicacionActual={usarUbicacionActual}
+      />
+
+      {mensajeUbicacion ? (
+        <Alerta variante="informacion" titulo="Ubicación">
+          <p>{mensajeUbicacion}</p>
+        </Alerta>
+      ) : null}
+
+      {mensajeErrorGeografico && reportesTerritoriales.length > 0 ? (
+        <Alerta variante="advertencia" titulo="Los datos territoriales pueden no estar actualizados">
+          <p>{mensajeErrorGeografico}</p>
+        </Alerta>
+      ) : null}
+
+      <section className="reportesPagina__mapaOperativo" aria-label="Vista territorial de reportes">
+        <div className="reportesPagina__mapaColumna">
+          <MapaReportes
+            reportes={reportesTerritoriales}
+            reporteSeleccionadoId={reporteMapaSeleccionadoId}
+            centro={centroConsulta}
+            radioMetros={radioConsulta}
+            acciones={
+              <div className="reportesPagina__accionesMapa">
+                <span>{totalConUbicacion} con ubicación</span>
+                <span>{totalReportesMapa} en consulta</span>
+              </div>
+            }
+            tituloVacio="Sin reportes con ubicación"
+            descripcionVacia="No hay reportes con coordenadas que coincidan con la consulta territorial actual."
+            alSeleccionarReporte={seleccionarReporteMapa}
+          />
+        </div>
+
+        <div className="reportesPagina__panelColumna">
+          <PanelReportesMapa
+            reportes={reportesTerritoriales}
+            total={totalReportesMapa}
+            reporteSeleccionadoId={reporteMapaSeleccionadoId}
+            estaCargando={estaCargandoMapa}
+            tieneError={Boolean(mensajeErrorGeografico && reportesTerritoriales.length === 0)}
+            mensajeError={mensajeErrorGeografico}
+            tituloVacio="Sin reportes para mostrar"
+            descripcionVacia="Ajusta el radio, las coordenadas o los filtros de la consulta territorial."
+            alSeleccionarReporte={seleccionarReporteMapa}
+            alVerDetalle={irADetalleReporte}
+            alReintentar={actualizarConsultaGeografica}
+          />
         </div>
       </section>
 
@@ -219,46 +494,12 @@ export function ReportesPagina() {
       />
 
       {mensajeError && reportes.length > 0 ? (
-        <Alerta variante="advertencia" titulo="Los datos mostrados pueden no estar actualizados">
+        <Alerta variante="advertencia" titulo="Los datos del listado pueden no estar actualizados">
           <p>{mensajeError}</p>
         </Alerta>
       ) : null}
 
-      <section className="reportesPagina__mapaOperativo" aria-label="Vista territorial de reportes">
-        <div className="reportesPagina__mapaColumna">
-          <MapaReportes
-            reportes={reportes}
-            reporteSeleccionadoId={reporteMapaSeleccionadoId}
-            acciones={
-              <div className="reportesPagina__accionesMapa">
-                <span>{totalConUbicacion} con ubicación</span>
-                <span>{totalReportesMapa} en consulta</span>
-              </div>
-            }
-            tituloVacio="Sin reportes con ubicación"
-            descripcionVacia="Los reportes cargados no tienen coordenadas registradas o no coinciden con los filtros actuales."
-            alSeleccionarReporte={seleccionarReporteMapa}
-          />
-        </div>
-
-        <div className="reportesPagina__panelColumna">
-          <PanelReportesMapa
-            reportes={reportes}
-            total={totalReportesMapa}
-            reporteSeleccionadoId={reporteMapaSeleccionadoId}
-            estaCargando={estaCargando}
-            tieneError={Boolean(mensajeError && reportes.length === 0)}
-            mensajeError={mensajeError}
-            alSeleccionarReporte={seleccionarReporteMapa}
-            alVerDetalle={irADetalleReporte}
-            alReintentar={actualizarReportes}
-          />
-        </div>
-      </section>
-
-      {reportes.length > 0 ? (
-        <ResumenReportes reportes={reportes} paginacion={paginacion} />
-      ) : null}
+      {reportes.length > 0 ? <ResumenReportes reportes={reportes} paginacion={paginacion} /> : null}
 
       <ListadoReportes
         reportes={reportes}
