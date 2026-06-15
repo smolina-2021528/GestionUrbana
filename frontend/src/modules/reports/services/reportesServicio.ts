@@ -16,6 +16,7 @@ import type {
   RespuestaActualizarUbicacionReporte,
   RespuestaAsignarReporte,
   RespuestaBoundingBoxReportes,
+  RespuestaBusquedaReportes,
   RespuestaCambiarEstadoReporte,
   RespuestaCrearReporte,
   RespuestaDetalleReporte,
@@ -133,8 +134,8 @@ export const reportesServicio = {
     );
   },
 
-  async buscarReportes(filtros: FiltrosBusquedaReportes): Promise<RespuestaListadoReportes> {
-    return obtenerDatosRespuesta<RespuestaListadoReportes>(
+  async buscarReportes(filtros: FiltrosBusquedaReportes): Promise<RespuestaBusquedaReportes> {
+    return obtenerDatosRespuesta<RespuestaBusquedaReportes>(
       clienteReportes.get(rutasApi.reportes.buscar, {
         params: limpiarParametros(filtros)
       })

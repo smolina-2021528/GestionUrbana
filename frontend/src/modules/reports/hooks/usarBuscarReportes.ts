@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 
 import { reportesServicio } from '../services/reportesServicio';
 import type { FiltrosBusquedaReportes } from '../types/reportesTipos';
+import { esTextoBusquedaReporteValido } from '../utils/validacionesGeograficas';
 import { clavesConsultaReportes } from './clavesConsultaReportes';
 import { usarConsultaReportesHabilitada } from './usarConsultaReportesHabilitada';
 
@@ -14,7 +15,7 @@ export function usarBuscarReportes(
   opciones?: OpcionesConsultaReportes
 ) {
   const { consultaHabilitada } = usarConsultaReportesHabilitada();
-  const tieneBusquedaValida = filtros.q.trim().length >= 3;
+  const tieneBusquedaValida = esTextoBusquedaReporteValido(filtros.q);
 
   return useQuery({
     queryKey: clavesConsultaReportes.busqueda(filtros),

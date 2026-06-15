@@ -66,30 +66,6 @@ export type Reporte = {
   hasLocation: boolean;
 };
 
-export type ReporteResumenMapa = {
-  id: string;
-  title: string;
-  category: CategoriaReporte;
-  priority: PrioridadReporte;
-  status: EstadoReporte;
-  address: string | null;
-  latitude: NumeroONulo;
-  longitude: NumeroONulo;
-  hasLocation: boolean;
-  createdAt: string;
-};
-
-export type PuntoHeatmapReporte = {
-  id: string;
-  latitude: NumeroONulo;
-  longitude: NumeroONulo;
-  weight: number;
-  category: CategoriaReporte;
-  priority: PrioridadReporte;
-  priorityColor?: string;
-  status: EstadoReporte;
-};
-
 export type HistorialEstadoReporte = {
   id: string;
   previousStatus: EstadoReporte | string | null;
@@ -137,37 +113,6 @@ export type FiltrosMisReportes = FiltrosFechaReportes & {
   limit?: number;
 };
 
-export type FiltrosBusquedaReportes = FiltrosFechaReportes & {
-  q: string;
-  page?: number;
-  limit?: number;
-};
-
-export type FiltrosReportesCercanos = {
-  lat: number;
-  lng: number;
-  radius?: number;
-  page?: number;
-  limit?: number;
-  status?: EstadoReporte;
-  category?: CategoriaReporte;
-};
-
-export type FiltrosHeatmapReportes = FiltrosFechaReportes & {
-  category?: CategoriaReporte;
-  priority?: PrioridadReporte;
-  status?: EstadoReporte;
-};
-
-export type FiltrosBoundingBoxReportes = {
-  swLat: number;
-  swLng: number;
-  neLat: number;
-  neLng: number;
-  status?: EstadoReporte;
-  category?: CategoriaReporte;
-};
-
 export type CrearReportePayload = {
   title?: string;
   description?: string;
@@ -195,12 +140,6 @@ export type CambiarEstadoReportePayload = {
 
 export type AsignarReportePayload = {
   assignedTo: string;
-};
-
-export type ActualizarUbicacionReportePayload = {
-  latitude: number;
-  longitude: number;
-  address?: string;
 };
 
 export type RespuestaApiReportesExitosa<TDatos = undefined> = {
@@ -241,39 +180,27 @@ export type RespuestaCambiarEstadoReporte = RespuestaApiReportes<Reporte>;
 
 export type RespuestaAsignarReporte = RespuestaApiReportes<Reporte>;
 
-export type RespuestaActualizarUbicacionReporte = RespuestaApiReportes<Reporte>;
-
 export type RespuestaEliminarReporte = RespuestaApiReportes;
 
 export type RespuestaEliminarImagenReporte = RespuestaApiReportes;
 
 export type RespuestaHistorialReporte = RespuestaApiReportes<HistorialEstadoReporte[]>;
 
-export type RespuestaReportesCercanos = RespuestaApiReportes<Reporte[]> & {
-  meta?: {
-    center: {
-      latitude: number;
-      longitude: number;
-    };
-    radius: number;
-  };
-  pagination?: PaginacionReportes;
-};
+export { limitesGeograficosReportes } from './reportesGeograficosTipos';
 
-export type RespuestaHeatmapReportes = RespuestaApiReportes<PuntoHeatmapReporte[]> & {
-  total?: number;
-};
-
-export type RespuestaBoundingBoxReportes = RespuestaApiReportes<ReporteResumenMapa[]> & {
-  total?: number;
-  bbox?: {
-    sw: {
-      latitude: number;
-      longitude: number;
-    };
-    ne: {
-      latitude: number;
-      longitude: number;
-    };
-  };
-};
+export type {
+  ActualizarUbicacionReportePayload,
+  BoundingBoxReportes,
+  CoordenadasGeograficas,
+  FiltrosBoundingBoxReportes,
+  FiltrosBusquedaReportes,
+  FiltrosHeatmapReportes,
+  FiltrosReportesCercanos,
+  PuntoHeatmapReporte,
+  ReporteResumenMapa,
+  RespuestaActualizarUbicacionReporte,
+  RespuestaBoundingBoxReportes,
+  RespuestaBusquedaReportes,
+  RespuestaHeatmapReportes,
+  RespuestaReportesCercanos
+} from './reportesGeograficosTipos';

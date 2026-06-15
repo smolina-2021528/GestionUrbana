@@ -6,6 +6,10 @@ import type {
   FiltrosHeatmapReportes,
   FiltrosReportesCercanos
 } from '../types/reportesTipos';
+import {
+  sonFiltrosBoundingBoxReportesValidos,
+  sonFiltrosReportesCercanosValidos
+} from '../utils/validacionesGeograficas';
 import { clavesConsultaReportes } from './clavesConsultaReportes';
 import { usarConsultaReportesHabilitada } from './usarConsultaReportesHabilitada';
 
@@ -18,11 +22,12 @@ export function usarReportesCercanos(
   opciones?: OpcionesConsultaReportes
 ) {
   const { consultaHabilitada } = usarConsultaReportesHabilitada();
+  const filtrosValidos = sonFiltrosReportesCercanosValidos(filtros);
 
   return useQuery({
     queryKey: clavesConsultaReportes.cercanos(filtros),
     queryFn: () => reportesServicio.obtenerReportesCercanos(filtros),
-    enabled: consultaHabilitada && (opciones?.habilitado ?? true)
+    enabled: consultaHabilitada && filtrosValidos && (opciones?.habilitado ?? true)
   });
 }
 
@@ -44,10 +49,11 @@ export function usarReportesBoundingBox(
   opciones?: OpcionesConsultaReportes
 ) {
   const { consultaHabilitada } = usarConsultaReportesHabilitada();
+  const filtrosValidos = sonFiltrosBoundingBoxReportesValidos(filtros);
 
   return useQuery({
     queryKey: clavesConsultaReportes.bbox(filtros),
     queryFn: () => reportesServicio.obtenerReportesBoundingBox(filtros),
-    enabled: consultaHabilitada && (opciones?.habilitado ?? true)
+    enabled: consultaHabilitada && filtrosValidos && (opciones?.habilitado ?? true)
   });
 }
