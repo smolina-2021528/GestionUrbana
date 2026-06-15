@@ -15,6 +15,8 @@ type PropiedadesPanelReportesMapa = {
   estaCargando?: boolean;
   tieneError?: boolean;
   mensajeError?: string;
+  tituloVacio?: string;
+  descripcionVacia?: string;
   limiteVisible?: number;
   alSeleccionarReporte?: (reporte: ReporteMapaVisual) => void;
   alVerDetalle?: (reporte: ReporteMapaVisual) => void;
@@ -80,6 +82,8 @@ export function PanelReportesMapa({
   estaCargando = false,
   tieneError = false,
   mensajeError = 'No fue posible cargar los reportes territoriales.',
+  tituloVacio = 'Sin reportes para mostrar',
+  descripcionVacia = 'Ajusta los filtros o selecciona otra área para consultar incidencias urbanas.',
   limiteVisible = 8,
   alSeleccionarReporte,
   alVerDetalle,
@@ -186,10 +190,7 @@ export function PanelReportesMapa({
           ) : null}
         </>
       ) : (
-        <EstadoVacio
-          titulo="Sin reportes para mostrar"
-          descripcion="Ajusta los filtros o selecciona otra área para consultar incidencias urbanas."
-        />
+        <EstadoVacio titulo={tituloVacio} descripcion={descripcionVacia} />
       )}
     </aside>
   );
