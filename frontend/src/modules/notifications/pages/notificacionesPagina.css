@@ -84,9 +84,20 @@
 }
 
 .notificacionesPagina__filtros {
+  display: grid;
+  gap: var(--espacio-3);
+}
+
+.notificacionesPagina__grupoFiltros {
   display: flex;
   flex-wrap: wrap;
   gap: var(--espacio-3);
+}
+
+.notificacionesPagina__descripcionFiltro {
+  margin-bottom: 0;
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-texto-sm);
 }
 
 .notificacionesPagina__paginacion {
@@ -172,11 +183,11 @@
     font-size: var(--tamano-texto-md);
   }
 
-  .notificacionesPagina__filtros {
+  .notificacionesPagina__grupoFiltros {
     display: grid;
   }
 
-  .notificacionesPagina__filtros .boton {
+  .notificacionesPagina__grupoFiltros .boton {
     width: 100%;
   }
 }

@@ -13,6 +13,8 @@ type PropiedadesFormularioComentarioReporte = {
   alComentarioCreado?: () => void;
 };
 
+const LIMITE_CARACTERES_COMENTARIO = 1000;
+
 function limpiarTexto(valor: string) {
   return valor.trim();
 }
@@ -38,6 +40,9 @@ export function FormularioComentarioReporte({
   const [mensajeExito, setMensajeExito] = useState<string | null>(null);
 
   const publicando = crearComentario.isPending;
+  const comentarioLimpio = limpiarTexto(contenido);
+  const puedePublicar = comentarioLimpio.length > 0 && !publicando;
+  const caracteresRestantes = LIMITE_CARACTERES_COMENTARIO - contenido.length;
 
   const limpiarMensajes = () => {
     setMensajeError(null);
@@ -48,9 +53,7 @@ export function FormularioComentarioReporte({
     evento.preventDefault();
     limpiarMensajes();
 
-    const comentario = limpiarTexto(contenido);
-
-    if (!comentario) {
+    if (!comentarioLimpio) {
       setMensajeError('Escribe un comentario antes de publicarlo.');
       return;
     }
@@ -59,7 +62,7 @@ export function FormularioComentarioReporte({
       const respuesta = await crearComentario.mutateAsync({
         reporteId,
         datos: {
-          content: comentario,
+          content: comentarioLimpio,
           ...(esAdministrador ? { isInternal: esInterno } : {})
         }
       });
@@ -103,9 +106,10 @@ export function FormularioComentarioReporte({
         <span>Comentario</span>
         <textarea
           value={contenido}
-          maxLength={1000}
+          maxLength={LIMITE_CARACTERES_COMENTARIO}
           placeholder="Escribe una actualización, aclaración o información adicional sobre el reporte."
           disabled={publicando}
+          aria-describedby="ayuda-comentario-reporte"
           onChange={(evento) => {
             setContenido(evento.target.value);
             if (mensajeError || mensajeExito) {
@@ -114,6 +118,24 @@ export function FormularioComentarioReporte({
           }}
         />
       </label>
+
+      <div id="ayuda-comentario-reporte" className="formularioComentario__estadoTexto">
+        <span>
+          {comentarioLimpio.length > 0
+            ? 'El comentario se publicará en este reporte.'
+            : 'Escribe al menos un carácter para publicar.'}
+        </span>
+
+        <span
+          className={
+            caracteresRestantes <= 100
+              ? 'formularioComentario__contador formularioComentario__contador--alerta'
+              : 'formularioComentario__contador'
+          }
+        >
+          {caracteresRestantes} caracteres disponibles
+        </span>
+      </div>
 
       <div className="formularioComentario__pie">
         {esAdministrador ? (
@@ -132,7 +154,7 @@ export function FormularioComentarioReporte({
           </span>
         )}
 
-        <Boton type="submit" disabled={publicando}>
+        <Boton type="submit" disabled={!puedePublicar}>
           {publicando ? 'Publicando...' : 'Publicar comentario'}
         </Boton>
       </div>

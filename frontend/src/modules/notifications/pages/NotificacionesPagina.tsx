@@ -95,6 +95,7 @@ export function NotificacionesPagina() {
   };
 
   const actualizarNotificaciones = () => {
+    limpiarMensajesAccion();
     void consultaNotificaciones.refetch();
   };
 
@@ -140,6 +141,7 @@ export function NotificacionesPagina() {
   };
 
   const irAReporte = (reporteId: string) => {
+    limpiarMensajesAccion();
     navigate(`${rutasAplicacion.reportes}/${encodeURIComponent(reporteId)}`);
   };
 
@@ -189,7 +191,14 @@ export function NotificacionesPagina() {
         return;
       }
 
-      setMensajeExitoAccion(respuesta.message ?? 'Todas las notificaciones fueron marcadas como leídas.');
+      setFiltros((filtrosActuales) => ({
+        ...filtrosActuales,
+        page: 1
+      }));
+
+      setMensajeExitoAccion(
+        respuesta.message ?? 'Todas las notificaciones fueron marcadas como leídas.'
+      );
     } catch (error) {
       setMensajeErrorAccion(obtenerMensajeError(error));
     }
@@ -250,7 +259,7 @@ export function NotificacionesPagina() {
             disabled={totalNoLeidas === 0 || accionesBloqueadas}
             onClick={manejarMarcarTodasLeidas}
           >
-            Marcar todas como leídas
+            {marcarTodasLeidas.isPending ? 'Marcando...' : 'Marcar todas como leídas'}
           </Boton>
         </div>
       </section>
@@ -280,21 +289,29 @@ export function NotificacionesPagina() {
 
       <Tarjeta titulo="Filtros" descripcion="Selecciona qué avisos deseas revisar.">
         <div className="notificacionesPagina__filtros">
-          <Boton
-            variante={mostrandoSoloNoLeidas ? 'secundario' : 'primario'}
-            disabled={consultaNotificaciones.isFetching}
-            onClick={mostrarTodas}
-          >
-            Todas
-          </Boton>
+          <div className="notificacionesPagina__grupoFiltros">
+            <Boton
+              variante={mostrandoSoloNoLeidas ? 'secundario' : 'primario'}
+              disabled={consultaNotificaciones.isFetching}
+              onClick={mostrarTodas}
+            >
+              Todas
+            </Boton>
 
-          <Boton
-            variante={mostrandoSoloNoLeidas ? 'primario' : 'secundario'}
-            disabled={consultaNotificaciones.isFetching}
-            onClick={mostrarNoLeidas}
-          >
-            No leídas
-          </Boton>
+            <Boton
+              variante={mostrandoSoloNoLeidas ? 'primario' : 'secundario'}
+              disabled={consultaNotificaciones.isFetching}
+              onClick={mostrarNoLeidas}
+            >
+              No leídas
+            </Boton>
+          </div>
+
+          <p className="notificacionesPagina__descripcionFiltro">
+            {mostrandoSoloNoLeidas
+              ? 'Mostrando únicamente avisos que aún no han sido leídos.'
+              : 'Mostrando todos los avisos disponibles para tu usuario.'}
+          </p>
         </div>
       </Tarjeta>
 

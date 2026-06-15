@@ -76,6 +76,7 @@ export function BotonSeguimientoReporte({
   };
 
   const refrescarSeguimiento = () => {
+    limpiarMensajes();
     void consultaReportesSeguidos.refetch();
   };
 
@@ -123,23 +124,31 @@ export function BotonSeguimientoReporte({
     }
   };
 
+  const accionSeguimiento = mensajeErrorConsulta ? (
+    <Boton variante="secundario" disabled={consultaReportesSeguidos.isFetching} onClick={refrescarSeguimiento}>
+      {consultaReportesSeguidos.isFetching ? 'Consultando...' : 'Reintentar'}
+    </Boton>
+  ) : (
+    <Boton
+      variante={reporteSeguido ? 'secundario' : 'primario'}
+      disabled={actualizandoSeguimiento || cargandoEstado}
+      onClick={reporteSeguido ? manejarDejarDeSeguirReporte : manejarSeguirReporte}
+    >
+      {actualizandoSeguimiento
+        ? 'Actualizando...'
+        : cargandoEstado
+          ? 'Consultando...'
+          : reporteSeguido
+            ? 'Dejar de seguir'
+            : 'Seguir reporte'}
+    </Boton>
+  );
+
   return (
     <Tarjeta
       titulo="Seguimiento del reporte"
       descripcion="Recibe actualizaciones relacionadas con esta incidencia urbana."
-      acciones={
-        <Boton
-          variante={reporteSeguido ? 'secundario' : 'primario'}
-          disabled={actualizandoSeguimiento || cargandoEstado}
-          onClick={reporteSeguido ? manejarDejarDeSeguirReporte : manejarSeguirReporte}
-        >
-          {actualizandoSeguimiento
-            ? 'Actualizando...'
-            : reporteSeguido
-              ? 'Dejar de seguir'
-              : 'Seguir reporte'}
-        </Boton>
-      }
+      acciones={accionSeguimiento}
     >
       <section className="seguimientoReporte" aria-label="Seguimiento del reporte">
         {consultaReportesSeguidos.isLoading ? (
@@ -152,13 +161,19 @@ export function BotonSeguimientoReporte({
           <div className="seguimientoReporte__contenido">
             <div>
               <span className="seguimientoReporte__etiqueta">
-                {reporteSeguido ? 'Reporte seguido' : 'Seguimiento disponible'}
+                {mensajeErrorConsulta
+                  ? 'Seguimiento por confirmar'
+                  : reporteSeguido
+                    ? 'Reporte seguido'
+                    : 'Seguimiento disponible'}
               </span>
 
               <p>
-                {reporteSeguido
-                  ? `Actualmente estás siguiendo “${tituloReporte}”.`
-                  : `Puedes seguir “${tituloReporte}” para mantenerlo dentro de tus reportes monitoreados.`}
+                {mensajeErrorConsulta
+                  ? 'No se pudo confirmar si este reporte está dentro de tus reportes seguidos.'
+                  : reporteSeguido
+                    ? `Actualmente estás siguiendo “${tituloReporte}”.`
+                    : `Puedes seguir “${tituloReporte}” para mantenerlo dentro de tus reportes monitoreados.`}
               </p>
             </div>
 
