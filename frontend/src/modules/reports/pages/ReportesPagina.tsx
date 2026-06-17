@@ -10,6 +10,7 @@ import { Cargando } from '../../../shared/components/feedback/Cargando';
 import { Boton } from '../../../shared/components/ui/Boton';
 import { Tarjeta } from '../../../shared/components/ui/Tarjeta';
 import { esErrorApi } from '../../../shared/types/errorApi';
+import { FiltrosHeatmapReportes } from '../components/FiltrosHeatmapReportes';
 import {
   FiltrosMapaReportes,
   type ModoConsultaMapaReportes
@@ -21,9 +22,14 @@ import type { ReporteMapaVisual } from '../components/MarcadorReporte';
 import { PanelReportesMapa } from '../components/PanelReportesMapa';
 import { ResumenReportes } from '../components/ResumenReportes';
 import { usarReportes } from '../hooks/usarReportes';
-import { usarReportesBoundingBox, usarReportesCercanos } from '../hooks/usarReportesMapa';
+import {
+  usarHeatmapReportes,
+  usarReportesBoundingBox,
+  usarReportesCercanos
+} from '../hooks/usarReportesMapa';
 import type {
   FiltrosBoundingBoxReportes,
+  FiltrosHeatmapReportes as FiltrosHeatmapReportesTipo,
   FiltrosListadoReportes,
   FiltrosReportesCercanos,
   Reporte
@@ -52,6 +58,8 @@ const filtrosAreaIniciales: FiltrosBoundingBoxReportes = {
   neLng: -90.42
 };
 
+const filtrosHeatmapIniciales: FiltrosHeatmapReportesTipo = {};
+
 function obtenerMensajeError(error: unknown) {
   if (esErrorApi(error)) {
     return error.mensaje;
@@ -73,6 +81,10 @@ function obtenerMensajeConsultaGeograficaFallida(mensaje?: string, error?: strin
   return mensaje ?? error ?? 'No fue posible cargar la consulta territorial. Intenta nuevamente.';
 }
 
+function obtenerMensajeHeatmapFallido(mensaje?: string, error?: string) {
+  return mensaje ?? error ?? 'No fue posible cargar la capa de intensidad territorial.';
+}
+
 export function ReportesPagina() {
   const navigate = useNavigate();
   const { roles } = usarAutenticacion();
@@ -82,6 +94,9 @@ export function ReportesPagina() {
   const [filtrosCercanos, setFiltrosCercanos] =
     useState<FiltrosReportesCercanos>(filtrosCercanosIniciales);
   const [filtrosArea, setFiltrosArea] = useState<FiltrosBoundingBoxReportes>(filtrosAreaIniciales);
+  const [mostrarHeatmap, setMostrarHeatmap] = useState(true);
+  const [filtrosHeatmap, setFiltrosHeatmap] =
+    useState<FiltrosHeatmapReportesTipo>(filtrosHeatmapIniciales);
   const [reporteMapaSeleccionadoId, setReporteMapaSeleccionadoId] = useState<string | undefined>();
   const [mensajeUbicacion, setMensajeUbicacion] = useState<string | undefined>();
   const [solicitandoUbicacion, setSolicitandoUbicacion] = useState(false);
@@ -100,15 +115,21 @@ export function ReportesPagina() {
     habilitado: modoConsultaMapa === 'AREA'
   });
 
+  const consultaHeatmap = usarHeatmapReportes(filtrosHeatmap, {
+    habilitado: mostrarHeatmap
+  });
+
   const respuestaReportes = consultaReportes.data;
   const reportes = respuestaReportes?.success === true ? respuestaReportes.data ?? [] : [];
   const paginacion = respuestaReportes?.success === true ? respuestaReportes.pagination : undefined;
 
   const respuestaCercanos = consultaReportesCercanos.data;
   const respuestaArea = consultaReportesArea.data;
+  const respuestaHeatmap = consultaHeatmap.data;
 
   const reportesCercanos = respuestaCercanos?.success === true ? respuestaCercanos.data ?? [] : [];
   const reportesArea = respuestaArea?.success === true ? respuestaArea.data ?? [] : [];
+  const puntosHeatmap = respuestaHeatmap?.success === true ? respuestaHeatmap.data ?? [] : [];
 
   const reportesTerritoriales: ReporteMapaVisual[] =
     modoConsultaMapa === 'CERCANOS' ? reportesCercanos : reportesArea;
@@ -121,6 +142,9 @@ export function ReportesPagina() {
       : respuestaArea?.success === true
         ? respuestaArea.total ?? reportesTerritoriales.length
         : reportesTerritoriales.length;
+
+  const totalPuntosHeatmap =
+    respuestaHeatmap?.success === true ? respuestaHeatmap.total ?? puntosHeatmap.length : puntosHeatmap.length;
 
   const centroConsulta =
     modoConsultaMapa === 'CERCANOS'
@@ -166,6 +190,16 @@ export function ReportesPagina() {
         ? obtenerMensajeError(consultaReportesArea.error)
         : mensajeRespuestaGeograficaFallida;
 
+  const mensajeRespuestaHeatmapFallida =
+    respuestaHeatmap?.success === false
+      ? obtenerMensajeHeatmapFallido(respuestaHeatmap.message, respuestaHeatmap.error)
+      : undefined;
+
+  const mensajeErrorHeatmap =
+    consultaHeatmap.error !== null
+      ? obtenerMensajeError(consultaHeatmap.error)
+      : mensajeRespuestaHeatmapFallida;
+
   const estaCargando = consultaReportes.isLoading;
   const estaActualizando = consultaReportes.isFetching && !consultaReportes.isLoading;
 
@@ -178,6 +212,10 @@ export function ReportesPagina() {
     modoConsultaMapa === 'CERCANOS'
       ? consultaReportesCercanos.isFetching && !consultaReportesCercanos.isLoading
       : consultaReportesArea.isFetching && !consultaReportesArea.isLoading;
+
+  const estaCargandoHeatmap = consultaHeatmap.isLoading;
+  const estaActualizandoHeatmap = consultaHeatmap.isFetching && !consultaHeatmap.isLoading;
+  const estaActualizandoTerritorio = estaActualizandoMapa || estaActualizandoHeatmap;
 
   const cambiarFiltros = (nuevosFiltros: FiltrosListadoReportes) => {
     setFiltros({
@@ -205,12 +243,25 @@ export function ReportesPagina() {
     void consultaReportesArea.refetch();
   };
 
+  const actualizarHeatmap = () => {
+    if (!mostrarHeatmap) {
+      return;
+    }
+
+    void consultaHeatmap.refetch();
+  };
+
   const limpiarConsultaGeografica = () => {
     setModoConsultaMapa('CERCANOS');
     setFiltrosCercanos(filtrosCercanosIniciales);
     setFiltrosArea(filtrosAreaIniciales);
     setReporteMapaSeleccionadoId(undefined);
     setMensajeUbicacion(undefined);
+  };
+
+  const limpiarHeatmap = () => {
+    setFiltrosHeatmap(filtrosHeatmapIniciales);
+    setMostrarHeatmap(true);
   };
 
   const cambiarModoConsultaMapa = (modo: ModoConsultaMapaReportes) => {
@@ -227,6 +278,14 @@ export function ReportesPagina() {
   const cambiarFiltrosArea = (nuevosFiltros: FiltrosBoundingBoxReportes) => {
     setFiltrosArea(nuevosFiltros);
     setReporteMapaSeleccionadoId(undefined);
+  };
+
+  const cambiarFiltrosHeatmap = (nuevosFiltros: FiltrosHeatmapReportesTipo) => {
+    setFiltrosHeatmap(nuevosFiltros);
+  };
+
+  const cambiarActivoHeatmap = (activo: boolean) => {
+    setMostrarHeatmap(activo);
   };
 
   const usarUbicacionActual = () => {
@@ -314,7 +373,7 @@ export function ReportesPagina() {
           </div>
 
           <div className="reportesPagina__accionesEncabezado">
-            {estaActualizandoMapa ? <Cargando texto="Actualizando mapa..." compacto /> : null}
+            {estaActualizandoTerritorio ? <Cargando texto="Actualizando mapa..." compacto /> : null}
 
             <Boton variante="secundario" onClick={irAMisReportes}>
               Ver mis reportes
@@ -337,9 +396,26 @@ export function ReportesPagina() {
           alUsarUbicacionActual={usarUbicacionActual}
         />
 
+        <FiltrosHeatmapReportes
+          activo={mostrarHeatmap}
+          filtros={filtrosHeatmap}
+          totalPuntos={totalPuntosHeatmap}
+          bloqueado={estaCargandoHeatmap || estaActualizandoHeatmap}
+          alCambiarActivo={cambiarActivoHeatmap}
+          alCambiarFiltros={cambiarFiltrosHeatmap}
+          alConsultar={actualizarHeatmap}
+          alLimpiar={limpiarHeatmap}
+        />
+
         {mensajeUbicacion ? (
           <Alerta variante="informacion" titulo="Ubicación">
             <p>{mensajeUbicacion}</p>
+          </Alerta>
+        ) : null}
+
+        {mensajeErrorHeatmap && mostrarHeatmap ? (
+          <Alerta variante="advertencia" titulo="La intensidad territorial no pudo actualizarse">
+            <p>{mensajeErrorHeatmap}</p>
           </Alerta>
         ) : null}
 
@@ -347,6 +423,8 @@ export function ReportesPagina() {
           <div className="reportesPagina__mapaColumna">
             <MapaReportes
               reportes={reportesTerritoriales}
+              puntosHeatmap={puntosHeatmap}
+              mostrarHeatmap={mostrarHeatmap}
               reporteSeleccionadoId={reporteMapaSeleccionadoId}
               centro={centroConsulta}
               radioMetros={radioConsulta}
@@ -354,6 +432,7 @@ export function ReportesPagina() {
                 <div className="reportesPagina__accionesMapa">
                   <span>{totalConUbicacion} con ubicación</span>
                   <span>{totalReportesMapa} en consulta</span>
+                  {mostrarHeatmap ? <span>{totalPuntosHeatmap} puntos de intensidad</span> : null}
                 </div>
               }
               tituloVacio="Sin reportes con ubicación para mostrar"
@@ -405,9 +484,9 @@ export function ReportesPagina() {
         </div>
 
         <div className="reportesPagina__accionesEncabezado">
-          {estaActualizando || estaActualizandoMapa ? (
+          {estaActualizando || estaActualizandoTerritorio ? (
             <Cargando
-              texto={estaActualizandoMapa ? 'Actualizando mapa...' : 'Actualizando reportes...'}
+              texto={estaActualizandoTerritorio ? 'Actualizando mapa...' : 'Actualizando reportes...'}
               compacto
             />
           ) : null}
@@ -438,6 +517,17 @@ export function ReportesPagina() {
         alUsarUbicacionActual={usarUbicacionActual}
       />
 
+      <FiltrosHeatmapReportes
+        activo={mostrarHeatmap}
+        filtros={filtrosHeatmap}
+        totalPuntos={totalPuntosHeatmap}
+        bloqueado={estaCargandoHeatmap || estaActualizandoHeatmap}
+        alCambiarActivo={cambiarActivoHeatmap}
+        alCambiarFiltros={cambiarFiltrosHeatmap}
+        alConsultar={actualizarHeatmap}
+        alLimpiar={limpiarHeatmap}
+      />
+
       {mensajeUbicacion ? (
         <Alerta variante="informacion" titulo="Ubicación">
           <p>{mensajeUbicacion}</p>
@@ -450,10 +540,18 @@ export function ReportesPagina() {
         </Alerta>
       ) : null}
 
+      {mensajeErrorHeatmap && mostrarHeatmap ? (
+        <Alerta variante="advertencia" titulo="La intensidad territorial no pudo actualizarse">
+          <p>{mensajeErrorHeatmap}</p>
+        </Alerta>
+      ) : null}
+
       <section className="reportesPagina__mapaOperativo" aria-label="Vista territorial de reportes">
         <div className="reportesPagina__mapaColumna">
           <MapaReportes
             reportes={reportesTerritoriales}
+            puntosHeatmap={puntosHeatmap}
+            mostrarHeatmap={mostrarHeatmap}
             reporteSeleccionadoId={reporteMapaSeleccionadoId}
             centro={centroConsulta}
             radioMetros={radioConsulta}
@@ -461,6 +559,7 @@ export function ReportesPagina() {
               <div className="reportesPagina__accionesMapa">
                 <span>{totalConUbicacion} con ubicación</span>
                 <span>{totalReportesMapa} en consulta</span>
+                {mostrarHeatmap ? <span>{totalPuntosHeatmap} puntos de intensidad</span> : null}
               </div>
             }
             tituloVacio="Sin reportes con ubicación"
