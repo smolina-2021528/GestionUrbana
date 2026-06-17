@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient, type QueryClient } from '@tanstack/react-query';
 
 import { reportesServicio } from '../services/reportesServicio';
 import type { ActualizarUbicacionReportePayload } from '../types/reportesTipos';
@@ -9,6 +9,16 @@ type ActualizarUbicacionReporteParametros = {
   datos: ActualizarUbicacionReportePayload;
 };
 
+function invalidarConsultasUbicacion(queryClient: QueryClient, reporteId: string) {
+  void queryClient.invalidateQueries({
+    queryKey: clavesConsultaReportes.detalle(reporteId)
+  });
+
+  void queryClient.invalidateQueries({
+    queryKey: clavesConsultaReportes.todos
+  });
+}
+
 export function usarActualizarUbicacionReporte() {
   const queryClient = useQueryClient();
 
@@ -16,13 +26,7 @@ export function usarActualizarUbicacionReporte() {
     mutationFn: ({ reporteId, datos }: ActualizarUbicacionReporteParametros) =>
       reportesServicio.actualizarUbicacionReporte(reporteId, datos),
     onSuccess: (_respuesta, variables) => {
-      void queryClient.invalidateQueries({
-        queryKey: clavesConsultaReportes.detalle(variables.reporteId)
-      });
-
-      void queryClient.invalidateQueries({
-        queryKey: clavesConsultaReportes.listas()
-      });
+      invalidarConsultasUbicacion(queryClient, variables.reporteId);
     }
   });
 }
@@ -33,13 +37,7 @@ export function usarEliminarUbicacionReporte() {
   return useMutation({
     mutationFn: (reporteId: string) => reportesServicio.eliminarUbicacionReporte(reporteId),
     onSuccess: (_respuesta, reporteId) => {
-      void queryClient.invalidateQueries({
-        queryKey: clavesConsultaReportes.detalle(reporteId)
-      });
-
-      void queryClient.invalidateQueries({
-        queryKey: clavesConsultaReportes.listas()
-      });
+      invalidarConsultasUbicacion(queryClient, reporteId);
     }
   });
 }

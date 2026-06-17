@@ -13,6 +13,7 @@ import { BotonSeguimientoReporte } from '../components/BotonSeguimientoReporte';
 import { ComentariosReporte } from '../components/ComentariosReporte';
 import { DetalleReporte } from '../components/DetalleReporte';
 import { HistorialReporte } from '../components/HistorialReporte';
+import { UbicacionReporte } from '../components/UbicacionReporte';
 import { usarReporteDetalle } from '../hooks/usarReporteDetalle';
 import './reportesPagina.css';
 
@@ -31,7 +32,7 @@ function obtenerMensajeRespuestaFallida(mensaje?: string, error?: string) {
 export function ReporteDetallePagina() {
   const navigate = useNavigate();
   const { reporteId } = useParams<{ reporteId: string }>();
-  const { roles } = usarAutenticacion();
+  const { roles, usuario } = usarAutenticacion();
 
   const consultaDetalle = usarReporteDetalle(reporteId);
 
@@ -49,6 +50,8 @@ export function ReporteDetallePagina() {
       : mensajeRespuestaFallida;
 
   const esAdministrador = roles.includes(rolesSistema.administrador);
+  const puedeGestionarUbicacion =
+    esAdministrador || Boolean(usuario?.id && reporte?.citizen?.id && usuario.id === reporte.citizen.id);
 
   const volver = () => {
     navigate(-1);
@@ -143,6 +146,12 @@ export function ReporteDetallePagina() {
         alVolver={volver}
         alActualizar={actualizarDetalle}
         actualizando={consultaDetalle.isFetching}
+      />
+
+      <UbicacionReporte
+        reporte={reporte}
+        puedeGestionar={puedeGestionarUbicacion}
+        alCambioRealizado={actualizarDetalle}
       />
 
       <BotonSeguimientoReporte

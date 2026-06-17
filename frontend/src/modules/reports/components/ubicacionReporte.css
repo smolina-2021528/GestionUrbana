@@ -1,0 +1,310 @@
+.ubicacionReporte__contenido {
+  display: grid;
+  gap: var(--espacio-4);
+}
+
+.ubicacionReporte__accionesEncabezado {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--espacio-2);
+}
+
+.ubicacionReporte__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(20rem, 0.85fr);
+  gap: var(--espacio-5);
+  align-items: stretch;
+}
+
+.ubicacionReporte__resumen {
+  display: grid;
+  align-content: start;
+  gap: var(--espacio-4);
+}
+
+.ubicacionReporte__estado {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  border: 1px solid var(--color-amarillo-alerta-200);
+  border-radius: var(--radio-completo);
+  background: var(--color-amarillo-alerta-50);
+  padding: 0.35rem 0.75rem;
+  color: var(--color-amarillo-alerta-800);
+  font-size: var(--tamano-texto-xs);
+  font-weight: var(--peso-seminegrita);
+}
+
+.ubicacionReporte__estado--registrada {
+  border-color: var(--color-verde-operativo-200);
+  background: var(--color-verde-operativo-50);
+  color: var(--color-verde-operativo-800);
+}
+
+.ubicacionReporte__datos,
+.formularioUbicacionReporte__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--espacio-3);
+}
+
+.ubicacionReporte__dato {
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  background: var(--color-superficie-secundaria);
+  padding: var(--espacio-3);
+}
+
+.ubicacionReporte__dato--ancho,
+.formularioUbicacionReporte__campo--ancho {
+  grid-column: 1 / -1;
+}
+
+.ubicacionReporte__dato span,
+.formularioUbicacionReporte__campo span {
+  display: block;
+  margin-bottom: var(--espacio-1);
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-texto-xs);
+  font-weight: var(--peso-seminegrita);
+}
+
+.ubicacionReporte__dato strong {
+  display: block;
+  color: var(--color-texto);
+  font-size: var(--tamano-texto-sm);
+  font-weight: var(--peso-seminegrita);
+  line-height: var(--alto-linea-normal);
+  overflow-wrap: anywhere;
+}
+
+.ubicacionReporte__enlaceMapa {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  border: 1px solid var(--color-azul-civico-200);
+  border-radius: var(--radio-completo);
+  background: var(--color-principal-suave);
+  padding: 0.55rem 0.9rem;
+  color: var(--color-principal);
+  font-size: var(--tamano-texto-sm);
+  font-weight: var(--peso-seminegrita);
+  text-decoration: none;
+  transition:
+    background-color var(--transicion-rapida),
+    border-color var(--transicion-rapida),
+    color var(--transicion-rapida);
+}
+
+.ubicacionReporte__enlaceMapa:hover,
+.ubicacionReporte__enlaceMapa:focus-visible {
+  border-color: var(--color-principal);
+  background: var(--color-principal);
+  color: var(--color-texto-invertido);
+}
+
+.ubicacionReporte__vista {
+  position: relative;
+  isolation: isolate;
+  min-height: 16rem;
+  overflow: hidden;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-lg);
+  background:
+    radial-gradient(circle at 30% 26%, rgb(36 116 214 / 0.16), transparent 7rem),
+    radial-gradient(circle at 76% 70%, rgb(13 136 79 / 0.14), transparent 7rem),
+    linear-gradient(135deg, var(--color-gris-urbano-50), var(--color-gris-urbano-100));
+}
+
+.ubicacionReporte__rejilla {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(rgb(148 163 184 / 0.16) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(148 163 184 / 0.16) 1px, transparent 1px);
+  background-size: 2.5rem 2.5rem;
+}
+
+.ubicacionReporte__via {
+  position: absolute;
+  z-index: 2;
+  border-radius: var(--radio-completo);
+  background: rgb(255 255 255 / 0.76);
+  box-shadow:
+    inset 0 0 0 1px rgb(148 163 184 / 0.22),
+    var(--sombra-xs);
+}
+
+.ubicacionReporte__via--horizontal {
+  top: 48%;
+  left: -10%;
+  width: 120%;
+  height: 0.85rem;
+  transform: rotate(-12deg);
+}
+
+.ubicacionReporte__via--vertical {
+  top: -10%;
+  left: 56%;
+  width: 0.75rem;
+  height: 120%;
+  transform: rotate(16deg);
+}
+
+.ubicacionReporte__marcador {
+  position: absolute;
+  top: 48%;
+  left: 56%;
+  z-index: 5;
+  display: inline-grid;
+  width: 3rem;
+  height: 3rem;
+  place-items: center;
+  transform: translate(-50%, -50%);
+  border-radius: var(--radio-completo);
+  background: rgb(36 116 214 / 0.16);
+}
+
+.ubicacionReporte__marcador::after {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--color-principal);
+  opacity: 0.18;
+  content: "";
+  animation: pulsoUbicacionReporte 1.7s ease-out infinite;
+}
+
+.ubicacionReporte__marcador span {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 1.35rem;
+  height: 1.35rem;
+  border: 3px solid var(--color-blanco);
+  border-radius: var(--radio-completo);
+  background: var(--color-principal);
+  box-shadow: var(--sombra-md);
+}
+
+.ubicacionReporte__sinVista {
+  position: absolute;
+  inset: var(--espacio-4);
+  z-index: 4;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: var(--espacio-2);
+  border: 1px dashed var(--color-borde);
+  border-radius: var(--radio-lg);
+  background: rgb(255 255 255 / 0.72);
+  padding: var(--espacio-4);
+  text-align: center;
+  backdrop-filter: blur(8px);
+}
+
+.ubicacionReporte__sinVista strong {
+  color: var(--color-texto);
+  font-size: var(--tamano-texto-md);
+}
+
+.ubicacionReporte__sinVista span {
+  color: var(--color-texto-secundario);
+  font-size: var(--tamano-texto-sm);
+}
+
+.formularioUbicacionReporte {
+  display: grid;
+  gap: var(--espacio-4);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-lg);
+  background: var(--color-superficie-secundaria);
+  padding: var(--espacio-4);
+}
+
+.formularioUbicacionReporte__campo {
+  display: grid;
+  gap: var(--espacio-2);
+}
+
+.formularioUbicacionReporte__campo input,
+.formularioUbicacionReporte__campo textarea {
+  width: 100%;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  background: var(--color-superficie);
+  padding: 0.75rem 0.85rem;
+  color: var(--color-texto);
+  font: inherit;
+  outline: none;
+  resize: vertical;
+  transition:
+    border-color var(--transicion-rapida),
+    box-shadow var(--transicion-rapida);
+}
+
+.formularioUbicacionReporte__campo input {
+  min-height: 2.75rem;
+}
+
+.formularioUbicacionReporte__campo input:focus,
+.formularioUbicacionReporte__campo textarea:focus {
+  border-color: var(--color-principal);
+  box-shadow: 0 0 0 3px rgb(22 93 175 / 0.12);
+}
+
+.formularioUbicacionReporte__campo input:disabled,
+.formularioUbicacionReporte__campo textarea:disabled {
+  cursor: not-allowed;
+  background: var(--color-gris-urbano-50);
+  color: var(--color-texto-suave);
+}
+
+.formularioUbicacionReporte__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--espacio-3);
+}
+
+@keyframes pulsoUbicacionReporte {
+  0% {
+    transform: scale(0.75);
+    opacity: 0.24;
+  }
+
+  100% {
+    transform: scale(2.1);
+    opacity: 0;
+  }
+}
+
+@media (max-width: 980px) {
+  .ubicacionReporte__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ubicacionReporte__vista {
+    min-height: 14rem;
+  }
+}
+
+@media (max-width: 720px) {
+  .ubicacionReporte__accionesEncabezado,
+  .formularioUbicacionReporte__acciones {
+    display: grid;
+    justify-content: stretch;
+  }
+
+  .ubicacionReporte__accionesEncabezado .boton,
+  .formularioUbicacionReporte__acciones .boton {
+    width: 100%;
+  }
+
+  .ubicacionReporte__datos,
+  .formularioUbicacionReporte__grid {
+    grid-template-columns: 1fr;
+  }
+}

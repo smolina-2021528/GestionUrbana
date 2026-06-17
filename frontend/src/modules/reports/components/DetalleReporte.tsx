@@ -41,12 +41,6 @@ function formatearFecha(fecha: string | null | undefined) {
   }).format(fechaValida);
 }
 
-function formatearCoordenada(valor: number) {
-  return new Intl.NumberFormat('es-GT', {
-    maximumFractionDigits: 6
-  }).format(valor);
-}
-
 function formatearPorcentaje(valor: number | null | undefined) {
   if (typeof valor !== 'number' || !Number.isFinite(valor)) {
     return 'No disponible';
@@ -69,26 +63,6 @@ function obtenerNombreUsuario(usuario: UsuarioResumenReporte | null) {
 
 function obtenerCategoria(categoria: CategoriaReporte) {
   return etiquetasCategoria[categoria] ?? categoria;
-}
-
-function obtenerUbicacion(reporte: Reporte) {
-  if (reporte.address) {
-    return reporte.address;
-  }
-
-  if (typeof reporte.latitude === 'number' && typeof reporte.longitude === 'number') {
-    return `${formatearCoordenada(reporte.latitude)}, ${formatearCoordenada(reporte.longitude)}`;
-  }
-
-  return 'Sin ubicación registrada';
-}
-
-function obtenerCoordenadas(reporte: Reporte) {
-  if (typeof reporte.latitude === 'number' && typeof reporte.longitude === 'number') {
-    return `${formatearCoordenada(reporte.latitude)}, ${formatearCoordenada(reporte.longitude)}`;
-  }
-
-  return 'No disponibles';
 }
 
 function obtenerEstadoIA(analisis: AnalisisIAReporte | null) {
@@ -148,8 +122,6 @@ export function DetalleReporte({
   alActualizar,
   actualizando = false
 }: PropiedadesDetalleReporte) {
-  const ubicacion = obtenerUbicacion(reporte);
-  const coordenadas = obtenerCoordenadas(reporte);
   const categoria = obtenerCategoria(reporte.category);
   const analisisIA = reporte.ai;
 
@@ -215,25 +187,6 @@ export function DetalleReporte({
             <div className="detalleReporte__dato">
               <span>Resuelto</span>
               <strong>{formatearFecha(reporte.resolvedAt)}</strong>
-            </div>
-          </div>
-        </Tarjeta>
-
-        <Tarjeta titulo="Ubicación" descripcion="Referencia territorial registrada para el caso.">
-          <div className="detalleReporte__listaDatos">
-            <div className="detalleReporte__dato detalleReporte__dato--ancho">
-              <span>Dirección o referencia</span>
-              <strong>{ubicacion}</strong>
-            </div>
-
-            <div className="detalleReporte__dato">
-              <span>Coordenadas</span>
-              <strong>{coordenadas}</strong>
-            </div>
-
-            <div className="detalleReporte__dato">
-              <span>Información geográfica</span>
-              <strong>{reporte.hasLocation ? 'Registrada' : 'No registrada'}</strong>
             </div>
           </div>
         </Tarjeta>
