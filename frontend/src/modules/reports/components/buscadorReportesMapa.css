@@ -1,0 +1,213 @@
+.buscadorReportesMapa {
+  display: grid;
+  gap: var(--espacio-4);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-xl);
+  background: var(--color-superficie);
+  padding: var(--espacio-5);
+  box-shadow: var(--sombra-xs);
+}
+
+.buscadorReportesMapa__encabezado {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--espacio-4);
+}
+
+.buscadorReportesMapa__eyebrow {
+  margin-bottom: var(--espacio-1);
+  color: var(--color-principal);
+  font-size: var(--tamano-texto-xs);
+  font-weight: var(--peso-seminegrita);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.buscadorReportesMapa__encabezado h2 {
+  margin-bottom: var(--espacio-2);
+  color: var(--color-texto);
+  font-size: var(--tamano-texto-xl);
+  font-weight: var(--peso-negrita);
+}
+
+.buscadorReportesMapa__encabezado p {
+  max-width: 48rem;
+  margin-bottom: 0;
+  color: var(--color-texto-secundario);
+  font-size: var(--tamano-texto-sm);
+}
+
+.buscadorReportesMapa__contador {
+  display: inline-flex;
+  min-height: 2.25rem;
+  align-items: center;
+  border: 1px solid var(--color-azul-civico-200);
+  border-radius: var(--radio-completo);
+  background: var(--color-principal-suave);
+  padding: 0.35rem 0.75rem;
+  color: var(--color-principal);
+  font-size: var(--tamano-texto-xs);
+  font-weight: var(--peso-negrita);
+  white-space: nowrap;
+}
+
+.buscadorReportesMapa__formulario {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--espacio-4);
+  align-items: end;
+}
+
+.buscadorReportesMapa__campo {
+  display: grid;
+  gap: var(--espacio-2);
+}
+
+.buscadorReportesMapa__campo span {
+  color: var(--color-texto-secundario);
+  font-size: var(--tamano-texto-sm);
+  font-weight: var(--peso-seminegrita);
+}
+
+.buscadorReportesMapa__campo input {
+  width: 100%;
+  min-height: 2.75rem;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  background: var(--color-superficie);
+  padding: 0.7rem 0.85rem;
+  color: var(--color-texto);
+  font: inherit;
+  outline: none;
+  transition:
+    border-color var(--transicion-rapida),
+    box-shadow var(--transicion-rapida);
+}
+
+.buscadorReportesMapa__campo input:focus {
+  border-color: var(--color-principal);
+  box-shadow: 0 0 0 3px rgb(22 93 175 / 0.12);
+}
+
+.buscadorReportesMapa__campo input:disabled {
+  cursor: not-allowed;
+  background: var(--color-gris-urbano-50);
+  color: var(--color-texto-suave);
+}
+
+.buscadorReportesMapa__acciones {
+  display: flex;
+  gap: var(--espacio-3);
+  justify-content: flex-end;
+}
+
+.buscadorReportesMapa__ayuda,
+.buscadorReportesMapa__busquedaAplicada,
+.buscadorReportesMapa__resumen {
+  margin-bottom: 0;
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-texto-sm);
+}
+
+.buscadorReportesMapa__busquedaAplicada strong {
+  color: var(--color-texto);
+}
+
+.buscadorReportesMapa__resultados {
+  display: grid;
+  gap: var(--espacio-3);
+}
+
+.buscadorReportesMapa__resultado {
+  overflow: hidden;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-lg);
+  background: var(--color-superficie-secundaria);
+  transition:
+    border-color var(--transicion-rapida),
+    box-shadow var(--transicion-rapida),
+    transform var(--transicion-rapida);
+}
+
+.buscadorReportesMapa__resultado:hover {
+  transform: translateY(-1px);
+  border-color: var(--color-azul-civico-200);
+  box-shadow: var(--sombra-sm);
+}
+
+.buscadorReportesMapa__selector {
+  display: grid;
+  width: 100%;
+  gap: var(--espacio-2);
+  background: transparent;
+  padding: var(--espacio-4);
+  text-align: left;
+}
+
+.buscadorReportesMapa__categoria {
+  display: inline-flex;
+  width: fit-content;
+  border-radius: var(--radio-completo);
+  background: var(--color-superficie);
+  padding: 0.2rem 0.55rem;
+  color: var(--color-principal);
+  font-size: var(--tamano-texto-xs);
+  font-weight: var(--peso-seminegrita);
+}
+
+.buscadorReportesMapa__selector strong {
+  color: var(--color-texto);
+  font-size: var(--tamano-texto-md);
+  line-height: var(--alto-linea-ajustado);
+}
+
+.buscadorReportesMapa__selector span:not(.buscadorReportesMapa__categoria) {
+  color: var(--color-texto-secundario);
+  font-size: var(--tamano-texto-sm);
+}
+
+.buscadorReportesMapa__selector small {
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-texto-xs);
+}
+
+.buscadorReportesMapa__detalle {
+  display: flex;
+  justify-content: flex-end;
+  border-top: 1px solid var(--color-borde);
+  padding: var(--espacio-2) var(--espacio-3);
+}
+
+.buscadorReportesMapa__alerta {
+  display: grid;
+  gap: var(--espacio-3);
+  justify-items: start;
+}
+
+.buscadorReportesMapa__alerta p {
+  margin-bottom: 0;
+  color: inherit;
+}
+
+@media (max-width: 860px) {
+  .buscadorReportesMapa__encabezado,
+  .buscadorReportesMapa__formulario {
+    grid-template-columns: 1fr;
+  }
+
+  .buscadorReportesMapa__encabezado {
+    display: grid;
+  }
+
+  .buscadorReportesMapa__acciones {
+    display: grid;
+    justify-content: stretch;
+  }
+
+  .buscadorReportesMapa__acciones .boton,
+  .buscadorReportesMapa__detalle .boton,
+  .buscadorReportesMapa__alerta .boton {
+    width: 100%;
+  }
+}

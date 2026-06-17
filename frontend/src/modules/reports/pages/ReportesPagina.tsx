@@ -10,6 +10,7 @@ import { Cargando } from '../../../shared/components/feedback/Cargando';
 import { Boton } from '../../../shared/components/ui/Boton';
 import { Tarjeta } from '../../../shared/components/ui/Tarjeta';
 import { esErrorApi } from '../../../shared/types/errorApi';
+import { BuscadorReportesMapa } from '../components/BuscadorReportesMapa';
 import { FiltrosHeatmapReportes } from '../components/FiltrosHeatmapReportes';
 import {
   FiltrosMapaReportes,
@@ -21,6 +22,7 @@ import { MapaReportes } from '../components/MapaReportes';
 import type { ReporteMapaVisual } from '../components/MarcadorReporte';
 import { PanelReportesMapa } from '../components/PanelReportesMapa';
 import { ResumenReportes } from '../components/ResumenReportes';
+import { usarBuscarReportes } from '../hooks/usarBuscarReportes';
 import { usarReportes } from '../hooks/usarReportes';
 import {
   usarHeatmapReportes,
@@ -29,11 +31,13 @@ import {
 } from '../hooks/usarReportesMapa';
 import type {
   FiltrosBoundingBoxReportes,
+  FiltrosBusquedaReportes,
   FiltrosHeatmapReportes as FiltrosHeatmapReportesTipo,
   FiltrosListadoReportes,
   FiltrosReportesCercanos,
   Reporte
 } from '../types/reportesTipos';
+import { esTextoBusquedaReporteValido } from '../utils/validacionesGeograficas';
 import './reportesPagina.css';
 
 const filtrosIniciales: FiltrosListadoReportes = {
@@ -60,6 +64,14 @@ const filtrosAreaIniciales: FiltrosBoundingBoxReportes = {
 
 const filtrosHeatmapIniciales: FiltrosHeatmapReportesTipo = {};
 
+function construirFiltrosBusqueda(q: string): FiltrosBusquedaReportes {
+  return {
+    q,
+    page: 1,
+    limit: 12
+  };
+}
+
 function obtenerMensajeError(error: unknown) {
   if (esErrorApi(error)) {
     return error.mensaje;
@@ -85,6 +97,10 @@ function obtenerMensajeHeatmapFallido(mensaje?: string, error?: string) {
   return mensaje ?? error ?? 'No fue posible cargar la capa de intensidad territorial.';
 }
 
+function obtenerMensajeBusquedaFallida(mensaje?: string, error?: string) {
+  return mensaje ?? error ?? 'No fue posible completar la búsqueda territorial.';
+}
+
 export function ReportesPagina() {
   const navigate = useNavigate();
   const { roles } = usarAutenticacion();
@@ -97,11 +113,14 @@ export function ReportesPagina() {
   const [mostrarHeatmap, setMostrarHeatmap] = useState(true);
   const [filtrosHeatmap, setFiltrosHeatmap] =
     useState<FiltrosHeatmapReportesTipo>(filtrosHeatmapIniciales);
+  const [textoBusquedaTerritorial, setTextoBusquedaTerritorial] = useState('');
+  const [busquedaTerritorial, setBusquedaTerritorial] = useState('');
   const [reporteMapaSeleccionadoId, setReporteMapaSeleccionadoId] = useState<string | undefined>();
   const [mensajeUbicacion, setMensajeUbicacion] = useState<string | undefined>();
   const [solicitandoUbicacion, setSolicitandoUbicacion] = useState(false);
 
   const esAdministrador = roles.includes(rolesSistema.administrador);
+  const busquedaTerritorialActiva = esTextoBusquedaReporteValido(busquedaTerritorial);
 
   const consultaReportes = usarReportes(filtros, {
     habilitado: esAdministrador
@@ -119,6 +138,13 @@ export function ReportesPagina() {
     habilitado: mostrarHeatmap
   });
 
+  const consultaBusquedaTerritorial = usarBuscarReportes(
+    construirFiltrosBusqueda(busquedaTerritorial),
+    {
+      habilitado: busquedaTerritorialActiva
+    }
+  );
+
   const respuestaReportes = consultaReportes.data;
   const reportes = respuestaReportes?.success === true ? respuestaReportes.data ?? [] : [];
   const paginacion = respuestaReportes?.success === true ? respuestaReportes.pagination : undefined;
@@ -126,10 +152,13 @@ export function ReportesPagina() {
   const respuestaCercanos = consultaReportesCercanos.data;
   const respuestaArea = consultaReportesArea.data;
   const respuestaHeatmap = consultaHeatmap.data;
+  const respuestaBusquedaTerritorial = consultaBusquedaTerritorial.data;
 
   const reportesCercanos = respuestaCercanos?.success === true ? respuestaCercanos.data ?? [] : [];
   const reportesArea = respuestaArea?.success === true ? respuestaArea.data ?? [] : [];
   const puntosHeatmap = respuestaHeatmap?.success === true ? respuestaHeatmap.data ?? [] : [];
+  const reportesBusquedaTerritorial =
+    respuestaBusquedaTerritorial?.success === true ? respuestaBusquedaTerritorial.data ?? [] : [];
 
   const reportesTerritoriales: ReporteMapaVisual[] =
     modoConsultaMapa === 'CERCANOS' ? reportesCercanos : reportesArea;
@@ -142,6 +171,19 @@ export function ReportesPagina() {
       : respuestaArea?.success === true
         ? respuestaArea.total ?? reportesTerritoriales.length
         : reportesTerritoriales.length;
+
+  const totalBusquedaTerritorial =
+    respuestaBusquedaTerritorial?.success === true
+      ? respuestaBusquedaTerritorial.pagination?.total ?? reportesBusquedaTerritorial.length
+      : reportesBusquedaTerritorial.length;
+
+  const reportesMapaVisibles: ReporteMapaVisual[] = busquedaTerritorialActiva
+    ? reportesBusquedaTerritorial
+    : reportesTerritoriales;
+
+  const totalReportesMapaVisible = busquedaTerritorialActiva
+    ? totalBusquedaTerritorial
+    : totalReportesMapa;
 
   const totalPuntosHeatmap =
     respuestaHeatmap?.success === true ? respuestaHeatmap.total ?? puntosHeatmap.length : puntosHeatmap.length;
@@ -159,8 +201,10 @@ export function ReportesPagina() {
           }
       : undefined;
 
+  const centroMapaVisible = busquedaTerritorialActiva ? undefined : centroConsulta;
   const radioConsulta = modoConsultaMapa === 'CERCANOS' ? filtrosCercanos.radius : undefined;
-  const totalConUbicacion = obtenerTotalConUbicacion(reportesTerritoriales);
+  const radioMapaVisible = busquedaTerritorialActiva ? undefined : radioConsulta;
+  const totalConUbicacion = obtenerTotalConUbicacion(reportesMapaVisibles);
 
   const mensajeRespuestaFallida =
     respuestaReportes?.success === false
@@ -200,6 +244,19 @@ export function ReportesPagina() {
       ? obtenerMensajeError(consultaHeatmap.error)
       : mensajeRespuestaHeatmapFallida;
 
+  const mensajeRespuestaBusquedaFallida =
+    respuestaBusquedaTerritorial?.success === false
+      ? obtenerMensajeBusquedaFallida(
+          respuestaBusquedaTerritorial.message,
+          respuestaBusquedaTerritorial.error
+        )
+      : undefined;
+
+  const mensajeErrorBusqueda =
+    consultaBusquedaTerritorial.error !== null
+      ? obtenerMensajeError(consultaBusquedaTerritorial.error)
+      : mensajeRespuestaBusquedaFallida;
+
   const estaCargando = consultaReportes.isLoading;
   const estaActualizando = consultaReportes.isFetching && !consultaReportes.isLoading;
 
@@ -215,7 +272,14 @@ export function ReportesPagina() {
 
   const estaCargandoHeatmap = consultaHeatmap.isLoading;
   const estaActualizandoHeatmap = consultaHeatmap.isFetching && !consultaHeatmap.isLoading;
-  const estaActualizandoTerritorio = estaActualizandoMapa || estaActualizandoHeatmap;
+  const estaCargandoBusqueda = consultaBusquedaTerritorial.isLoading;
+  const estaActualizandoBusqueda =
+    consultaBusquedaTerritorial.isFetching && !consultaBusquedaTerritorial.isLoading;
+
+  const estaCargandoPanelMapa = busquedaTerritorialActiva ? estaCargandoBusqueda : estaCargandoMapa;
+  const mensajeErrorPanelMapa = busquedaTerritorialActiva ? mensajeErrorBusqueda : mensajeErrorGeografico;
+  const estaActualizandoTerritorio =
+    estaActualizandoMapa || estaActualizandoHeatmap || estaActualizandoBusqueda;
 
   const cambiarFiltros = (nuevosFiltros: FiltrosListadoReportes) => {
     setFiltros({
@@ -251,12 +315,38 @@ export function ReportesPagina() {
     void consultaHeatmap.refetch();
   };
 
+  const actualizarBusquedaTerritorial = () => {
+    if (!busquedaTerritorialActiva) {
+      return;
+    }
+
+    void consultaBusquedaTerritorial.refetch();
+  };
+
+  const limpiarBusquedaTerritorial = () => {
+    setTextoBusquedaTerritorial('');
+    setBusquedaTerritorial('');
+    setReporteMapaSeleccionadoId(undefined);
+  };
+
+  const buscarTerritorialmente = () => {
+    const textoLimpio = textoBusquedaTerritorial.trim();
+
+    if (!esTextoBusquedaReporteValido(textoLimpio)) {
+      return;
+    }
+
+    setBusquedaTerritorial(textoLimpio);
+    setReporteMapaSeleccionadoId(undefined);
+  };
+
   const limpiarConsultaGeografica = () => {
     setModoConsultaMapa('CERCANOS');
     setFiltrosCercanos(filtrosCercanosIniciales);
     setFiltrosArea(filtrosAreaIniciales);
     setReporteMapaSeleccionadoId(undefined);
     setMensajeUbicacion(undefined);
+    limpiarBusquedaTerritorial();
   };
 
   const limpiarHeatmap = () => {
@@ -268,16 +358,19 @@ export function ReportesPagina() {
     setModoConsultaMapa(modo);
     setReporteMapaSeleccionadoId(undefined);
     setMensajeUbicacion(undefined);
+    limpiarBusquedaTerritorial();
   };
 
   const cambiarFiltrosCercanos = (nuevosFiltros: FiltrosReportesCercanos) => {
     setFiltrosCercanos(nuevosFiltros);
     setReporteMapaSeleccionadoId(undefined);
+    limpiarBusquedaTerritorial();
   };
 
   const cambiarFiltrosArea = (nuevosFiltros: FiltrosBoundingBoxReportes) => {
     setFiltrosArea(nuevosFiltros);
     setReporteMapaSeleccionadoId(undefined);
+    limpiarBusquedaTerritorial();
   };
 
   const cambiarFiltrosHeatmap = (nuevosFiltros: FiltrosHeatmapReportesTipo) => {
@@ -309,6 +402,7 @@ export function ReportesPagina() {
         setReporteMapaSeleccionadoId(undefined);
         setSolicitandoUbicacion(false);
         setMensajeUbicacion('Ubicación detectada. Puedes consultar reportes cercanos a ese punto.');
+        limpiarBusquedaTerritorial();
       },
       () => {
         setSolicitandoUbicacion(false);
@@ -382,6 +476,23 @@ export function ReportesPagina() {
           </div>
         </section>
 
+        <BuscadorReportesMapa
+          texto={textoBusquedaTerritorial}
+          busquedaAplicada={busquedaTerritorialActiva ? busquedaTerritorial : undefined}
+          reportes={reportesBusquedaTerritorial}
+          total={totalBusquedaTerritorial}
+          bloqueado={estaCargandoBusqueda || estaActualizandoBusqueda}
+          estaCargando={estaCargandoBusqueda}
+          tieneError={Boolean(mensajeErrorBusqueda)}
+          mensajeError={mensajeErrorBusqueda}
+          alCambiarTexto={setTextoBusquedaTerritorial}
+          alBuscar={buscarTerritorialmente}
+          alLimpiar={limpiarBusquedaTerritorial}
+          alSeleccionarReporte={seleccionarReporteMapa}
+          alVerDetalle={irADetalleReporte}
+          alReintentar={actualizarBusquedaTerritorial}
+        />
+
         <FiltrosMapaReportes
           modo={modoConsultaMapa}
           filtrosCercanos={filtrosCercanos}
@@ -422,38 +533,51 @@ export function ReportesPagina() {
         <section className="reportesPagina__mapaOperativo" aria-label="Vista territorial ciudadana">
           <div className="reportesPagina__mapaColumna">
             <MapaReportes
-              reportes={reportesTerritoriales}
+              reportes={reportesMapaVisibles}
               puntosHeatmap={puntosHeatmap}
               mostrarHeatmap={mostrarHeatmap}
               reporteSeleccionadoId={reporteMapaSeleccionadoId}
-              centro={centroConsulta}
-              radioMetros={radioConsulta}
+              centro={centroMapaVisible}
+              radioMetros={radioMapaVisible}
               acciones={
                 <div className="reportesPagina__accionesMapa">
                   <span>{totalConUbicacion} con ubicación</span>
-                  <span>{totalReportesMapa} en consulta</span>
+                  <span>{totalReportesMapaVisible} en consulta</span>
+                  {busquedaTerritorialActiva ? <span>Búsqueda activa</span> : null}
                   {mostrarHeatmap ? <span>{totalPuntosHeatmap} puntos de intensidad</span> : null}
                 </div>
               }
               tituloVacio="Sin reportes con ubicación para mostrar"
-              descripcionVacia="Ajusta las coordenadas, el radio o el área de consulta para visualizar incidencias urbanas."
+              descripcionVacia={
+                busquedaTerritorialActiva
+                  ? 'La búsqueda no tiene reportes con coordenadas para mostrar en el mapa.'
+                  : 'Ajusta las coordenadas, el radio o el área de consulta para visualizar incidencias urbanas.'
+              }
               alSeleccionarReporte={seleccionarReporteMapa}
             />
           </div>
 
           <div className="reportesPagina__panelColumna">
             <PanelReportesMapa
-              reportes={reportesTerritoriales}
-              total={totalReportesMapa}
+              reportes={reportesMapaVisibles}
+              total={totalReportesMapaVisible}
               reporteSeleccionadoId={reporteMapaSeleccionadoId}
-              estaCargando={estaCargandoMapa}
-              tieneError={Boolean(mensajeErrorGeografico && reportesTerritoriales.length === 0)}
-              mensajeError={mensajeErrorGeografico}
-              tituloVacio="Sin incidencias visibles"
-              descripcionVacia="No hay reportes que coincidan con la consulta territorial actual."
+              estaCargando={estaCargandoPanelMapa}
+              tieneError={Boolean(mensajeErrorPanelMapa && reportesMapaVisibles.length === 0)}
+              mensajeError={mensajeErrorPanelMapa}
+              tituloVacio={
+                busquedaTerritorialActiva ? 'Sin resultados visibles' : 'Sin incidencias visibles'
+              }
+              descripcionVacia={
+                busquedaTerritorialActiva
+                  ? 'No hay reportes que coincidan con la búsqueda aplicada.'
+                  : 'No hay reportes que coincidan con la consulta territorial actual.'
+              }
               alSeleccionarReporte={seleccionarReporteMapa}
               alVerDetalle={irADetalleReporte}
-              alReintentar={actualizarConsultaGeografica}
+              alReintentar={
+                busquedaTerritorialActiva ? actualizarBusquedaTerritorial : actualizarConsultaGeografica
+              }
             />
           </div>
         </section>
@@ -503,6 +627,23 @@ export function ReportesPagina() {
         </div>
       </section>
 
+      <BuscadorReportesMapa
+        texto={textoBusquedaTerritorial}
+        busquedaAplicada={busquedaTerritorialActiva ? busquedaTerritorial : undefined}
+        reportes={reportesBusquedaTerritorial}
+        total={totalBusquedaTerritorial}
+        bloqueado={estaCargandoBusqueda || estaActualizandoBusqueda}
+        estaCargando={estaCargandoBusqueda}
+        tieneError={Boolean(mensajeErrorBusqueda)}
+        mensajeError={mensajeErrorBusqueda}
+        alCambiarTexto={setTextoBusquedaTerritorial}
+        alBuscar={buscarTerritorialmente}
+        alLimpiar={limpiarBusquedaTerritorial}
+        alSeleccionarReporte={seleccionarReporteMapa}
+        alVerDetalle={irADetalleReporte}
+        alReintentar={actualizarBusquedaTerritorial}
+      />
+
       <FiltrosMapaReportes
         modo={modoConsultaMapa}
         filtrosCercanos={filtrosCercanos}
@@ -534,9 +675,15 @@ export function ReportesPagina() {
         </Alerta>
       ) : null}
 
-      {mensajeErrorGeografico && reportesTerritoriales.length > 0 ? (
+      {mensajeErrorGeografico && !busquedaTerritorialActiva && reportesTerritoriales.length > 0 ? (
         <Alerta variante="advertencia" titulo="Los datos territoriales pueden no estar actualizados">
           <p>{mensajeErrorGeografico}</p>
+        </Alerta>
+      ) : null}
+
+      {mensajeErrorBusqueda && busquedaTerritorialActiva && reportesBusquedaTerritorial.length > 0 ? (
+        <Alerta variante="advertencia" titulo="Los resultados de búsqueda pueden no estar actualizados">
+          <p>{mensajeErrorBusqueda}</p>
         </Alerta>
       ) : null}
 
@@ -549,38 +696,49 @@ export function ReportesPagina() {
       <section className="reportesPagina__mapaOperativo" aria-label="Vista territorial de reportes">
         <div className="reportesPagina__mapaColumna">
           <MapaReportes
-            reportes={reportesTerritoriales}
+            reportes={reportesMapaVisibles}
             puntosHeatmap={puntosHeatmap}
             mostrarHeatmap={mostrarHeatmap}
             reporteSeleccionadoId={reporteMapaSeleccionadoId}
-            centro={centroConsulta}
-            radioMetros={radioConsulta}
+            centro={centroMapaVisible}
+            radioMetros={radioMapaVisible}
             acciones={
               <div className="reportesPagina__accionesMapa">
                 <span>{totalConUbicacion} con ubicación</span>
-                <span>{totalReportesMapa} en consulta</span>
+                <span>{totalReportesMapaVisible} en consulta</span>
+                {busquedaTerritorialActiva ? <span>Búsqueda activa</span> : null}
                 {mostrarHeatmap ? <span>{totalPuntosHeatmap} puntos de intensidad</span> : null}
               </div>
             }
             tituloVacio="Sin reportes con ubicación"
-            descripcionVacia="No hay reportes con coordenadas que coincidan con la consulta territorial actual."
+            descripcionVacia={
+              busquedaTerritorialActiva
+                ? 'La búsqueda no tiene reportes con coordenadas para mostrar en el mapa.'
+                : 'No hay reportes con coordenadas que coincidan con la consulta territorial actual.'
+            }
             alSeleccionarReporte={seleccionarReporteMapa}
           />
         </div>
 
         <div className="reportesPagina__panelColumna">
           <PanelReportesMapa
-            reportes={reportesTerritoriales}
-            total={totalReportesMapa}
+            reportes={reportesMapaVisibles}
+            total={totalReportesMapaVisible}
             reporteSeleccionadoId={reporteMapaSeleccionadoId}
-            estaCargando={estaCargandoMapa}
-            tieneError={Boolean(mensajeErrorGeografico && reportesTerritoriales.length === 0)}
-            mensajeError={mensajeErrorGeografico}
-            tituloVacio="Sin reportes para mostrar"
-            descripcionVacia="Ajusta el radio, las coordenadas o los filtros de la consulta territorial."
+            estaCargando={estaCargandoPanelMapa}
+            tieneError={Boolean(mensajeErrorPanelMapa && reportesMapaVisibles.length === 0)}
+            mensajeError={mensajeErrorPanelMapa}
+            tituloVacio={busquedaTerritorialActiva ? 'Sin resultados visibles' : 'Sin reportes para mostrar'}
+            descripcionVacia={
+              busquedaTerritorialActiva
+                ? 'No hay reportes que coincidan con la búsqueda aplicada.'
+                : 'Ajusta el radio, las coordenadas o los filtros de la consulta territorial.'
+            }
             alSeleccionarReporte={seleccionarReporteMapa}
             alVerDetalle={irADetalleReporte}
-            alReintentar={actualizarConsultaGeografica}
+            alReintentar={
+              busquedaTerritorialActiva ? actualizarBusquedaTerritorial : actualizarConsultaGeografica
+            }
           />
         </div>
       </section>
