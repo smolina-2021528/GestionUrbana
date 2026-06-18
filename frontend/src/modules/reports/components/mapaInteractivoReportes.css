@@ -1,0 +1,365 @@
+.mapaInteractivoReportes {
+  display: grid;
+  gap: var(--espacio-4);
+  overflow: hidden;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-xl);
+  background: var(--color-superficie);
+  padding: var(--espacio-5);
+  box-shadow: var(--sombra-xs);
+}
+
+.mapaInteractivoReportes__encabezado {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--espacio-4);
+}
+
+.mapaInteractivoReportes__eyebrow {
+  margin-bottom: var(--espacio-1);
+  color: var(--color-principal);
+  font-size: var(--tamano-texto-xs);
+  font-weight: var(--peso-seminegrita);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.mapaInteractivoReportes__titulo {
+  margin-bottom: var(--espacio-2);
+  color: var(--color-texto);
+  font-size: var(--tamano-texto-xl);
+  font-weight: var(--peso-negrita);
+  line-height: var(--alto-linea-ajustado);
+}
+
+.mapaInteractivoReportes__descripcion {
+  max-width: 45rem;
+  margin-bottom: 0;
+  color: var(--color-texto-secundario);
+  font-size: var(--tamano-texto-sm);
+}
+
+.mapaInteractivoReportes__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--espacio-2);
+}
+
+.mapaInteractivoReportes__contenedor {
+  position: relative;
+  isolation: isolate;
+  min-height: clamp(24rem, 54vh, 38rem);
+  overflow: hidden;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-lg);
+  background: var(--color-gris-urbano-100);
+}
+
+.mapaInteractivoReportes__mapa {
+  z-index: 1;
+  width: 100%;
+  min-height: clamp(24rem, 54vh, 38rem);
+  background: var(--color-gris-urbano-100);
+}
+
+.mapaInteractivoReportes__iconoLeaflet {
+  background: transparent;
+  border: 0;
+}
+
+.mapaInteractivoReportes__marcador {
+  position: relative;
+  display: inline-grid;
+  width: 2.35rem;
+  height: 2.35rem;
+  place-items: center;
+  border-radius: var(--radio-completo);
+  color: var(--color-texto-invertido);
+  font-size: 0.76rem;
+  font-weight: var(--peso-negrita);
+  line-height: 1;
+  transform: translateY(-1px);
+}
+
+.mapaInteractivoReportes__marcador::before {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: 0.22;
+  content: "";
+}
+
+.mapaInteractivoReportes__marcador span {
+  position: relative;
+  z-index: 2;
+  display: inline-grid;
+  width: 1.75rem;
+  height: 1.75rem;
+  place-items: center;
+  border: 3px solid var(--color-blanco);
+  border-radius: var(--radio-completo);
+  box-shadow: var(--sombra-md);
+}
+
+.mapaInteractivoReportes__marcador--alta span,
+.mapaInteractivoReportes__marcador--alta::before {
+  background: var(--color-prioridad-alta);
+}
+
+.mapaInteractivoReportes__marcador--media span,
+.mapaInteractivoReportes__marcador--media::before {
+  background: var(--color-prioridad-media);
+}
+
+.mapaInteractivoReportes__marcador--baja span,
+.mapaInteractivoReportes__marcador--baja::before {
+  background: var(--color-prioridad-baja);
+}
+
+.mapaInteractivoReportes__marcador--activo::before {
+  animation: pulsoMarcadorMapaInteractivo 1.6s ease-out infinite;
+  opacity: 0.34;
+}
+
+.mapaInteractivoReportes__marcador--activo span {
+  transform: translateY(-2px) scale(1.08);
+  box-shadow: var(--sombra-lg);
+}
+
+.mapaInteractivoReportes__estadoVacio {
+  position: absolute;
+  inset: var(--espacio-5);
+  z-index: 500;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.mapaInteractivoReportes__estadoVacio .estadoVacio {
+  max-width: 28rem;
+  border: 1px solid var(--color-borde);
+  background: rgb(255 255 255 / 0.9);
+  padding: var(--espacio-5);
+  box-shadow: var(--sombra-sm);
+  backdrop-filter: blur(10px);
+}
+
+.mapaInteractivoReportes__leyenda {
+  position: absolute;
+  right: var(--espacio-4);
+  bottom: var(--espacio-4);
+  z-index: 500;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-2);
+  border: 1px solid rgb(226 232 240 / 0.9);
+  border-radius: var(--radio-completo);
+  background: rgb(255 255 255 / 0.92);
+  padding: var(--espacio-2) var(--espacio-3);
+  box-shadow: var(--sombra-sm);
+  backdrop-filter: blur(12px);
+}
+
+.mapaInteractivoReportes__leyenda span {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-1);
+  color: var(--color-texto-secundario);
+  font-size: var(--tamano-texto-xs);
+  font-weight: var(--peso-seminegrita);
+}
+
+.mapaInteractivoReportes__leyendaPunto {
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: var(--radio-completo);
+}
+
+.mapaInteractivoReportes__leyendaPunto--alta {
+  background: var(--color-prioridad-alta);
+}
+
+.mapaInteractivoReportes__leyendaPunto--media {
+  background: var(--color-prioridad-media);
+}
+
+.mapaInteractivoReportes__leyendaPunto--baja {
+  background: var(--color-prioridad-baja);
+}
+
+.mapaInteractivoReportes__popup {
+  display: grid;
+  min-width: 15rem;
+  max-width: 18rem;
+  gap: var(--espacio-3);
+}
+
+.mapaInteractivoReportes__popup--compacto {
+  min-width: 12rem;
+  gap: var(--espacio-2);
+}
+
+.mapaInteractivoReportes__popupCategoria {
+  display: inline-flex;
+  width: fit-content;
+  border-radius: var(--radio-completo);
+  background: var(--color-principal-suave);
+  padding: 0.2rem 0.55rem;
+  color: var(--color-principal);
+  font-size: var(--tamano-texto-xs);
+  font-weight: var(--peso-seminegrita);
+}
+
+.mapaInteractivoReportes__popupTitulo {
+  margin: 0;
+  color: var(--color-texto);
+  font-size: var(--tamano-texto-md);
+  font-weight: var(--peso-negrita);
+  line-height: var(--alto-linea-ajustado);
+}
+
+.mapaInteractivoReportes__popupTexto,
+.mapaInteractivoReportes__popupUbicacion {
+  margin: 0;
+  color: var(--color-texto-secundario);
+  font-size: var(--tamano-texto-sm);
+  line-height: var(--alto-linea-normal);
+}
+
+.mapaInteractivoReportes__popupInsignias {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-2);
+}
+
+.mapaInteractivoReportes__popupDatos {
+  display: grid;
+  gap: var(--espacio-2);
+  margin: 0;
+}
+
+.mapaInteractivoReportes__popupDatos div {
+  display: grid;
+  grid-template-columns: 5rem 1fr;
+  gap: var(--espacio-2);
+  align-items: start;
+}
+
+.mapaInteractivoReportes__popupDatos dt {
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-texto-xs);
+  font-weight: var(--peso-seminegrita);
+}
+
+.mapaInteractivoReportes__popupDatos dd {
+  margin: 0;
+  color: var(--color-texto);
+  font-size: var(--tamano-texto-xs);
+}
+
+.mapaInteractivoReportes__pie {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--espacio-2);
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-texto-sm);
+}
+
+.mapaInteractivoReportes .leaflet-container {
+  font-family: inherit;
+}
+
+.mapaInteractivoReportes .leaflet-control-attribution {
+  font-size: 0.68rem;
+}
+
+.mapaInteractivoReportes .leaflet-popup-content-wrapper {
+  border-radius: var(--radio-lg);
+  box-shadow: var(--sombra-lg);
+}
+
+.mapaInteractivoReportes .leaflet-popup-content {
+  margin: var(--espacio-4);
+}
+
+.mapaInteractivoReportes .leaflet-control-zoom a {
+  color: var(--color-texto);
+}
+
+@keyframes pulsoMarcadorMapaInteractivo {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.34;
+  }
+
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mapaInteractivoReportes__marcador--activo::before {
+    animation: none;
+  }
+
+  .mapaInteractivoReportes__marcador span {
+    transition: none;
+  }
+}
+
+@media (max-width: 920px) {
+  .mapaInteractivoReportes__encabezado {
+    flex-direction: column;
+  }
+
+  .mapaInteractivoReportes__acciones {
+    justify-content: flex-start;
+  }
+
+  .mapaInteractivoReportes__contenedor,
+  .mapaInteractivoReportes__mapa {
+    min-height: 28rem;
+  }
+
+  .mapaInteractivoReportes__leyenda {
+    right: var(--espacio-3);
+    bottom: var(--espacio-3);
+    left: var(--espacio-3);
+    justify-content: center;
+    border-radius: var(--radio-lg);
+  }
+}
+
+@media (max-width: 640px) {
+  .mapaInteractivoReportes {
+    padding: var(--espacio-4);
+  }
+
+  .mapaInteractivoReportes__contenedor,
+  .mapaInteractivoReportes__mapa {
+    min-height: 24rem;
+  }
+
+  .mapaInteractivoReportes__descripcion {
+    font-size: var(--tamano-texto-sm);
+  }
+
+  .mapaInteractivoReportes__marcador span {
+    width: 1.45rem;
+    height: 1.45rem;
+    font-size: 0.65rem;
+  }
+
+  .mapaInteractivoReportes__popup {
+    min-width: 13rem;
+  }
+
+  .mapaInteractivoReportes__popupDatos div {
+    grid-template-columns: 1fr;
+    gap: 0.15rem;
+  }
+}
