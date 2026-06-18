@@ -149,6 +149,211 @@
   font-weight: var(--peso-seminegrita);
 }
 
+.crearReportePagina__ubicacionHerramientas {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-4);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-lg);
+  background:
+    radial-gradient(circle at 10% 16%, rgb(36 116 214 / 0.12), transparent 9rem),
+    var(--color-superficie-secundaria);
+  padding: var(--espacio-4);
+}
+
+.crearReportePagina__ubicacionHerramientas strong {
+  display: block;
+  margin-bottom: var(--espacio-1);
+  color: var(--color-texto);
+  font-size: var(--tamano-texto-md);
+}
+
+.crearReportePagina__ubicacionHerramientas p {
+  max-width: 42rem;
+  margin-bottom: 0;
+  color: var(--color-texto-secundario);
+  font-size: var(--tamano-texto-sm);
+}
+
+.crearReportePagina__ubicacionAcciones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--espacio-2);
+  min-width: fit-content;
+}
+
+.crearReportePagina__vistaUbicacion {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(18rem, 0.9fr);
+  gap: var(--espacio-4);
+  align-items: stretch;
+}
+
+.crearReportePagina__mapaMiniatura {
+  position: relative;
+  isolation: isolate;
+  min-height: 15rem;
+  overflow: hidden;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-lg);
+  background:
+    radial-gradient(circle at 24% 26%, rgb(36 116 214 / 0.15), transparent 7rem),
+    radial-gradient(circle at 78% 76%, rgb(13 136 79 / 0.14), transparent 7rem),
+    linear-gradient(135deg, var(--color-gris-urbano-50), var(--color-gris-urbano-100));
+}
+
+.crearReportePagina__mapaRejilla {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(rgb(148 163 184 / 0.16) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(148 163 184 / 0.16) 1px, transparent 1px);
+  background-size: 2.5rem 2.5rem;
+}
+
+.crearReportePagina__mapaVia {
+  position: absolute;
+  z-index: 2;
+  border-radius: var(--radio-completo);
+  background: rgb(255 255 255 / 0.76);
+  box-shadow:
+    inset 0 0 0 1px rgb(148 163 184 / 0.22),
+    var(--sombra-xs);
+}
+
+.crearReportePagina__mapaVia--horizontal {
+  top: 48%;
+  left: -10%;
+  width: 120%;
+  height: 0.85rem;
+  transform: rotate(-12deg);
+}
+
+.crearReportePagina__mapaVia--vertical {
+  top: -10%;
+  left: 56%;
+  width: 0.75rem;
+  height: 120%;
+  transform: rotate(16deg);
+}
+
+.crearReportePagina__mapaMarcador {
+  position: absolute;
+  top: 48%;
+  left: 56%;
+  z-index: 5;
+  display: inline-grid;
+  width: 3rem;
+  height: 3rem;
+  place-items: center;
+  transform: translate(-50%, -50%);
+  border-radius: var(--radio-completo);
+  background: rgb(36 116 214 / 0.16);
+}
+
+.crearReportePagina__mapaMarcador::after {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--color-principal);
+  opacity: 0.18;
+  content: "";
+  animation: pulsoCrearReporteUbicacion 1.7s ease-out infinite;
+}
+
+.crearReportePagina__mapaMarcador span {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 1.35rem;
+  height: 1.35rem;
+  border: 3px solid var(--color-blanco);
+  border-radius: var(--radio-completo);
+  background: var(--color-principal);
+  box-shadow: var(--sombra-md);
+}
+
+.crearReportePagina__mapaSinPunto {
+  position: absolute;
+  inset: var(--espacio-4);
+  z-index: 4;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: var(--espacio-2);
+  border: 1px dashed var(--color-borde);
+  border-radius: var(--radio-lg);
+  background: rgb(255 255 255 / 0.72);
+  padding: var(--espacio-4);
+  text-align: center;
+  backdrop-filter: blur(8px);
+}
+
+.crearReportePagina__mapaSinPunto strong {
+  color: var(--color-texto);
+  font-size: var(--tamano-texto-md);
+}
+
+.crearReportePagina__mapaSinPunto span {
+  color: var(--color-texto-secundario);
+  font-size: var(--tamano-texto-sm);
+}
+
+.crearReportePagina__datosUbicacion {
+  display: grid;
+  gap: var(--espacio-3);
+}
+
+.crearReportePagina__datosUbicacion div {
+  display: grid;
+  gap: var(--espacio-1);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  background: var(--color-superficie-secundaria);
+  padding: var(--espacio-3);
+}
+
+.crearReportePagina__datosUbicacion span {
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-texto-xs);
+  font-weight: var(--peso-seminegrita);
+}
+
+.crearReportePagina__datosUbicacion strong {
+  color: var(--color-texto);
+  font-size: var(--tamano-texto-sm);
+  font-weight: var(--peso-seminegrita);
+  overflow-wrap: anywhere;
+}
+
+.crearReportePagina__datosUbicacion a {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  border: 1px solid var(--color-azul-civico-200);
+  border-radius: var(--radio-completo);
+  background: var(--color-principal-suave);
+  padding: 0.55rem 0.9rem;
+  color: var(--color-principal);
+  font-size: var(--tamano-texto-sm);
+  font-weight: var(--peso-seminegrita);
+  text-decoration: none;
+  transition:
+    background-color var(--transicion-rapida),
+    border-color var(--transicion-rapida),
+    color var(--transicion-rapida);
+}
+
+.crearReportePagina__datosUbicacion a:hover,
+.crearReportePagina__datosUbicacion a:focus-visible {
+  border-color: var(--color-principal);
+  background: var(--color-principal);
+  color: var(--color-texto-invertido);
+}
+
 .crearReportePagina__campoArchivo input {
   padding: var(--espacio-4);
   border-style: dashed;
@@ -250,6 +455,18 @@
   margin-top: var(--espacio-5);
 }
 
+@keyframes pulsoCrearReporteUbicacion {
+  0% {
+    transform: scale(0.75);
+    opacity: 0.24;
+  }
+
+  100% {
+    transform: scale(2.1);
+    opacity: 0;
+  }
+}
+
 @media (max-width: 1120px) {
   .crearReportePagina__grid {
     grid-template-columns: 1fr;
@@ -260,19 +477,33 @@
   }
 }
 
-@media (max-width: 860px) {
-  .crearReportePagina__encabezado {
-    flex-direction: column;
+@media (max-width: 980px) {
+  .crearReportePagina__vistaUbicacion {
+    grid-template-columns: 1fr;
   }
 
-  .crearReportePagina__accionesEncabezado {
+  .crearReportePagina__mapaMiniatura {
+    min-height: 13rem;
+  }
+}
+
+@media (max-width: 860px) {
+  .crearReportePagina__encabezado,
+  .crearReportePagina__ubicacionHerramientas {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .crearReportePagina__accionesEncabezado,
+  .crearReportePagina__ubicacionAcciones {
     align-items: stretch;
     justify-content: flex-start;
     width: 100%;
     min-width: 0;
   }
 
-  .crearReportePagina__accionesEncabezado .boton {
+  .crearReportePagina__accionesEncabezado .boton,
+  .crearReportePagina__ubicacionAcciones .boton {
     width: 100%;
   }
 }

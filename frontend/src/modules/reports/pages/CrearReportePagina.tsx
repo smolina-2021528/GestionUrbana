@@ -14,6 +14,10 @@ import {
   type CategoriaReporte,
   type CrearReportePayload
 } from '../types/reportesTipos';
+import {
+  esLatitudReporteValida,
+  esLongitudReporteValida
+} from '../utils/validacionesGeograficas';
 import './crearReportePagina.css';
 
 type FormularioCrearReporte = {
@@ -79,6 +83,25 @@ function esCategoriaReporte(valor: string): valor is CategoriaReporte {
   return categoriasReporte.includes(valor as CategoriaReporte);
 }
 
+function obtenerCoordenadasValidas(formulario: FormularioCrearReporte) {
+  const latitud = convertirNumero(formulario.latitude);
+  const longitud = convertirNumero(formulario.longitude);
+
+  if (
+    latitud === undefined ||
+    longitud === undefined ||
+    !esLatitudReporteValida(latitud) ||
+    !esLongitudReporteValida(longitud)
+  ) {
+    return null;
+  }
+
+  return {
+    latitude: latitud,
+    longitude: longitud
+  };
+}
+
 function validarFormularioCrearReporte(formulario: FormularioCrearReporte) {
   const errores: ErroresFormularioCrearReporte = {};
 
@@ -120,7 +143,7 @@ function validarFormularioCrearReporte(formulario: FormularioCrearReporte) {
   if (latitudTexto) {
     const latitud = Number(latitudTexto);
 
-    if (!Number.isFinite(latitud) || latitud < -90 || latitud > 90) {
+    if (!Number.isFinite(latitud) || !esLatitudReporteValida(latitud)) {
       errores.latitude = 'La latitud debe ser un número entre -90 y 90.';
     }
   }
@@ -128,7 +151,7 @@ function validarFormularioCrearReporte(formulario: FormularioCrearReporte) {
   if (longitudTexto) {
     const longitud = Number(longitudTexto);
 
-    if (!Number.isFinite(longitud) || longitud < -180 || longitud > 180) {
+    if (!Number.isFinite(longitud) || !esLongitudReporteValida(longitud)) {
       errores.longitude = 'La longitud debe ser un número entre -180 y 180.';
     }
   }
@@ -178,6 +201,28 @@ function formatearTamanoArchivo(bytes: number) {
   }).format(bytes / (1024 * 1024))} MB`;
 }
 
+function formatearCoordenada(valor: string) {
+  const numero = convertirNumero(valor);
+
+  if (numero === undefined) {
+    return 'No registrada';
+  }
+
+  return new Intl.NumberFormat('es-GT', {
+    maximumFractionDigits: 6
+  }).format(numero);
+}
+
+function obtenerUrlMapa(formulario: FormularioCrearReporte) {
+  const coordenadas = obtenerCoordenadasValidas(formulario);
+
+  if (!coordenadas) {
+    return null;
+  }
+
+  return `https://www.google.com/maps/search/?api=1&query=${coordenadas.latitude},${coordenadas.longitude}`;
+}
+
 export function CrearReportePagina() {
   const navigate = useNavigate();
   const crearReporte = usarCrearReporte();
@@ -186,9 +231,15 @@ export function CrearReportePagina() {
   const [errores, setErrores] = useState<ErroresFormularioCrearReporte>({});
   const [mensajeError, setMensajeError] = useState<string | null>(null);
   const [mensajeExito, setMensajeExito] = useState<string | null>(null);
+  const [mensajeUbicacion, setMensajeUbicacion] = useState<string | null>(null);
+  const [solicitandoUbicacion, setSolicitandoUbicacion] = useState(false);
   const [llaveInputImagenes, setLlaveInputImagenes] = useState(0);
 
   const totalImagenes = formulario.images.length;
+  const urlMapa = obtenerUrlMapa(formulario);
+  const coordenadasValidas = obtenerCoordenadasValidas(formulario);
+  const tieneDireccion = limpiarTexto(formulario.address).length > 0;
+  const tieneUbicacion = tieneDireccion || Boolean(coordenadasValidas);
 
   const resumenUbicacion = useMemo(() => {
     const direccion = limpiarTexto(formulario.address);
@@ -227,6 +278,7 @@ export function CrearReportePagina() {
 
     setMensajeError(null);
     setMensajeExito(null);
+    setMensajeUbicacion(null);
   };
 
   const cambiarCategoria = (evento: ChangeEvent<HTMLSelectElement>) => {
@@ -269,11 +321,77 @@ export function CrearReportePagina() {
     });
   };
 
+  const limpiarUbicacion = () => {
+    setFormulario((formularioActual) => ({
+      ...formularioActual,
+      address: '',
+      latitude: '',
+      longitude: ''
+    }));
+
+    setErrores((erroresActuales) => {
+      const erroresActualizados = { ...erroresActuales };
+      delete erroresActualizados.address;
+      delete erroresActualizados.latitude;
+      delete erroresActualizados.longitude;
+      return erroresActualizados;
+    });
+
+    setMensajeUbicacion(null);
+    setMensajeError(null);
+    setMensajeExito(null);
+  };
+
+  const usarUbicacionActual = () => {
+    if (!navigator.geolocation) {
+      setMensajeUbicacion('Tu navegador no permite obtener tu ubicación actual.');
+      return;
+    }
+
+    setSolicitandoUbicacion(true);
+    setMensajeUbicacion(null);
+
+    navigator.geolocation.getCurrentPosition(
+      (posicion) => {
+        setFormulario((formularioActual) => ({
+          ...formularioActual,
+          latitude: posicion.coords.latitude.toFixed(6),
+          longitude: posicion.coords.longitude.toFixed(6)
+        }));
+
+        setErrores((erroresActuales) => {
+          const erroresActualizados = { ...erroresActuales };
+          delete erroresActualizados.latitude;
+          delete erroresActualizados.longitude;
+          return erroresActualizados;
+        });
+
+        setSolicitandoUbicacion(false);
+        setMensajeUbicacion(
+          'Ubicación detectada. Puedes agregar una dirección o referencia para completar el reporte.'
+        );
+      },
+      () => {
+        setSolicitandoUbicacion(false);
+        setMensajeUbicacion(
+          'No fue posible obtener tu ubicación. Puedes ingresar las coordenadas manualmente.'
+        );
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 60000
+      }
+    );
+  };
+
   const limpiarFormulario = () => {
     setFormulario(formularioInicial);
     setErrores({});
     setMensajeError(null);
     setMensajeExito(null);
+    setMensajeUbicacion(null);
+    setSolicitandoUbicacion(false);
     setLlaveInputImagenes((llaveActual) => llaveActual + 1);
   };
 
@@ -413,9 +531,43 @@ export function CrearReportePagina() {
 
             <Tarjeta
               titulo="2. Ubicación"
-              descripcion="Agrega una referencia clara para ubicar el problema."
+              descripcion="Agrega coordenadas o una referencia clara para ubicar el problema."
             >
               <div className="crearReportePagina__campos">
+                {mensajeUbicacion ? (
+                  <Alerta variante="informacion" titulo="Ubicación">
+                    <p>{mensajeUbicacion}</p>
+                  </Alerta>
+                ) : null}
+
+                <div className="crearReportePagina__ubicacionHerramientas">
+                  <div>
+                    <strong>Ubicación territorial</strong>
+                    <p>
+                      Puedes registrar una dirección, ingresar coordenadas manualmente o usar la
+                      ubicación actual del navegador.
+                    </p>
+                  </div>
+
+                  <div className="crearReportePagina__ubicacionAcciones">
+                    <Boton
+                      variante="secundario"
+                      disabled={crearReporte.isPending || solicitandoUbicacion}
+                      onClick={usarUbicacionActual}
+                    >
+                      {solicitandoUbicacion ? 'Obteniendo ubicación...' : 'Usar mi ubicación'}
+                    </Boton>
+
+                    <Boton
+                      variante="fantasma"
+                      disabled={crearReporte.isPending || !tieneUbicacion}
+                      onClick={limpiarUbicacion}
+                    >
+                      Limpiar ubicación
+                    </Boton>
+                  </div>
+                </div>
+
                 <label className="crearReportePagina__campo">
                   <span>Dirección o referencia</span>
                   <input
@@ -429,7 +581,7 @@ export function CrearReportePagina() {
                   {errores.address ? (
                     <small className="crearReportePagina__error">{errores.address}</small>
                   ) : (
-                    <small>También puedes dejar este campo vacío si usarás coordenadas.</small>
+                    <small>Agrega una referencia que ayude a ubicar la incidencia.</small>
                   )}
                 </label>
 
@@ -441,15 +593,15 @@ export function CrearReportePagina() {
                       value={formulario.latitude}
                       min={-90}
                       max={90}
-                      step="any"
-                      placeholder="Ej. 14.6349"
+                      step="0.000001"
+                      placeholder="Ej. 14.634915"
                       disabled={crearReporte.isPending}
                       onChange={(evento) => actualizarCampo('latitude', evento.target.value)}
                     />
                     {errores.latitude ? (
                       <small className="crearReportePagina__error">{errores.latitude}</small>
                     ) : (
-                      <small>Opcional.</small>
+                      <small>Debe estar entre -90 y 90.</small>
                     )}
                   </label>
 
@@ -460,17 +612,64 @@ export function CrearReportePagina() {
                       value={formulario.longitude}
                       min={-180}
                       max={180}
-                      step="any"
-                      placeholder="Ej. -90.5069"
+                      step="0.000001"
+                      placeholder="Ej. -90.506882"
                       disabled={crearReporte.isPending}
                       onChange={(evento) => actualizarCampo('longitude', evento.target.value)}
                     />
                     {errores.longitude ? (
                       <small className="crearReportePagina__error">{errores.longitude}</small>
                     ) : (
-                      <small>Opcional.</small>
+                      <small>Debe estar entre -180 y 180.</small>
                     )}
                   </label>
+                </div>
+
+                <div className="crearReportePagina__vistaUbicacion">
+                  <div className="crearReportePagina__mapaMiniatura" aria-label="Referencia visual de ubicación">
+                    <div className="crearReportePagina__mapaRejilla" aria-hidden="true" />
+                    <div className="crearReportePagina__mapaVia crearReportePagina__mapaVia--horizontal" aria-hidden="true" />
+                    <div className="crearReportePagina__mapaVia crearReportePagina__mapaVia--vertical" aria-hidden="true" />
+
+                    {coordenadasValidas ? (
+                      <span className="crearReportePagina__mapaMarcador" title="Coordenadas registradas">
+                        <span aria-hidden="true" />
+                      </span>
+                    ) : (
+                      <div className="crearReportePagina__mapaSinPunto">
+                        <strong>Sin coordenadas</strong>
+                        <span>Agrega latitud y longitud para visualizar el punto.</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="crearReportePagina__datosUbicacion">
+                    <div>
+                      <span>Estado</span>
+                      <strong>{tieneUbicacion ? 'Ubicación capturada' : 'Sin ubicación'}</strong>
+                    </div>
+
+                    <div>
+                      <span>Latitud</span>
+                      <strong>{formatearCoordenada(formulario.latitude)}</strong>
+                    </div>
+
+                    <div>
+                      <span>Longitud</span>
+                      <strong>{formatearCoordenada(formulario.longitude)}</strong>
+                    </div>
+
+                    <div>
+                      <span>Referencia</span>
+                      <strong>{limpiarTexto(formulario.address) || 'No registrada'}</strong>
+                    </div>
+
+                    {urlMapa ? (
+                      <a href={urlMapa} target="_blank" rel="noreferrer">
+                        Abrir punto en mapa
+                      </a>
+                    ) : null}
+                  </div>
                 </div>
               </div>
             </Tarjeta>
@@ -550,6 +749,11 @@ export function CrearReportePagina() {
                 <div>
                   <span>Ubicación</span>
                   <strong>{resumenUbicacion}</strong>
+                </div>
+
+                <div>
+                  <span>Estado territorial</span>
+                  <strong>{coordenadasValidas ? 'Con coordenadas' : 'Sin coordenadas'}</strong>
                 </div>
 
                 <div>
