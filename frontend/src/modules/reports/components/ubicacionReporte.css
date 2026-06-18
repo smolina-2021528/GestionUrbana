@@ -281,6 +281,18 @@
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .ubicacionReporte__marcador::after {
+    animation: none;
+  }
+
+  .ubicacionReporte__enlaceMapa,
+  .formularioUbicacionReporte__campo input,
+  .formularioUbicacionReporte__campo textarea {
+    transition: none;
+  }
+}
+
 @media (max-width: 980px) {
   .ubicacionReporte__grid {
     grid-template-columns: 1fr;
@@ -306,5 +318,10 @@
   .ubicacionReporte__datos,
   .formularioUbicacionReporte__grid {
     grid-template-columns: 1fr;
+  }
+
+  .ubicacionReporte__enlaceMapa {
+    justify-content: center;
+    width: 100%;
   }
 }

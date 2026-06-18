@@ -181,7 +181,11 @@ export function MapaReportes({
 }: PropiedadesMapaReportes) {
   const reportesConUbicacion = reportes.filter(esPuntoConUbicacion);
   const puntosHeatmapConUbicacion = puntosHeatmap.filter(esPuntoConUbicacion);
-  const puntosBase = obtenerPuntosBase(reportesConUbicacion, puntosHeatmapConUbicacion, mostrarHeatmap);
+  const puntosBase = obtenerPuntosBase(
+    reportesConUbicacion,
+    puntosHeatmapConUbicacion,
+    mostrarHeatmap
+  );
   const limitesMapa = obtenerLimitesMapa(puntosBase, centro);
   const radioVisible = formatearRadio(radioMetros);
 
@@ -258,7 +262,9 @@ export function MapaReportes({
             className="mapaReportes__centroConsulta"
             style={estiloCentro}
             title={radioVisible ? `Centro de consulta · radio ${radioVisible}` : 'Centro de consulta'}
-            aria-label={radioVisible ? `Centro de consulta con radio ${radioVisible}` : 'Centro de consulta'}
+            aria-label={
+              radioVisible ? `Centro de consulta con radio ${radioVisible}` : 'Centro de consulta'
+            }
           >
             <span aria-hidden="true" />
           </span>
@@ -301,6 +307,7 @@ export function MapaReportes({
         <span>{reportesConUbicacion.length} reportes con ubicación</span>
         {mostrarHeatmap ? <span>{puntosHeatmapConUbicacion.length} puntos de intensidad</span> : null}
         {radioVisible ? <span>Radio: {radioVisible}</span> : null}
+        <span>Vista referencial</span>
       </footer>
     </section>
   );

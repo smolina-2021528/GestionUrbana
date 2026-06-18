@@ -52,7 +52,7 @@
 .mapaReportes__superficie {
   position: relative;
   isolation: isolate;
-  min-height: 34rem;
+  min-height: clamp(24rem, 54vh, 38rem);
   overflow: hidden;
   border: 1px solid var(--color-borde);
   border-radius: var(--radio-lg);
@@ -60,6 +60,27 @@
     radial-gradient(circle at 18% 20%, rgb(13 136 79 / 0.16), transparent 7rem),
     radial-gradient(circle at 76% 72%, rgb(36 116 214 / 0.16), transparent 8rem),
     linear-gradient(135deg, var(--color-gris-urbano-50), var(--color-gris-urbano-100));
+}
+
+.mapaReportes__superficie::after {
+  position: absolute;
+  top: var(--espacio-4);
+  right: var(--espacio-4);
+  z-index: 4;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.35rem;
+  height: 2.35rem;
+  border: 1px solid rgb(148 163 184 / 0.35);
+  border-radius: var(--radio-completo);
+  background: rgb(255 255 255 / 0.82);
+  color: var(--color-texto-secundario);
+  font-size: var(--tamano-texto-xs);
+  font-weight: var(--peso-negrita);
+  box-shadow: var(--sombra-sm);
+  content: "N";
+  backdrop-filter: blur(12px);
 }
 
 .mapaReportes__rejilla {
@@ -134,22 +155,23 @@
 .marcadorReporteMapa {
   z-index: 6;
   display: inline-grid;
-  width: 2.15rem;
-  height: 2.15rem;
+  width: 2.25rem;
+  height: 2.25rem;
   place-items: center;
   border: 0;
   border-radius: var(--radio-completo);
   background: transparent;
   padding: 0;
   color: var(--color-texto-invertido);
+  cursor: pointer;
 }
 
 .marcadorReporteMapa__punto {
   position: relative;
   z-index: 2;
   display: inline-grid;
-  width: 1.65rem;
-  height: 1.65rem;
+  width: 1.7rem;
+  height: 1.7rem;
   place-items: center;
   border: 3px solid var(--color-blanco);
   border-radius: var(--radio-completo);
@@ -157,6 +179,9 @@
   font-size: 0.7rem;
   font-weight: var(--peso-negrita);
   line-height: 1;
+  transition:
+    transform var(--transicion-rapida),
+    box-shadow var(--transicion-rapida);
 }
 
 .marcadorReporteMapa__pulso {
@@ -187,6 +212,11 @@
 .marcadorReporteMapa--activo .marcadorReporteMapa__punto {
   transform: translateY(-2px) scale(1.08);
   box-shadow: var(--sombra-lg);
+}
+
+.marcadorReporteMapa:focus-visible {
+  outline: 3px solid rgb(36 116 214 / 0.35);
+  outline-offset: 0.25rem;
 }
 
 .marcadorReporteMapa--activo .marcadorReporteMapa__pulso {
@@ -247,7 +277,7 @@
 .mapaReportes__estadoVacio .estadoVacio {
   max-width: 28rem;
   border: 1px solid var(--color-borde);
-  background: rgb(255 255 255 / 0.86);
+  background: rgb(255 255 255 / 0.88);
   padding: var(--espacio-5);
   box-shadow: var(--sombra-sm);
   backdrop-filter: blur(10px);
@@ -263,7 +293,7 @@
   gap: var(--espacio-2);
   border: 1px solid rgb(226 232 240 / 0.9);
   border-radius: var(--radio-completo);
-  background: rgb(255 255 255 / 0.88);
+  background: rgb(255 255 255 / 0.9);
   padding: var(--espacio-2) var(--espacio-3);
   box-shadow: var(--sombra-sm);
   backdrop-filter: blur(12px);
@@ -368,9 +398,16 @@
   display: grid;
   width: 100%;
   gap: var(--espacio-2);
+  border: 0;
   background: transparent;
   padding: var(--espacio-4);
   text-align: left;
+  cursor: pointer;
+}
+
+.panelReportesMapa__selector:focus-visible {
+  outline: 3px solid rgb(36 116 214 / 0.18);
+  outline-offset: -3px;
 }
 
 .panelReportesMapa__categoria {
@@ -442,6 +479,17 @@
   100% {
     transform: scale(2.15);
     opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marcadorReporteMapa--activo .marcadorReporteMapa__pulso {
+    animation: none;
+  }
+
+  .marcadorReporteMapa__punto,
+  .panelReportesMapa__item {
+    transition: none;
   }
 }
 
