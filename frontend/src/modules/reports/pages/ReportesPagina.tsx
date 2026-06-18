@@ -18,7 +18,7 @@ import {
 } from '../components/FiltrosMapaReportes';
 import { FiltrosReportes } from '../components/FiltrosReportes';
 import { ListadoReportes } from '../components/ListadoReportes';
-import { MapaReportes } from '../components/MapaReportes';
+import { MapaInteractivoReportes } from '../components/MapaInteractivoReportes';
 import type { ReporteMapaVisual } from '../components/MarcadorReporte';
 import { PanelReportesMapa } from '../components/PanelReportesMapa';
 import { ResumenReportes } from '../components/ResumenReportes';
@@ -85,8 +85,9 @@ function obtenerMensajeRespuestaFallida(mensaje?: string, error?: string) {
 }
 
 function obtenerTotalConUbicacion(reportes: ReporteMapaVisual[]) {
-  return reportes.filter((reporte) => reporte.hasLocation && reporte.latitude !== null && reporte.longitude !== null)
-    .length;
+  return reportes.filter(
+    (reporte) => reporte.hasLocation && reporte.latitude !== null && reporte.longitude !== null
+  ).length;
 }
 
 function obtenerMensajeConsultaGeograficaFallida(mensaje?: string, error?: string) {
@@ -186,7 +187,9 @@ export function ReportesPagina() {
     : totalReportesMapa;
 
   const totalPuntosHeatmap =
-    respuestaHeatmap?.success === true ? respuestaHeatmap.total ?? puntosHeatmap.length : puntosHeatmap.length;
+    respuestaHeatmap?.success === true
+      ? respuestaHeatmap.total ?? puntosHeatmap.length
+      : puntosHeatmap.length;
 
   const centroConsulta =
     modoConsultaMapa === 'CERCANOS'
@@ -532,7 +535,7 @@ export function ReportesPagina() {
 
         <section className="reportesPagina__mapaOperativo" aria-label="Vista territorial ciudadana">
           <div className="reportesPagina__mapaColumna">
-            <MapaReportes
+            <MapaInteractivoReportes
               reportes={reportesMapaVisibles}
               puntosHeatmap={puntosHeatmap}
               mostrarHeatmap={mostrarHeatmap}
@@ -554,6 +557,7 @@ export function ReportesPagina() {
                   : 'Ajusta las coordenadas, el radio o el área de consulta para visualizar incidencias urbanas.'
               }
               alSeleccionarReporte={seleccionarReporteMapa}
+              alVerDetalle={irADetalleReporte}
             />
           </div>
 
@@ -695,7 +699,7 @@ export function ReportesPagina() {
 
       <section className="reportesPagina__mapaOperativo" aria-label="Vista territorial de reportes">
         <div className="reportesPagina__mapaColumna">
-          <MapaReportes
+          <MapaInteractivoReportes
             reportes={reportesMapaVisibles}
             puntosHeatmap={puntosHeatmap}
             mostrarHeatmap={mostrarHeatmap}
@@ -717,6 +721,7 @@ export function ReportesPagina() {
                 : 'No hay reportes con coordenadas que coincidan con la consulta territorial actual.'
             }
             alSeleccionarReporte={seleccionarReporteMapa}
+            alVerDetalle={irADetalleReporte}
           />
         </div>
 
