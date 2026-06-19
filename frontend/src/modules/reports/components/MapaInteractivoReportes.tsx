@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type MouseEvent, type ReactNode } from 'react';
 import L from 'leaflet';
 import {
   Circle,
@@ -68,6 +68,11 @@ type PropiedadesSincronizadorVistaMapa = {
 type PropiedadesRastreadorAreaVisible = {
   activo: boolean;
   alCambiarAreaVisible: (filtros: FiltrosBoundingBoxReportes, pendiente: boolean) => void;
+};
+
+type PropiedadesControlCentroConsulta = {
+  centro?: CoordenadasGeograficas;
+  radioMetros?: number;
 };
 
 const etiquetasCategoria: Record<CategoriaReporte, string> = {
@@ -155,6 +160,16 @@ function crearIconoReporte(reporte: ReporteMapaVisual, indice: number, activo: b
   });
 }
 
+function crearIconoCentroConsulta() {
+  return L.divIcon({
+    className: 'mapaInteractivoReportes__iconoLeaflet',
+    html: '<span class="mapaInteractivoReportes__centroConsulta"><span></span></span>',
+    iconSize: [34, 34],
+    iconAnchor: [17, 17],
+    popupAnchor: [0, -16]
+  });
+}
+
 function SincronizadorVistaMapa({
   centro,
   reportes,
@@ -232,6 +247,42 @@ function RastreadorAreaVisibleMapa({
   return null;
 }
 
+function ControlCentroConsultaMapa({ centro, radioMetros }: PropiedadesControlCentroConsulta) {
+  const mapa = useMap();
+
+  if (!centro || !tieneUbicacionMapa(centro)) {
+    return null;
+  }
+
+  const centrarConsulta = (evento: MouseEvent<HTMLButtonElement>) => {
+    evento.stopPropagation();
+
+    mapa.flyTo(crearLatLngDesdeCoordenadas(centro), Math.max(mapa.getZoom(), 14), {
+      duration: 0.65
+    });
+  };
+
+  const detenerPropagacion = (evento: MouseEvent<HTMLButtonElement>) => {
+    evento.stopPropagation();
+  };
+
+  return (
+    <div className="leaflet-top leaflet-right mapaInteractivoReportes__controlCentro">
+      <button
+        type="button"
+        className="mapaInteractivoReportes__botonCentro"
+        aria-label="Centrar mapa en el punto de consulta"
+        onClick={centrarConsulta}
+        onMouseDown={detenerPropagacion}
+        onDoubleClick={detenerPropagacion}
+      >
+        <span>Centrar consulta</span>
+        {radioMetros ? <small>{formatearRadioMapa(radioMetros)}</small> : null}
+      </button>
+    </div>
+  );
+}
+
 export function MapaInteractivoReportes({
   reportes,
   puntosHeatmap = [],
@@ -265,6 +316,7 @@ export function MapaInteractivoReportes({
   );
 
   const radioVisible = radioMetros ? formatearRadioMapa(radioMetros) : null;
+  const mostrarCentroConsulta = centro && tieneUbicacionMapa(centro);
   const mostrarEstadoVacio =
     reportesConUbicacion.length === 0 &&
     (!mostrarHeatmap || puntosHeatmapConUbicacion.length === 0);
@@ -327,18 +379,52 @@ export function MapaInteractivoReportes({
             alCambiarAreaVisible={registrarAreaVisible}
           />
 
-          {centro && radioMetros ? (
-            <Circle
-              center={crearLatLngDesdeCoordenadas(centro)}
-              radius={radioMetros}
-              pathOptions={{
-                color: 'var(--color-principal)',
-                fillColor: 'var(--color-principal)',
-                fillOpacity: 0.08,
-                opacity: 0.36,
-                weight: 2
-              }}
-            />
+          <ControlCentroConsultaMapa centro={centro} radioMetros={radioMetros} />
+
+          {mostrarCentroConsulta ? (
+            <>
+              {radioMetros ? (
+                <Circle
+                  center={crearLatLngDesdeCoordenadas(centro)}
+                  radius={radioMetros}
+                  pathOptions={{
+                    color: 'var(--color-principal)',
+                    fillColor: 'var(--color-principal)',
+                    fillOpacity: 0.08,
+                    opacity: 0.36,
+                    weight: 2
+                  }}
+                />
+              ) : null}
+
+              <Marker position={crearLatLngDesdeCoordenadas(centro)} icon={crearIconoCentroConsulta()}>
+                <Popup>
+                  <article className="mapaInteractivoReportes__popup mapaInteractivoReportes__popup--compacto">
+                    <span className="mapaInteractivoReportes__popupCategoria">
+                      Centro de consulta
+                    </span>
+                    <h3 className="mapaInteractivoReportes__popupTitulo">Punto de referencia</h3>
+                    <p className="mapaInteractivoReportes__popupTexto">
+                      {radioMetros
+                        ? `El mapa muestra reportes cercanos dentro de un radio de ${formatearRadioMapa(
+                            radioMetros
+                          )}.`
+                        : 'Punto utilizado como referencia territorial.'}
+                    </p>
+                    <dl className="mapaInteractivoReportes__popupDatos">
+                      <div>
+                        <dt>Latitud</dt>
+                        <dd>{formatearCoordenadaMapa(centro.latitude)}</dd>
+                      </div>
+                      <div>
+                        <dt>Longitud</dt>
+                        <dd>{formatearCoordenadaMapa(centro.longitude)}</dd>
+                      </div>
+                    </dl>
+                  </article>
+                </Popup>
+              </Marker>
+            </>
           ) : null}
 
           {mostrarHeatmap
@@ -468,6 +554,12 @@ export function MapaInteractivoReportes({
             <i className="mapaInteractivoReportes__leyendaPunto mapaInteractivoReportes__leyendaPunto--baja" />
             Baja
           </span>
+          {mostrarCentroConsulta ? (
+            <span>
+              <i className="mapaInteractivoReportes__leyendaPunto mapaInteractivoReportes__leyendaPunto--centro" />
+              Centro
+            </span>
+          ) : null}
         </div>
       </div>
 
@@ -475,6 +567,7 @@ export function MapaInteractivoReportes({
         <span>{reportesConUbicacion.length} reportes con ubicación</span>
         {mostrarHeatmap ? <span>{puntosHeatmapConUbicacion.length} puntos de intensidad</span> : null}
         {radioVisible ? <span>Radio: {radioVisible}</span> : null}
+        {mostrarCentroConsulta ? <span>Centro activo</span> : null}
         <span>Mapa interactivo</span>
       </footer>
     </section>

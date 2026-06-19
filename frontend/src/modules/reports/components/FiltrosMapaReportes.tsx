@@ -41,6 +41,8 @@ const etiquetasEstado: Record<EstadoReporte, string> = {
   RECHAZADO: 'Rechazado'
 };
 
+const radiosRapidosCercanos = [500, 1000, 3000, 5000, 10000] as const;
+
 function esCategoriaReporte(valor: string): valor is CategoriaReporte {
   return categoriasReporte.includes(valor as CategoriaReporte);
 }
@@ -63,6 +65,16 @@ function limpiarCampo<TFiltros extends Record<string, unknown>>(
   delete filtrosActualizados[campo];
 
   return filtrosActualizados;
+}
+
+function formatearRadioRapido(radio: number) {
+  if (radio >= 1000) {
+    return `${new Intl.NumberFormat('es-GT', {
+      maximumFractionDigits: 1
+    }).format(radio / 1000)} km`;
+  }
+
+  return `${new Intl.NumberFormat('es-GT').format(radio)} m`;
 }
 
 export function FiltrosMapaReportes({
@@ -131,10 +143,20 @@ export function FiltrosMapaReportes({
     alCambiarFiltrosArea({ ...filtrosArea, status: valor });
   };
 
+  const cambiarRadioRapido = (radio: number) => {
+    alCambiarFiltrosCercanos({
+      ...filtrosCercanos,
+      page: 1,
+      radius: radio
+    });
+  };
+
+  const radioActual = filtrosCercanos.radius ?? 3000;
+
   return (
     <Tarjeta
       titulo="Consulta territorial"
-      descripcion="Consulta reportes cercanos o define un área por coordenadas para visualizar incidencias urbanas."
+      descripcion="Consulta reportes cercanos, usa tu ubicación actual o define un área visible para revisar incidencias urbanas."
     >
       <form className="filtrosMapaReportes" onSubmit={consultar}>
         <div className="filtrosMapaReportes__modos" role="group" aria-label="Tipo de consulta">
@@ -168,115 +190,148 @@ export function FiltrosMapaReportes({
         </div>
 
         {modo === 'CERCANOS' ? (
-          <div className="filtrosMapaReportes__grid">
-            <label className="filtrosMapaReportes__campo">
-              <span>Latitud centro</span>
-              <input
-                type="number"
-                step="0.000001"
-                min="-90"
-                max="90"
-                value={filtrosCercanos.lat}
-                disabled={bloqueado}
-                onChange={(evento) =>
-                  alCambiarFiltrosCercanos({
-                    ...filtrosCercanos,
-                    page: 1,
-                    lat: obtenerNumeroCampo(evento, filtrosCercanos.lat)
-                  })
-                }
-              />
-            </label>
+          <>
+            <div className="filtrosMapaReportes__ayudaPrincipal">
+              <strong>Consulta por punto y radio</strong>
+              <p>
+                El centro se muestra en el mapa con un marcador azul y el radio se visualiza como
+                un círculo alrededor del punto seleccionado.
+              </p>
+            </div>
 
-            <label className="filtrosMapaReportes__campo">
-              <span>Longitud centro</span>
-              <input
-                type="number"
-                step="0.000001"
-                min="-180"
-                max="180"
-                value={filtrosCercanos.lng}
-                disabled={bloqueado}
-                onChange={(evento) =>
-                  alCambiarFiltrosCercanos({
-                    ...filtrosCercanos,
-                    page: 1,
-                    lng: obtenerNumeroCampo(evento, filtrosCercanos.lng)
-                  })
-                }
-              />
-            </label>
+            <div className="filtrosMapaReportes__grid">
+              <label className="filtrosMapaReportes__campo">
+                <span>Latitud centro</span>
+                <input
+                  type="number"
+                  step="0.000001"
+                  min="-90"
+                  max="90"
+                  value={filtrosCercanos.lat}
+                  disabled={bloqueado}
+                  onChange={(evento) =>
+                    alCambiarFiltrosCercanos({
+                      ...filtrosCercanos,
+                      page: 1,
+                      lat: obtenerNumeroCampo(evento, filtrosCercanos.lat)
+                    })
+                  }
+                />
+              </label>
 
-            <label className="filtrosMapaReportes__campo">
-              <span>Radio en metros</span>
-              <input
-                type="number"
-                step="50"
-                min="50"
-                max="50000"
-                value={filtrosCercanos.radius ?? 3000}
-                disabled={bloqueado}
-                onChange={(evento) =>
-                  alCambiarFiltrosCercanos({
-                    ...filtrosCercanos,
-                    page: 1,
-                    radius: obtenerNumeroCampo(evento, filtrosCercanos.radius ?? 3000)
-                  })
-                }
-              />
-            </label>
+              <label className="filtrosMapaReportes__campo">
+                <span>Longitud centro</span>
+                <input
+                  type="number"
+                  step="0.000001"
+                  min="-180"
+                  max="180"
+                  value={filtrosCercanos.lng}
+                  disabled={bloqueado}
+                  onChange={(evento) =>
+                    alCambiarFiltrosCercanos({
+                      ...filtrosCercanos,
+                      page: 1,
+                      lng: obtenerNumeroCampo(evento, filtrosCercanos.lng)
+                    })
+                  }
+                />
+              </label>
 
-            <label className="filtrosMapaReportes__campo">
-              <span>Categoría</span>
-              <select
-                value={filtrosCercanos.category ?? ''}
-                disabled={bloqueado}
-                onChange={cambiarCategoriaCercanos}
-              >
-                <option value="">Todas</option>
-                {categoriasReporte.map((categoria) => (
-                  <option key={categoria} value={categoria}>
-                    {etiquetasCategoria[categoria]}
-                  </option>
-                ))}
-              </select>
-            </label>
+              <label className="filtrosMapaReportes__campo filtrosMapaReportes__campo--radio">
+                <span>Radio en metros</span>
+                <input
+                  type="number"
+                  step="50"
+                  min="50"
+                  max="50000"
+                  value={radioActual}
+                  disabled={bloqueado}
+                  onChange={(evento) =>
+                    alCambiarFiltrosCercanos({
+                      ...filtrosCercanos,
+                      page: 1,
+                      radius: obtenerNumeroCampo(evento, radioActual)
+                    })
+                  }
+                />
 
-            <label className="filtrosMapaReportes__campo">
-              <span>Estado</span>
-              <select
-                value={filtrosCercanos.status ?? ''}
-                disabled={bloqueado}
-                onChange={cambiarEstadoCercanos}
-              >
-                <option value="">Todos</option>
-                {estadosReporte.map((estado) => (
-                  <option key={estado} value={estado}>
-                    {etiquetasEstado[estado]}
-                  </option>
-                ))}
-              </select>
-            </label>
+                <div className="filtrosMapaReportes__radiosRapidos" role="group" aria-label="Radios rápidos">
+                  {radiosRapidosCercanos.map((radio) => {
+                    const activo = radioActual === radio;
 
-            <label className="filtrosMapaReportes__campo">
-              <span>Límite</span>
-              <input
-                type="number"
-                step="1"
-                min="1"
-                max="50"
-                value={filtrosCercanos.limit ?? 20}
-                disabled={bloqueado}
-                onChange={(evento) =>
-                  alCambiarFiltrosCercanos({
-                    ...filtrosCercanos,
-                    page: 1,
-                    limit: obtenerNumeroCampo(evento, filtrosCercanos.limit ?? 20)
-                  })
-                }
-              />
-            </label>
-          </div>
+                    return (
+                      <button
+                        key={radio}
+                        type="button"
+                        className={[
+                          'filtrosMapaReportes__radioRapido',
+                          activo ? 'filtrosMapaReportes__radioRapido--activo' : ''
+                        ]
+                          .filter(Boolean)
+                          .join(' ')}
+                        disabled={bloqueado}
+                        onClick={() => cambiarRadioRapido(radio)}
+                      >
+                        {formatearRadioRapido(radio)}
+                      </button>
+                    );
+                  })}
+                </div>
+              </label>
+
+              <label className="filtrosMapaReportes__campo">
+                <span>Categoría</span>
+                <select
+                  value={filtrosCercanos.category ?? ''}
+                  disabled={bloqueado}
+                  onChange={cambiarCategoriaCercanos}
+                >
+                  <option value="">Todas</option>
+                  {categoriasReporte.map((categoria) => (
+                    <option key={categoria} value={categoria}>
+                      {etiquetasCategoria[categoria]}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="filtrosMapaReportes__campo">
+                <span>Estado</span>
+                <select
+                  value={filtrosCercanos.status ?? ''}
+                  disabled={bloqueado}
+                  onChange={cambiarEstadoCercanos}
+                >
+                  <option value="">Todos</option>
+                  {estadosReporte.map((estado) => (
+                    <option key={estado} value={estado}>
+                      {etiquetasEstado[estado]}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="filtrosMapaReportes__campo">
+                <span>Límite</span>
+                <input
+                  type="number"
+                  step="1"
+                  min="1"
+                  max="50"
+                  value={filtrosCercanos.limit ?? 20}
+                  disabled={bloqueado}
+                  onChange={(evento) =>
+                    alCambiarFiltrosCercanos({
+                      ...filtrosCercanos,
+                      page: 1,
+                      limit: obtenerNumeroCampo(evento, filtrosCercanos.limit ?? 20)
+                    })
+                  }
+                />
+              </label>
+            </div>
+          </>
         ) : (
           <div className="filtrosMapaReportes__grid filtrosMapaReportes__grid--area">
             <label className="filtrosMapaReportes__campo">

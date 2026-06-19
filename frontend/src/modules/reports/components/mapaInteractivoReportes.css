@@ -128,6 +128,71 @@
   box-shadow: var(--sombra-lg);
 }
 
+.mapaInteractivoReportes__centroConsulta {
+  position: relative;
+  display: inline-grid;
+  width: 2.1rem;
+  height: 2.1rem;
+  place-items: center;
+  border-radius: var(--radio-completo);
+  background: rgb(22 93 175 / 0.16);
+}
+
+.mapaInteractivoReportes__centroConsulta::before {
+  position: absolute;
+  inset: -0.4rem;
+  border: 2px solid rgb(22 93 175 / 0.26);
+  border-radius: inherit;
+  content: "";
+}
+
+.mapaInteractivoReportes__centroConsulta span {
+  position: relative;
+  display: block;
+  width: 1.05rem;
+  height: 1.05rem;
+  border: 3px solid var(--color-blanco);
+  border-radius: var(--radio-completo);
+  background: var(--color-principal);
+  box-shadow: var(--sombra-md);
+}
+
+.mapaInteractivoReportes__controlCentro {
+  margin-top: 4.7rem;
+  margin-right: var(--espacio-3);
+}
+
+.mapaInteractivoReportes__botonCentro {
+  display: grid;
+  gap: 0.1rem;
+  min-width: 9.5rem;
+  border: 1px solid rgb(226 232 240 / 0.96);
+  border-radius: var(--radio-lg);
+  background: rgb(255 255 255 / 0.95);
+  padding: 0.65rem 0.8rem;
+  color: var(--color-texto);
+  font: inherit;
+  font-size: var(--tamano-texto-xs);
+  font-weight: var(--peso-negrita);
+  text-align: left;
+  box-shadow: var(--sombra-sm);
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+}
+
+.mapaInteractivoReportes__botonCentro small {
+  color: var(--color-principal);
+  font-size: 0.68rem;
+  font-weight: var(--peso-seminegrita);
+}
+
+.mapaInteractivoReportes__botonCentro:hover,
+.mapaInteractivoReportes__botonCentro:focus-visible {
+  border-color: var(--color-principal);
+  outline: none;
+  box-shadow: 0 0 0 3px rgb(22 93 175 / 0.12), var(--sombra-sm);
+}
+
 .mapaInteractivoReportes__controlArea {
   position: absolute;
   top: var(--espacio-4);
@@ -219,6 +284,10 @@
 
 .mapaInteractivoReportes__leyendaPunto--baja {
   background: var(--color-prioridad-baja);
+}
+
+.mapaInteractivoReportes__leyendaPunto--centro {
+  background: var(--color-principal);
 }
 
 .mapaInteractivoReportes__popup {
@@ -357,6 +426,15 @@
     min-height: 28rem;
   }
 
+  .mapaInteractivoReportes__controlCentro {
+    margin-top: 7.8rem;
+    margin-right: var(--espacio-3);
+  }
+
+  .mapaInteractivoReportes__botonCentro {
+    min-width: 8.6rem;
+  }
+
   .mapaInteractivoReportes__controlArea {
     top: var(--espacio-3);
     flex-direction: column;
@@ -391,6 +469,21 @@
     width: 1.45rem;
     height: 1.45rem;
     font-size: 0.65rem;
+  }
+
+  .mapaInteractivoReportes__centroConsulta {
+    width: 1.85rem;
+    height: 1.85rem;
+  }
+
+  .mapaInteractivoReportes__controlCentro {
+    margin-top: 8.25rem;
+    margin-right: var(--espacio-2);
+  }
+
+  .mapaInteractivoReportes__botonCentro {
+    min-width: auto;
+    padding: 0.55rem 0.65rem;
   }
 
   .mapaInteractivoReportes__popup {

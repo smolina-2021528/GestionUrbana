@@ -46,6 +46,26 @@
   opacity: 0.65;
 }
 
+.filtrosMapaReportes__ayudaPrincipal {
+  display: grid;
+  gap: var(--espacio-1);
+  border: 1px solid rgb(22 93 175 / 0.12);
+  border-radius: var(--radio-lg);
+  background: var(--color-principal-suave);
+  padding: var(--espacio-3);
+}
+
+.filtrosMapaReportes__ayudaPrincipal strong {
+  color: var(--color-principal);
+  font-size: var(--tamano-texto-sm);
+}
+
+.filtrosMapaReportes__ayudaPrincipal p {
+  margin: 0;
+  color: var(--color-texto-secundario);
+  font-size: var(--tamano-texto-sm);
+}
+
 .filtrosMapaReportes__grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -59,6 +79,10 @@
 .filtrosMapaReportes__campo {
   display: grid;
   gap: var(--espacio-2);
+}
+
+.filtrosMapaReportes__campo--radio {
+  align-content: start;
 }
 
 .filtrosMapaReportes__campo span {
@@ -96,6 +120,49 @@
   color: var(--color-texto-suave);
 }
 
+.filtrosMapaReportes__radiosRapidos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-2);
+}
+
+.filtrosMapaReportes__radioRapido {
+  min-height: 2rem;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-completo);
+  background: var(--color-superficie);
+  padding: 0.35rem 0.7rem;
+  color: var(--color-texto-secundario);
+  font: inherit;
+  font-size: var(--tamano-texto-xs);
+  font-weight: var(--peso-seminegrita);
+  cursor: pointer;
+  transition:
+    border-color var(--transicion-rapida),
+    background-color var(--transicion-rapida),
+    color var(--transicion-rapida),
+    box-shadow var(--transicion-rapida);
+}
+
+.filtrosMapaReportes__radioRapido:hover:not(:disabled),
+.filtrosMapaReportes__radioRapido:focus-visible {
+  border-color: var(--color-principal);
+  color: var(--color-principal);
+  outline: none;
+  box-shadow: 0 0 0 3px rgb(22 93 175 / 0.1);
+}
+
+.filtrosMapaReportes__radioRapido--activo {
+  border-color: var(--color-principal);
+  background: var(--color-principal);
+  color: var(--color-texto-invertido);
+}
+
+.filtrosMapaReportes__radioRapido:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
 .filtrosMapaReportes__acciones {
   display: flex;
   flex-wrap: wrap;
@@ -124,6 +191,11 @@
   .filtrosMapaReportes__grid,
   .filtrosMapaReportes__grid--area {
     grid-template-columns: 1fr;
+  }
+
+  .filtrosMapaReportes__radiosRapidos {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .filtrosMapaReportes__acciones {
