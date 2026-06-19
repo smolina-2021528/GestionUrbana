@@ -10,6 +10,7 @@ import {
 } from '../hooks/usarUbicacionReporte';
 import type { ActualizarUbicacionReportePayload, Reporte } from '../types/reportesTipos';
 import { FormularioUbicacionReporte } from './FormularioUbicacionReporte';
+import { SelectorUbicacionMapa } from './SelectorUbicacionMapa';
 import './ubicacionReporte.css';
 
 type PropiedadesUbicacionReporte = {
@@ -236,22 +237,15 @@ export function UbicacionReporte({
             ) : null}
           </div>
 
-          <div className="ubicacionReporte__vista" aria-label="Referencia visual de ubicación">
-            <div className="ubicacionReporte__rejilla" aria-hidden="true" />
-            <div className="ubicacionReporte__via ubicacionReporte__via--horizontal" aria-hidden="true" />
-            <div className="ubicacionReporte__via ubicacionReporte__via--vertical" aria-hidden="true" />
-
-            {ubicacionRegistrada ? (
-              <span className="ubicacionReporte__marcador" title="Ubicación registrada">
-                <span aria-hidden="true" />
-              </span>
-            ) : (
-              <div className="ubicacionReporte__sinVista">
-                <strong>Sin punto territorial</strong>
-                <span>Agrega coordenadas para ubicar este reporte.</span>
-              </div>
-            )}
-          </div>
+          <SelectorUbicacionMapa
+            latitude={reporte.latitude}
+            longitude={reporte.longitude}
+            soloLectura
+            titulo="Mapa de ubicación"
+            etiquetaPunto="Ubicación registrada"
+            textoSinPunto="Agrega coordenadas para ubicar este reporte en el mapa."
+            altura="compacta"
+          />
         </div>
 
         {editando ? (

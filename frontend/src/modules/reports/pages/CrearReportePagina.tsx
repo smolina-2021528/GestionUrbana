@@ -9,9 +9,11 @@ import { Boton } from '../../../shared/components/ui/Boton';
 import { Tarjeta } from '../../../shared/components/ui/Tarjeta';
 import { esErrorApi } from '../../../shared/types/errorApi';
 import { usarCrearReporte } from '../hooks/usarCrearReporte';
+import { SelectorUbicacionMapa } from '../components/SelectorUbicacionMapa';
 import {
   categoriasReporte,
   type CategoriaReporte,
+  type CoordenadasGeograficas,
   type CrearReportePayload
 } from '../types/reportesTipos';
 import {
@@ -321,6 +323,26 @@ export function CrearReportePagina() {
     });
   };
 
+
+  const seleccionarCoordenadasMapa = (coordenadas: CoordenadasGeograficas) => {
+    setFormulario((formularioActual) => ({
+      ...formularioActual,
+      latitude: coordenadas.latitude.toFixed(6),
+      longitude: coordenadas.longitude.toFixed(6)
+    }));
+
+    setErrores((erroresActuales) => {
+      const erroresActualizados = { ...erroresActuales };
+      delete erroresActualizados.latitude;
+      delete erroresActualizados.longitude;
+      return erroresActualizados;
+    });
+
+    setMensajeError(null);
+    setMensajeExito(null);
+    setMensajeUbicacion('Punto seleccionado en el mapa. Puedes ajustar los campos manualmente si es necesario.');
+  };
+
   const limpiarUbicacion = () => {
     setFormulario((formularioActual) => ({
       ...formularioActual,
@@ -626,22 +648,17 @@ export function CrearReportePagina() {
                 </div>
 
                 <div className="crearReportePagina__vistaUbicacion">
-                  <div className="crearReportePagina__mapaMiniatura" aria-label="Referencia visual de ubicación">
-                    <div className="crearReportePagina__mapaRejilla" aria-hidden="true" />
-                    <div className="crearReportePagina__mapaVia crearReportePagina__mapaVia--horizontal" aria-hidden="true" />
-                    <div className="crearReportePagina__mapaVia crearReportePagina__mapaVia--vertical" aria-hidden="true" />
-
-                    {coordenadasValidas ? (
-                      <span className="crearReportePagina__mapaMarcador" title="Coordenadas registradas">
-                        <span aria-hidden="true" />
-                      </span>
-                    ) : (
-                      <div className="crearReportePagina__mapaSinPunto">
-                        <strong>Sin coordenadas</strong>
-                        <span>Agrega latitud y longitud para visualizar el punto.</span>
-                      </div>
-                    )}
-                  </div>
+                  <SelectorUbicacionMapa
+                    latitude={coordenadasValidas?.latitude}
+                    longitude={coordenadasValidas?.longitude}
+                    bloqueado={crearReporte.isPending}
+                    titulo="Seleccionar punto en el mapa"
+                    descripcion="Haz clic sobre el mapa para registrar las coordenadas del reporte."
+                    etiquetaPunto="Coordenadas del reporte"
+                    textoSinPunto="Haz clic sobre el mapa o ingresa latitud y longitud manualmente."
+                    altura="compacta"
+                    alCambiarCoordenadas={seleccionarCoordenadasMapa}
+                  />
 
                   <div className="crearReportePagina__datosUbicacion">
                     <div>

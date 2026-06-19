@@ -1,13 +1,18 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 
 import { Alerta } from '../../../shared/components/feedback/Alerta';
 import { Boton } from '../../../shared/components/ui/Boton';
-import type { ActualizarUbicacionReportePayload, Reporte } from '../types/reportesTipos';
+import type {
+  ActualizarUbicacionReportePayload,
+  CoordenadasGeograficas,
+  Reporte
+} from '../types/reportesTipos';
 import {
   esLatitudReporteValida,
   esLongitudReporteValida
 } from '../utils/validacionesGeograficas';
+import { SelectorUbicacionMapa } from './SelectorUbicacionMapa';
 import './ubicacionReporte.css';
 
 type PropiedadesFormularioUbicacionReporte = {
@@ -50,6 +55,25 @@ function obtenerMensajeValidacion(latitudTexto: string, longitudTexto: string) {
   return null;
 }
 
+function obtenerCoordenadasFormulario(latitudTexto: string, longitudTexto: string) {
+  const latitud = obtenerNumeroFormulario(latitudTexto);
+  const longitud = obtenerNumeroFormulario(longitudTexto);
+
+  if (
+    latitud === null ||
+    longitud === null ||
+    !esLatitudReporteValida(latitud) ||
+    !esLongitudReporteValida(longitud)
+  ) {
+    return null;
+  }
+
+  return {
+    latitude: latitud,
+    longitude: longitud
+  } satisfies CoordenadasGeograficas;
+}
+
 export function FormularioUbicacionReporte({
   reporte,
   bloqueado = false,
@@ -60,13 +84,27 @@ export function FormularioUbicacionReporte({
   const [longitud, setLongitud] = useState(() => obtenerValorCoordenada(reporte.longitude));
   const [direccion, setDireccion] = useState(reporte.address ?? '');
   const [mensajeValidacion, setMensajeValidacion] = useState<string | null>(null);
+  const [mensajeMapa, setMensajeMapa] = useState<string | null>(null);
 
   useEffect(() => {
     setLatitud(obtenerValorCoordenada(reporte.latitude));
     setLongitud(obtenerValorCoordenada(reporte.longitude));
     setDireccion(reporte.address ?? '');
     setMensajeValidacion(null);
+    setMensajeMapa(null);
   }, [reporte.address, reporte.latitude, reporte.longitude]);
+
+  const coordenadasFormulario = useMemo(
+    () => obtenerCoordenadasFormulario(latitud, longitud),
+    [latitud, longitud]
+  );
+
+  const seleccionarCoordenadasMapa = (coordenadas: CoordenadasGeograficas) => {
+    setLatitud(coordenadas.latitude.toFixed(6));
+    setLongitud(coordenadas.longitude.toFixed(6));
+    setMensajeValidacion(null);
+    setMensajeMapa('Punto seleccionado en el mapa. Puedes ajustar los campos manualmente antes de guardar.');
+  };
 
   const guardar = async (evento: FormEvent<HTMLFormElement>) => {
     evento.preventDefault();
@@ -99,6 +137,23 @@ export function FormularioUbicacionReporte({
         </Alerta>
       ) : null}
 
+      {mensajeMapa ? (
+        <Alerta variante="informacion" titulo="Mapa actualizado">
+          <p>{mensajeMapa}</p>
+        </Alerta>
+      ) : null}
+
+      <SelectorUbicacionMapa
+        latitude={coordenadasFormulario?.latitude}
+        longitude={coordenadasFormulario?.longitude}
+        bloqueado={bloqueado}
+        titulo="Seleccionar ubicación"
+        descripcion="Haz clic sobre el mapa para ajustar el punto territorial del reporte."
+        etiquetaPunto="Ubicación del reporte"
+        altura="compacta"
+        alCambiarCoordenadas={seleccionarCoordenadasMapa}
+      />
+
       <div className="formularioUbicacionReporte__grid">
         <label className="formularioUbicacionReporte__campo">
           <span>Latitud</span>
@@ -110,7 +165,11 @@ export function FormularioUbicacionReporte({
             value={latitud}
             disabled={bloqueado}
             placeholder="14.634915"
-            onChange={(evento) => setLatitud(evento.target.value)}
+            onChange={(evento) => {
+              setLatitud(evento.target.value);
+              setMensajeValidacion(null);
+              setMensajeMapa(null);
+            }}
           />
         </label>
 
@@ -124,7 +183,11 @@ export function FormularioUbicacionReporte({
             value={longitud}
             disabled={bloqueado}
             placeholder="-90.506882"
-            onChange={(evento) => setLongitud(evento.target.value)}
+            onChange={(evento) => {
+              setLongitud(evento.target.value);
+              setMensajeValidacion(null);
+              setMensajeMapa(null);
+            }}
           />
         </label>
 
