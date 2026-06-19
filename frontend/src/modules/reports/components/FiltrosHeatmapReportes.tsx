@@ -65,6 +65,16 @@ function limpiarCampo<TFiltros extends Record<string, unknown>>(
   return filtrosActualizados;
 }
 
+function contarFiltrosAplicados(filtros: FiltrosHeatmapReportesTipo) {
+  return [
+    filtros.category,
+    filtros.priority,
+    filtros.status,
+    filtros.startDate,
+    filtros.endDate
+  ].filter(Boolean).length;
+}
+
 export function FiltrosHeatmapReportes({
   activo,
   filtros,
@@ -75,6 +85,8 @@ export function FiltrosHeatmapReportes({
   alConsultar,
   alLimpiar
 }: PropiedadesFiltrosHeatmapReportes) {
+  const totalFiltros = contarFiltrosAplicados(filtros);
+
   const cambiarCategoria = (evento: ChangeEvent<HTMLSelectElement>) => {
     const valor = evento.target.value;
 
@@ -135,8 +147,16 @@ export function FiltrosHeatmapReportes({
       titulo="Intensidad territorial"
       descripcion="Activa la capa de intensidad para identificar concentración de incidencias según prioridad, estado, categoría y fechas."
       acciones={
-        <span className={activo ? 'heatmapReportes__estado heatmapReportes__estado--activo' : 'heatmapReportes__estado'}>
-          {activo ? `${new Intl.NumberFormat('es-GT').format(totalPuntos)} puntos activos` : 'Capa desactivada'}
+        <span
+          className={
+            activo
+              ? 'heatmapReportes__estado heatmapReportes__estado--activo'
+              : 'heatmapReportes__estado'
+          }
+        >
+          {activo
+            ? `${new Intl.NumberFormat('es-GT').format(totalPuntos)} puntos activos`
+            : 'Capa desactivada'}
         </span>
       }
     >
@@ -145,8 +165,8 @@ export function FiltrosHeatmapReportes({
           <div>
             <strong>Mostrar intensidad en el mapa</strong>
             <p>
-              La capa se dibuja sobre la misma vista territorial usando los puntos reales del
-              endpoint de heatmap.
+              La capa se dibuja sobre el mapa interactivo con círculos ponderados por concentración,
+              prioridad y estado del reporte.
             </p>
           </div>
 
@@ -164,6 +184,36 @@ export function FiltrosHeatmapReportes({
           >
             <span>{activo ? 'Activa' : 'Inactiva'}</span>
           </button>
+        </div>
+
+        <div className="heatmapReportes__resumen" aria-label="Resumen de la capa de intensidad">
+          <span>
+            <strong>{new Intl.NumberFormat('es-GT').format(totalPuntos)}</strong>
+            puntos territoriales
+          </span>
+          <span>
+            <strong>{totalFiltros}</strong>
+            filtros aplicados
+          </span>
+          <span>
+            <strong>{activo ? 'Visible' : 'Oculta'}</strong>
+            capa actual
+          </span>
+        </div>
+
+        <div className="heatmapReportes__escala" aria-label="Escala de intensidad territorial">
+          <span>
+            <i className="heatmapReportes__escalaPunto heatmapReportes__escalaPunto--baja" />
+            Baja
+          </span>
+          <span>
+            <i className="heatmapReportes__escalaPunto heatmapReportes__escalaPunto--media" />
+            Media
+          </span>
+          <span>
+            <i className="heatmapReportes__escalaPunto heatmapReportes__escalaPunto--alta" />
+            Alta
+          </span>
         </div>
 
         <div className="heatmapReportes__grid">

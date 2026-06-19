@@ -24,7 +24,9 @@ import {
 import type {
   CategoriaReporte,
   CoordenadasGeograficas,
+  EstadoReporte,
   FiltrosBoundingBoxReportes,
+  PrioridadReporte,
   PuntoHeatmapReporte
 } from '../types/reportesTipos';
 import {
@@ -41,6 +43,8 @@ import './mapaInteractivoReportes.css';
 type ReporteMapaConUbicacion = ReporteMapaVisual & CoordenadasGeograficas;
 
 type PuntoHeatmapConUbicacion = PuntoHeatmapReporte & CoordenadasGeograficas;
+
+type NivelIntensidad = 'baja' | 'media' | 'alta';
 
 type PropiedadesMapaInteractivoReportes = {
   reportes: ReporteMapaVisual[];
@@ -81,6 +85,19 @@ const etiquetasCategoria: Record<CategoriaReporte, string> = {
   LIMPIEZA: 'Limpieza'
 };
 
+const etiquetasPrioridad: Record<PrioridadReporte, string> = {
+  ALTA: 'Alta',
+  MEDIA: 'Media',
+  BAJA: 'Baja'
+};
+
+const etiquetasEstado: Record<EstadoReporte, string> = {
+  PENDIENTE: 'Pendiente',
+  EN_PROCESO: 'En proceso',
+  RESUELTO: 'Resuelto',
+  RECHAZADO: 'Rechazado'
+};
+
 const opcionesPrioridadMapa = {
   ALTA: {
     color: 'var(--color-prioridad-alta)',
@@ -96,6 +113,35 @@ const opcionesPrioridadMapa = {
   }
 } as const;
 
+const opcionesNivelIntensidad: Record<
+  NivelIntensidad,
+  {
+    etiqueta: string;
+    fillOpacity: number;
+    opacity: number;
+    weight: number;
+  }
+> = {
+  baja: {
+    etiqueta: 'Baja concentración',
+    fillOpacity: 0.14,
+    opacity: 0.24,
+    weight: 1
+  },
+  media: {
+    etiqueta: 'Concentración media',
+    fillOpacity: 0.2,
+    opacity: 0.34,
+    weight: 2
+  },
+  alta: {
+    etiqueta: 'Alta concentración',
+    fillOpacity: 0.28,
+    opacity: 0.46,
+    weight: 3
+  }
+};
+
 function esReporteConUbicacion(reporte: ReporteMapaVisual): reporte is ReporteMapaConUbicacion {
   return tieneUbicacionMapa(reporte);
 }
@@ -110,6 +156,14 @@ function obtenerClasePrioridad(prioridad: ReporteMapaVisual['priority']) {
 
 function obtenerEtiquetaCategoria(categoria: CategoriaReporte) {
   return etiquetasCategoria[categoria] ?? categoria;
+}
+
+function obtenerEtiquetaPrioridad(prioridad: PrioridadReporte) {
+  return etiquetasPrioridad[prioridad] ?? prioridad;
+}
+
+function obtenerEtiquetaEstado(estado: EstadoReporte) {
+  return etiquetasEstado[estado] ?? estado;
 }
 
 function formatearFechaMapa(fecha: string | null | undefined) {
@@ -129,6 +183,12 @@ function formatearFechaMapa(fecha: string | null | undefined) {
   }).format(fechaValida);
 }
 
+function formatearNumeroMapa(valor: number) {
+  return new Intl.NumberFormat('es-GT', {
+    maximumFractionDigits: 1
+  }).format(valor);
+}
+
 function obtenerTextoUbicacion(reporte: ReporteMapaVisual) {
   if (reporte.address) {
     return reporte.address;
@@ -143,6 +203,28 @@ function obtenerPesoVisualHeatmap(peso: number) {
   }
 
   return Math.min(Math.max(peso, 1), 5);
+}
+
+function obtenerNivelIntensidad(peso: number): NivelIntensidad {
+  const pesoVisual = obtenerPesoVisualHeatmap(peso);
+
+  if (pesoVisual >= 3) {
+    return 'alta';
+  }
+
+  if (pesoVisual >= 2) {
+    return 'media';
+  }
+
+  return 'baja';
+}
+
+function obtenerRadioIntensidad(peso: number, pesoMaximo: number) {
+  const pesoVisual = obtenerPesoVisualHeatmap(peso);
+  const maximoSeguro = Math.max(pesoMaximo, 1);
+  const proporcion = Math.min(Math.max(pesoVisual / maximoSeguro, 0.25), 1);
+
+  return 10 + proporcion * 22;
 }
 
 function crearIconoReporte(reporte: ReporteMapaVisual, indice: number, activo: boolean) {
@@ -236,8 +318,8 @@ function RastreadorAreaVisibleMapa({
   };
 
   const mapa = useMapEvents({
-    moveend: () => actualizarAreaVisible(mapa, true),
-    zoomend: () => actualizarAreaVisible(mapa, true)
+    moveend: (evento) => actualizarAreaVisible(evento.target, true),
+    zoomend: (evento) => actualizarAreaVisible(evento.target, true)
   });
 
   useEffect(() => {
@@ -305,10 +387,47 @@ export function MapaInteractivoReportes({
   const [areaVisiblePendiente, setAreaVisiblePendiente] = useState(false);
 
   const reportesConUbicacion = useMemo(() => reportes.filter(esReporteConUbicacion), [reportes]);
+
   const puntosHeatmapConUbicacion = useMemo(
     () => puntosHeatmap.filter(esPuntoHeatmapConUbicacion),
     [puntosHeatmap]
   );
+
+  const pesoMaximoIntensidad = useMemo(() => {
+    if (puntosHeatmapConUbicacion.length === 0) {
+      return 1;
+    }
+
+    return Math.max(...puntosHeatmapConUbicacion.map((punto) => obtenerPesoVisualHeatmap(punto.weight)));
+  }, [puntosHeatmapConUbicacion]);
+
+  const puntosHeatmapOrdenados = useMemo(
+    () =>
+      [...puntosHeatmapConUbicacion].sort(
+        (puntoA, puntoB) => obtenerPesoVisualHeatmap(puntoA.weight) - obtenerPesoVisualHeatmap(puntoB.weight)
+      ),
+    [puntosHeatmapConUbicacion]
+  );
+
+  const resumenIntensidad = useMemo(() => {
+    const totalPeso = puntosHeatmapConUbicacion.reduce(
+      (total, punto) => total + obtenerPesoVisualHeatmap(punto.weight),
+      0
+    );
+
+    const puntosAlta = puntosHeatmapConUbicacion.filter(
+      (punto) => obtenerNivelIntensidad(punto.weight) === 'alta'
+    ).length;
+
+    return {
+      totalPeso,
+      puntosAlta,
+      promedio:
+        puntosHeatmapConUbicacion.length > 0
+          ? totalPeso / puntosHeatmapConUbicacion.length
+          : 0
+    };
+  }, [puntosHeatmapConUbicacion]);
 
   const centroInicial = useMemo(
     () => centro ?? obtenerCentroMapa([...reportesConUbicacion, ...puntosHeatmapConUbicacion]),
@@ -317,6 +436,8 @@ export function MapaInteractivoReportes({
 
   const radioVisible = radioMetros ? formatearRadioMapa(radioMetros) : null;
   const mostrarCentroConsulta = centro && tieneUbicacionMapa(centro);
+  const mostrarResumenIntensidad = mostrarHeatmap && puntosHeatmapConUbicacion.length > 0;
+
   const mostrarEstadoVacio =
     reportesConUbicacion.length === 0 &&
     (!mostrarHeatmap || puntosHeatmapConUbicacion.length === 0);
@@ -428,31 +549,57 @@ export function MapaInteractivoReportes({
           ) : null}
 
           {mostrarHeatmap
-            ? puntosHeatmapConUbicacion.map((punto) => {
-                const peso = obtenerPesoVisualHeatmap(punto.weight);
+            ? puntosHeatmapOrdenados.map((punto) => {
+                const nivel = obtenerNivelIntensidad(punto.weight);
+                const opcionesNivel = opcionesNivelIntensidad[nivel];
                 const opcionesPrioridad = opcionesPrioridadMapa[punto.priority];
+                const colorPunto = punto.priorityColor ?? opcionesPrioridad.color;
+                const radio = obtenerRadioIntensidad(punto.weight, pesoMaximoIntensidad);
 
                 return (
                   <CircleMarker
                     key={`intensidad-${punto.id}`}
                     center={crearLatLngDesdeCoordenadas(punto)}
-                    radius={10 + peso * 4}
+                    radius={radio}
                     pathOptions={{
-                      ...opcionesPrioridad,
-                      fillOpacity: 0.18,
-                      opacity: 0.28,
-                      weight: 1
+                      color: colorPunto,
+                      fillColor: colorPunto,
+                      fillOpacity: opcionesNivel.fillOpacity,
+                      opacity: opcionesNivel.opacity,
+                      weight: opcionesNivel.weight,
+                      className: `mapaInteractivoReportes__intensidad mapaInteractivoReportes__intensidad--${nivel}`
                     }}
                   >
                     <Popup>
-                      <div className="mapaInteractivoReportes__popup mapaInteractivoReportes__popup--compacto">
+                      <article className="mapaInteractivoReportes__popup mapaInteractivoReportes__popup--compacto">
                         <span className="mapaInteractivoReportes__popupCategoria">
                           Intensidad territorial
                         </span>
+                        <h3 className="mapaInteractivoReportes__popupTitulo">
+                          {opcionesNivel.etiqueta}
+                        </h3>
                         <p className="mapaInteractivoReportes__popupTexto">
-                          Prioridad {punto.priority.toLowerCase()} · Estado {punto.status}
+                          Punto ponderado por prioridad, estado y concentración territorial.
                         </p>
-                      </div>
+                        <dl className="mapaInteractivoReportes__popupDatos">
+                          <div>
+                            <dt>Categoría</dt>
+                            <dd>{obtenerEtiquetaCategoria(punto.category)}</dd>
+                          </div>
+                          <div>
+                            <dt>Prioridad</dt>
+                            <dd>{obtenerEtiquetaPrioridad(punto.priority)}</dd>
+                          </div>
+                          <div>
+                            <dt>Estado</dt>
+                            <dd>{obtenerEtiquetaEstado(punto.status)}</dd>
+                          </div>
+                          <div>
+                            <dt>Peso</dt>
+                            <dd>{formatearNumeroMapa(obtenerPesoVisualHeatmap(punto.weight))}</dd>
+                          </div>
+                        </dl>
+                      </article>
                     </Popup>
                   </CircleMarker>
                 );
@@ -535,6 +682,28 @@ export function MapaInteractivoReportes({
           </div>
         ) : null}
 
+        {mostrarResumenIntensidad ? (
+          <aside className="mapaInteractivoReportes__panelIntensidad" aria-label="Resumen de intensidad territorial">
+            <span className="mapaInteractivoReportes__panelIntensidadTitulo">
+              Intensidad territorial
+            </span>
+            <div className="mapaInteractivoReportes__panelIntensidadMetricas">
+              <span>
+                <strong>{puntosHeatmapConUbicacion.length}</strong>
+                puntos
+              </span>
+              <span>
+                <strong>{formatearNumeroMapa(resumenIntensidad.promedio)}</strong>
+                peso promedio
+              </span>
+              <span>
+                <strong>{resumenIntensidad.puntosAlta}</strong>
+                alta concentración
+              </span>
+            </div>
+          </aside>
+        ) : null}
+
         {mostrarEstadoVacio ? (
           <div className="mapaInteractivoReportes__estadoVacio">
             <EstadoVacio titulo={tituloVacio} descripcion={descripcionVacia} />
@@ -560,12 +729,21 @@ export function MapaInteractivoReportes({
               Centro
             </span>
           ) : null}
+          {mostrarResumenIntensidad ? (
+            <span>
+              <i className="mapaInteractivoReportes__leyendaPunto mapaInteractivoReportes__leyendaPunto--intensidad" />
+              Intensidad
+            </span>
+          ) : null}
         </div>
       </div>
 
       <footer className="mapaInteractivoReportes__pie">
         <span>{reportesConUbicacion.length} reportes con ubicación</span>
         {mostrarHeatmap ? <span>{puntosHeatmapConUbicacion.length} puntos de intensidad</span> : null}
+        {mostrarResumenIntensidad ? (
+          <span>Peso total: {formatearNumeroMapa(resumenIntensidad.totalPeso)}</span>
+        ) : null}
         {radioVisible ? <span>Radio: {radioVisible}</span> : null}
         {mostrarCentroConsulta ? <span>Centro activo</span> : null}
         <span>Mapa interactivo</span>
