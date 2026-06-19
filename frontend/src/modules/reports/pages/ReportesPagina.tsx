@@ -376,6 +376,18 @@ export function ReportesPagina() {
     limpiarBusquedaTerritorial();
   };
 
+  const buscarEnAreaVisible = (filtrosAreaVisible: FiltrosBoundingBoxReportes) => {
+    setModoConsultaMapa('AREA');
+    setFiltrosArea({
+      ...filtrosAreaVisible,
+      category: filtrosArea.category,
+      status: filtrosArea.status
+    });
+    setReporteMapaSeleccionadoId(undefined);
+    setMensajeUbicacion('Área visible aplicada. Se consultarán los reportes dentro de la zona actual del mapa.');
+    limpiarBusquedaTerritorial();
+  };
+
   const cambiarFiltrosHeatmap = (nuevosFiltros: FiltrosHeatmapReportesTipo) => {
     setFiltrosHeatmap(nuevosFiltros);
   };
@@ -539,6 +551,8 @@ export function ReportesPagina() {
               reportes={reportesMapaVisibles}
               puntosHeatmap={puntosHeatmap}
               mostrarHeatmap={mostrarHeatmap}
+              mostrarAccionAreaVisible={!busquedaTerritorialActiva}
+              bloqueadoConsultaArea={estaCargandoMapa || estaActualizandoMapa}
               reporteSeleccionadoId={reporteMapaSeleccionadoId}
               centro={centroMapaVisible}
               radioMetros={radioMapaVisible}
@@ -558,6 +572,7 @@ export function ReportesPagina() {
               }
               alSeleccionarReporte={seleccionarReporteMapa}
               alVerDetalle={irADetalleReporte}
+              alBuscarEnAreaVisible={buscarEnAreaVisible}
             />
           </div>
 
@@ -703,6 +718,8 @@ export function ReportesPagina() {
             reportes={reportesMapaVisibles}
             puntosHeatmap={puntosHeatmap}
             mostrarHeatmap={mostrarHeatmap}
+            mostrarAccionAreaVisible={!busquedaTerritorialActiva}
+            bloqueadoConsultaArea={estaCargandoMapa || estaActualizandoMapa}
             reporteSeleccionadoId={reporteMapaSeleccionadoId}
             centro={centroMapaVisible}
             radioMetros={radioMapaVisible}
@@ -722,6 +739,7 @@ export function ReportesPagina() {
             }
             alSeleccionarReporte={seleccionarReporteMapa}
             alVerDetalle={irADetalleReporte}
+            alBuscarEnAreaVisible={buscarEnAreaVisible}
           />
         </div>
 

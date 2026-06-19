@@ -1,6 +1,15 @@
-import { useEffect, useMemo, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import L from 'leaflet';
-import { Circle, CircleMarker, MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet';
+import {
+  Circle,
+  CircleMarker,
+  MapContainer,
+  Marker,
+  Popup,
+  TileLayer,
+  useMap,
+  useMapEvents
+} from 'react-leaflet';
 
 import { EstadoVacio } from '../../../shared/components/data/EstadoVacio';
 import { Boton } from '../../../shared/components/ui/Boton';
@@ -15,9 +24,11 @@ import {
 import type {
   CategoriaReporte,
   CoordenadasGeograficas,
+  FiltrosBoundingBoxReportes,
   PuntoHeatmapReporte
 } from '../types/reportesTipos';
 import {
+  convertirBoundsAFiltrosBoundingBox,
   crearLatLngDesdeCoordenadas,
   formatearCoordenadaMapa,
   formatearRadioMapa,
@@ -38,17 +49,25 @@ type PropiedadesMapaInteractivoReportes = {
   centro?: CoordenadasGeograficas;
   radioMetros?: number;
   mostrarHeatmap?: boolean;
+  mostrarAccionAreaVisible?: boolean;
+  bloqueadoConsultaArea?: boolean;
   acciones?: ReactNode;
   tituloVacio?: string;
   descripcionVacia?: string;
   alSeleccionarReporte?: (reporte: ReporteMapaVisual) => void;
   alVerDetalle?: (reporte: ReporteMapaVisual) => void;
+  alBuscarEnAreaVisible?: (filtros: FiltrosBoundingBoxReportes) => void;
 };
 
 type PropiedadesSincronizadorVistaMapa = {
   centro?: CoordenadasGeograficas;
   reportes: ReporteMapaConUbicacion[];
   reporteSeleccionadoId?: string;
+};
+
+type PropiedadesRastreadorAreaVisible = {
+  activo: boolean;
+  alCambiarAreaVisible: (filtros: FiltrosBoundingBoxReportes, pendiente: boolean) => void;
 };
 
 const etiquetasCategoria: Record<CategoriaReporte, string> = {
@@ -186,6 +205,33 @@ function SincronizadorVistaMapa({
   return null;
 }
 
+function RastreadorAreaVisibleMapa({
+  activo,
+  alCambiarAreaVisible
+}: PropiedadesRastreadorAreaVisible) {
+  const actualizarAreaVisible = (mapa: L.Map, pendiente: boolean) => {
+    if (!activo) {
+      return;
+    }
+
+    const bounds = mapa.getBounds();
+    const filtros = convertirBoundsAFiltrosBoundingBox(bounds);
+
+    alCambiarAreaVisible(filtros, pendiente);
+  };
+
+  const mapa = useMapEvents({
+    moveend: () => actualizarAreaVisible(mapa, true),
+    zoomend: () => actualizarAreaVisible(mapa, true)
+  });
+
+  useEffect(() => {
+    actualizarAreaVisible(mapa, false);
+  }, [activo, mapa]);
+
+  return null;
+}
+
 export function MapaInteractivoReportes({
   reportes,
   puntosHeatmap = [],
@@ -193,12 +239,20 @@ export function MapaInteractivoReportes({
   centro,
   radioMetros,
   mostrarHeatmap = false,
+  mostrarAccionAreaVisible = false,
+  bloqueadoConsultaArea = false,
   acciones,
   tituloVacio = 'Sin reportes con ubicación',
   descripcionVacia = 'Ajusta los filtros o registra coordenadas para visualizar incidencias en el mapa.',
   alSeleccionarReporte,
-  alVerDetalle
+  alVerDetalle,
+  alBuscarEnAreaVisible
 }: PropiedadesMapaInteractivoReportes) {
+  const [filtrosAreaVisible, setFiltrosAreaVisible] = useState<
+    FiltrosBoundingBoxReportes | undefined
+  >();
+  const [areaVisiblePendiente, setAreaVisiblePendiente] = useState(false);
+
   const reportesConUbicacion = useMemo(() => reportes.filter(esReporteConUbicacion), [reportes]);
   const puntosHeatmapConUbicacion = useMemo(
     () => puntosHeatmap.filter(esPuntoHeatmapConUbicacion),
@@ -214,6 +268,27 @@ export function MapaInteractivoReportes({
   const mostrarEstadoVacio =
     reportesConUbicacion.length === 0 &&
     (!mostrarHeatmap || puntosHeatmapConUbicacion.length === 0);
+
+  const puedeBuscarAreaVisible =
+    mostrarAccionAreaVisible &&
+    Boolean(alBuscarEnAreaVisible) &&
+    Boolean(filtrosAreaVisible) &&
+    areaVisiblePendiente &&
+    !bloqueadoConsultaArea;
+
+  const registrarAreaVisible = (filtros: FiltrosBoundingBoxReportes, pendiente: boolean) => {
+    setFiltrosAreaVisible(filtros);
+    setAreaVisiblePendiente(pendiente);
+  };
+
+  const buscarEnAreaVisible = () => {
+    if (!filtrosAreaVisible || !alBuscarEnAreaVisible || bloqueadoConsultaArea) {
+      return;
+    }
+
+    alBuscarEnAreaVisible(filtrosAreaVisible);
+    setAreaVisiblePendiente(false);
+  };
 
   return (
     <section className="mapaInteractivoReportes" aria-label="Mapa interactivo de reportes">
@@ -245,6 +320,11 @@ export function MapaInteractivoReportes({
             centro={centro}
             reportes={reportesConUbicacion}
             reporteSeleccionadoId={reporteSeleccionadoId}
+          />
+
+          <RastreadorAreaVisibleMapa
+            activo={mostrarAccionAreaVisible}
+            alCambiarAreaVisible={registrarAreaVisible}
           />
 
           {centro && radioMetros ? (
@@ -348,6 +428,26 @@ export function MapaInteractivoReportes({
             );
           })}
         </MapContainer>
+
+        {mostrarAccionAreaVisible ? (
+          <div className="mapaInteractivoReportes__controlArea" aria-live="polite">
+            <div>
+              <span className="mapaInteractivoReportes__controlAreaTitulo">Área visible</span>
+              <p className="mapaInteractivoReportes__controlAreaTexto">
+                Mueve el mapa o ajusta el zoom para consultar reportes dentro de esa zona.
+              </p>
+            </div>
+
+            <Boton
+              tamano="sm"
+              variante="secundario"
+              disabled={!puedeBuscarAreaVisible}
+              onClick={buscarEnAreaVisible}
+            >
+              Buscar en esta área
+            </Boton>
+          </div>
+        ) : null}
 
         {mostrarEstadoVacio ? (
           <div className="mapaInteractivoReportes__estadoVacio">

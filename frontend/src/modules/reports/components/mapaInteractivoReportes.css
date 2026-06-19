@@ -128,6 +128,38 @@
   box-shadow: var(--sombra-lg);
 }
 
+.mapaInteractivoReportes__controlArea {
+  position: absolute;
+  top: var(--espacio-4);
+  left: 50%;
+  z-index: 700;
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-3);
+  width: min(34rem, calc(100% - var(--espacio-8)));
+  transform: translateX(-50%);
+  border: 1px solid rgb(226 232 240 / 0.95);
+  border-radius: var(--radio-xl);
+  background: rgb(255 255 255 / 0.94);
+  padding: var(--espacio-3);
+  box-shadow: var(--sombra-md);
+  backdrop-filter: blur(14px);
+}
+
+.mapaInteractivoReportes__controlAreaTitulo {
+  display: block;
+  color: var(--color-texto);
+  font-size: var(--tamano-texto-sm);
+  font-weight: var(--peso-negrita);
+}
+
+.mapaInteractivoReportes__controlAreaTexto {
+  margin: 0;
+  color: var(--color-texto-secundario);
+  font-size: var(--tamano-texto-xs);
+  line-height: var(--alto-linea-normal);
+}
+
 .mapaInteractivoReportes__estadoVacio {
   position: absolute;
   inset: var(--espacio-5);
@@ -323,6 +355,13 @@
   .mapaInteractivoReportes__contenedor,
   .mapaInteractivoReportes__mapa {
     min-height: 28rem;
+  }
+
+  .mapaInteractivoReportes__controlArea {
+    top: var(--espacio-3);
+    flex-direction: column;
+    align-items: stretch;
+    width: calc(100% - var(--espacio-6));
   }
 
   .mapaInteractivoReportes__leyenda {
