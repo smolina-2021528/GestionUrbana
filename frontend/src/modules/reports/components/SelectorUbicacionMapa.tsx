@@ -3,6 +3,14 @@ import L from 'leaflet';
 import { MapContainer, Marker, Popup, TileLayer, useMap, useMapEvents } from 'react-leaflet';
 
 import { Boton } from '../../../shared/components/ui/Boton';
+import {
+  centroMapaPredeterminado,
+  opcionesTilesOpenStreetMap,
+  urlTilesOpenStreetMap,
+  zoomMapaMaximo,
+  zoomMapaMinimo,
+  zoomMapaPredeterminado
+} from '../config/mapaConfig';
 import type { CoordenadasGeograficas } from '../types/reportesTipos';
 import {
   esLatitudReporteValida,
@@ -32,15 +40,6 @@ type PropiedadesSincronizadorSelectorMapa = {
   coordenadas: CoordenadasGeograficas;
   acercar?: boolean;
 };
-
-const centroMapaPredeterminado: CoordenadasGeograficas = {
-  latitude: 14.634915,
-  longitude: -90.506882
-};
-
-const urlTilesOpenStreetMap = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-const atribucionOpenStreetMap =
-  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
 
 function tieneCoordenadasValidas(latitude?: number | null, longitude?: number | null) {
   return (
@@ -112,10 +111,47 @@ function SincronizadorSelectorMapa({
   const mapa = useMap();
 
   useEffect(() => {
-    mapa.setView(crearLatLng(coordenadas), acercar ? Math.max(mapa.getZoom(), 15) : mapa.getZoom());
-  }, [acercar, coordenadas, mapa]);
+    mapa.setView(
+      crearLatLng(coordenadas),
+      acercar ? Math.max(mapa.getZoom(), 15) : mapa.getZoom()
+    );
+  }, [acercar, coordenadas.latitude, coordenadas.longitude, mapa]);
 
   return null;
+}
+
+function ControlCentrarSelectorMapa({
+  tieneCoordenadas,
+  alCentrar
+}: {
+  tieneCoordenadas: boolean;
+  alCentrar: (mapa: L.Map) => void;
+}) {
+  const mapa = useMap();
+
+  return (
+    <div className="leaflet-top leaflet-right selectorUbicacionMapa__controlCentrar">
+      <div className="leaflet-control">
+        <Boton
+          tamano="sm"
+          variante="secundario"
+          aria-label={
+            tieneCoordenadas
+              ? 'Centrar mapa en el punto seleccionado'
+              : 'Centrar mapa en el área inicial'
+          }
+          onClick={(evento) => {
+            evento.stopPropagation();
+            alCentrar(mapa);
+          }}
+          onMouseDown={(evento) => evento.stopPropagation()}
+          onDoubleClick={(evento) => evento.stopPropagation()}
+        >
+          {tieneCoordenadas ? 'Centrar punto' : 'Centrar mapa'}
+        </Boton>
+      </div>
+    </div>
+  );
 }
 
 export function SelectorUbicacionMapa({
@@ -130,15 +166,20 @@ export function SelectorUbicacionMapa({
   altura = 'normal',
   alCambiarCoordenadas
 }: PropiedadesSelectorUbicacionMapa) {
-  const coordenadas = normalizarCoordenadas(latitude, longitude);
+  const coordenadas = useMemo(
+    () => normalizarCoordenadas(latitude, longitude),
+    [latitude, longitude]
+  );
+
   const centroInicial = coordenadas ?? centroMapaPredeterminado;
   const seleccionBloqueada = bloqueado || soloLectura || !alCambiarCoordenadas;
-
   const iconoSelector = useMemo(() => crearIconoSelectorUbicacion(), []);
 
   const centrarMapaEnPunto = (mapa: L.Map) => {
     if (!coordenadas) {
-      mapa.setView(crearLatLng(centroMapaPredeterminado), 13);
+      mapa.flyTo(crearLatLng(centroMapaPredeterminado), zoomMapaPredeterminado, {
+        duration: 0.55
+      });
       return;
     }
 
@@ -164,25 +205,29 @@ export function SelectorUbicacionMapa({
           <p>{soloLectura ? 'Vista territorial registrada para este reporte.' : descripcion}</p>
         </div>
 
-        <span className="selectorUbicacionMapa__estado">
+        <span className="selectorUbicacionMapa__estado" aria-live="polite">
           {coordenadas ? 'Con punto' : 'Sin punto'}
         </span>
       </div>
+
+      {!soloLectura ? (
+        <p className="selectorUbicacionMapa__ayuda">
+          Puedes mover el mapa, acercarte con zoom y hacer clic para fijar el punto. Los campos
+          manuales siguen disponibles como respaldo.
+        </p>
+      ) : null}
 
       <div className="selectorUbicacionMapa__contenedor">
         <MapContainer
           className="selectorUbicacionMapa__mapa"
           center={crearLatLng(centroInicial)}
-          zoom={coordenadas ? 15 : 13}
-          minZoom={5}
-          maxZoom={19}
-          scrollWheelZoom={!bloqueado}
+          zoom={coordenadas ? 15 : zoomMapaPredeterminado}
+          minZoom={zoomMapaMinimo}
+          maxZoom={zoomMapaMaximo}
+          scrollWheelZoom={!seleccionBloqueada}
+          dragging={!bloqueado}
         >
-          <TileLayer
-            attribution={atribucionOpenStreetMap}
-            maxZoom={19}
-            url={urlTilesOpenStreetMap}
-          />
+          <TileLayer url={urlTilesOpenStreetMap} {...opcionesTilesOpenStreetMap} />
 
           <EventosSelectorMapa
             bloqueado={seleccionBloqueada}
@@ -197,7 +242,8 @@ export function SelectorUbicacionMapa({
                 <article className="selectorUbicacionMapa__popup">
                   <span>{etiquetaPunto}</span>
                   <strong>
-                    {formatearCoordenada(coordenadas.latitude)}, {formatearCoordenada(coordenadas.longitude)}
+                    {formatearCoordenada(coordenadas.latitude)},{' '}
+                    {formatearCoordenada(coordenadas.longitude)}
                   </strong>
                 </article>
               </Popup>
@@ -218,7 +264,7 @@ export function SelectorUbicacionMapa({
         ) : null}
       </div>
 
-      <footer className="selectorUbicacionMapa__pie">
+      <footer className="selectorUbicacionMapa__pie" aria-live="polite">
         {coordenadas ? (
           <>
             <span>Latitud: {formatearCoordenada(coordenadas.latitude)}</span>
@@ -229,33 +275,5 @@ export function SelectorUbicacionMapa({
         )}
       </footer>
     </section>
-  );
-}
-
-function ControlCentrarSelectorMapa({
-  tieneCoordenadas,
-  alCentrar
-}: {
-  tieneCoordenadas: boolean;
-  alCentrar: (mapa: L.Map) => void;
-}) {
-  const mapa = useMap();
-
-  return (
-    <div className="leaflet-top leaflet-right selectorUbicacionMapa__controlCentrar">
-      <Boton
-        tamano="sm"
-        variante="secundario"
-        aria-label={tieneCoordenadas ? 'Centrar mapa en el punto seleccionado' : 'Centrar mapa en el área inicial'}
-        onClick={(evento) => {
-          evento.stopPropagation();
-          alCentrar(mapa);
-        }}
-        onMouseDown={(evento) => evento.stopPropagation()}
-        onDoubleClick={(evento) => evento.stopPropagation()}
-      >
-        {tieneCoordenadas ? 'Centrar punto' : 'Centrar mapa'}
-      </Boton>
-    </div>
   );
 }

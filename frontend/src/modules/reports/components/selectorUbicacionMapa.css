@@ -5,21 +5,22 @@
   border-radius: var(--radio-lg);
   background: var(--color-superficie);
   padding: var(--espacio-3);
+  box-shadow: var(--sombra-xs);
 }
 
 .selectorUbicacionMapa--compacta .selectorUbicacionMapa__contenedor,
 .selectorUbicacionMapa--compacta .selectorUbicacionMapa__mapa {
-  min-height: 16rem;
+  min-height: 17rem;
 }
 
 .selectorUbicacionMapa--normal .selectorUbicacionMapa__contenedor,
 .selectorUbicacionMapa--normal .selectorUbicacionMapa__mapa {
-  min-height: 20rem;
+  min-height: 21rem;
 }
 
 .selectorUbicacionMapa--amplia .selectorUbicacionMapa__contenedor,
 .selectorUbicacionMapa--amplia .selectorUbicacionMapa__mapa {
-  min-height: 26rem;
+  min-height: 27rem;
 }
 
 .selectorUbicacionMapa__encabezado {
@@ -39,6 +40,7 @@
   margin: var(--espacio-1) 0 0;
   color: var(--color-texto-secundario);
   font-size: var(--tamano-texto-sm);
+  line-height: var(--alto-linea-normal);
 }
 
 .selectorUbicacionMapa__estado {
@@ -51,6 +53,17 @@
   color: var(--color-principal);
   font-size: var(--tamano-texto-xs);
   font-weight: var(--peso-seminegrita);
+}
+
+.selectorUbicacionMapa__ayuda {
+  margin: 0;
+  border: 1px solid rgb(22 93 175 / 0.12);
+  border-radius: var(--radio-md);
+  background: var(--color-principal-suave);
+  padding: var(--espacio-2) var(--espacio-3);
+  color: var(--color-texto-secundario);
+  font-size: var(--tamano-texto-xs);
+  line-height: var(--alto-linea-normal);
 }
 
 .selectorUbicacionMapa__contenedor {
@@ -66,6 +79,10 @@
   z-index: 1;
   width: 100%;
   background: var(--color-gris-urbano-100);
+}
+
+.selectorUbicacionMapa--bloqueado .selectorUbicacionMapa__mapa {
+  cursor: default;
 }
 
 .selectorUbicacionMapa__iconoLeaflet {
@@ -110,6 +127,10 @@
   margin-right: var(--espacio-3);
 }
 
+.selectorUbicacionMapa__controlCentrar .boton {
+  box-shadow: var(--sombra-sm);
+}
+
 .selectorUbicacionMapa__sinPunto {
   position: absolute;
   inset: var(--espacio-4);
@@ -136,6 +157,7 @@
   max-width: 22rem;
   color: var(--color-texto-secundario);
   font-size: var(--tamano-texto-sm);
+  line-height: var(--alto-linea-normal);
 }
 
 .selectorUbicacionMapa__popup {
@@ -181,6 +203,10 @@
   margin: var(--espacio-3);
 }
 
+.selectorUbicacionMapa .leaflet-control-zoom a {
+  color: var(--color-texto);
+}
+
 @keyframes pulsoSelectorUbicacionMapa {
   0% {
     transform: scale(0.75);
@@ -215,5 +241,14 @@
   .selectorUbicacionMapa--amplia .selectorUbicacionMapa__contenedor,
   .selectorUbicacionMapa--amplia .selectorUbicacionMapa__mapa {
     min-height: 18rem;
+  }
+
+  .selectorUbicacionMapa__sinPunto {
+    inset: var(--espacio-3);
+  }
+
+  .selectorUbicacionMapa__controlCentrar {
+    margin-top: var(--espacio-2);
+    margin-right: var(--espacio-2);
   }
 }
