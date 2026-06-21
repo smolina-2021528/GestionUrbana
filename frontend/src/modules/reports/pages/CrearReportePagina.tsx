@@ -12,6 +12,10 @@ import {
   AnalisisReportePanel,
   type AnalisisReporteAplicado
 } from '../components/AnalisisReportePanel';
+import {
+  DuplicadosReportePanel,
+  type ResultadoRevisionDuplicados
+} from '../components/DuplicadosReportePanel';
 import { SelectorUbicacionMapa } from '../components/SelectorUbicacionMapa';
 import { usarCrearReporte } from '../hooks/usarCrearReporte';
 import {
@@ -40,6 +44,12 @@ type CampoTextoCrearReporte = Exclude<keyof FormularioCrearReporte, 'images'>;
 
 type ErroresFormularioCrearReporte = Partial<Record<keyof FormularioCrearReporte, string>>;
 
+type RevisionDuplicadosFormulario = {
+  revisado: boolean;
+  hayDuplicados: boolean;
+  totalCandidatos: number;
+};
+
 const formularioInicial: FormularioCrearReporte = {
   title: '',
   description: '',
@@ -48,6 +58,12 @@ const formularioInicial: FormularioCrearReporte = {
   latitude: '',
   longitude: '',
   images: []
+};
+
+const revisionDuplicadosInicial: RevisionDuplicadosFormulario = {
+  revisado: false,
+  hayDuplicados: false,
+  totalCandidatos: 0
 };
 
 const etiquetasCategoria: Record<CategoriaReporte, string> = {
@@ -60,6 +76,14 @@ const tiposImagenPermitidos = ['image/jpeg', 'image/png', 'image/webp'];
 const maximoImagenes = 3;
 const maximoTamanoImagenMb = 5;
 const maximoTamanoImagenBytes = maximoTamanoImagenMb * 1024 * 1024;
+
+const camposQueInvalidanRevisionDuplicados: CampoTextoCrearReporte[] = [
+  'title',
+  'description',
+  'category',
+  'latitude',
+  'longitude'
+];
 
 function obtenerMensajeError(error: unknown) {
   if (esErrorApi(error)) {
@@ -240,6 +264,8 @@ export function CrearReportePagina() {
   const [mensajeUbicacion, setMensajeUbicacion] = useState<string | null>(null);
   const [solicitandoUbicacion, setSolicitandoUbicacion] = useState(false);
   const [llaveInputImagenes, setLlaveInputImagenes] = useState(0);
+  const [revisionDuplicados, setRevisionDuplicados] =
+    useState<RevisionDuplicadosFormulario>(revisionDuplicadosInicial);
 
   const totalImagenes = formulario.images.length;
   const urlMapa = obtenerUrlMapa(formulario);
@@ -267,6 +293,10 @@ export function CrearReportePagina() {
     return 'Sin ubicación registrada';
   }, [formulario.address, formulario.latitude, formulario.longitude]);
 
+  const invalidarRevisionDuplicados = () => {
+    setRevisionDuplicados(revisionDuplicadosInicial);
+  };
+
   const actualizarCampo = <TCampo extends CampoTextoCrearReporte>(
     campo: TCampo,
     valor: FormularioCrearReporte[TCampo]
@@ -275,6 +305,10 @@ export function CrearReportePagina() {
       ...formularioActual,
       [campo]: valor
     }));
+
+    if (camposQueInvalidanRevisionDuplicados.includes(campo)) {
+      invalidarRevisionDuplicados();
+    }
 
     setErrores((erroresActuales) => {
       const erroresActualizados = { ...erroresActuales };
@@ -334,6 +368,8 @@ export function CrearReportePagina() {
       longitude: coordenadas.longitude.toFixed(6)
     }));
 
+    invalidarRevisionDuplicados();
+
     setErrores((erroresActuales) => {
       const erroresActualizados = { ...erroresActuales };
       delete erroresActualizados.latitude;
@@ -355,6 +391,8 @@ export function CrearReportePagina() {
       latitude: '',
       longitude: ''
     }));
+
+    invalidarRevisionDuplicados();
 
     setErrores((erroresActuales) => {
       const erroresActualizados = { ...erroresActuales };
@@ -385,6 +423,8 @@ export function CrearReportePagina() {
           latitude: posicion.coords.latitude.toFixed(6),
           longitude: posicion.coords.longitude.toFixed(6)
         }));
+
+        invalidarRevisionDuplicados();
 
         setErrores((erroresActuales) => {
           const erroresActualizados = { ...erroresActuales };
@@ -425,6 +465,8 @@ export function CrearReportePagina() {
         location.longitude !== null ? location.longitude.toFixed(6) : formularioActual.longitude
     }));
 
+    invalidarRevisionDuplicados();
+
     setErrores((erroresActuales) => {
       const erroresActualizados = { ...erroresActuales };
       delete erroresActualizados.title;
@@ -451,6 +493,16 @@ export function CrearReportePagina() {
     );
   };
 
+  const completarRevisionDuplicados = (resultado: ResultadoRevisionDuplicados) => {
+    setRevisionDuplicados({
+      revisado: resultado.revisado,
+      hayDuplicados: resultado.hayDuplicados,
+      totalCandidatos: resultado.totalCandidatos
+    });
+
+    setMensajeError(null);
+  };
+
   const limpiarFormulario = () => {
     setFormulario(formularioInicial);
     setErrores({});
@@ -458,6 +510,7 @@ export function CrearReportePagina() {
     setMensajeExito(null);
     setMensajeUbicacion(null);
     setSolicitandoUbicacion(false);
+    setRevisionDuplicados(revisionDuplicadosInicial);
     setLlaveInputImagenes((llaveActual) => llaveActual + 1);
   };
 
@@ -475,6 +528,11 @@ export function CrearReportePagina() {
 
     if (Object.keys(erroresFormulario).length > 0) {
       setMensajeError('Revisa los campos marcados antes de enviar el reporte.');
+      return;
+    }
+
+    if (!revisionDuplicados.revisado) {
+      setMensajeError('Antes de enviar, realiza la revisión de posibles reportes duplicados.');
       return;
     }
 
@@ -793,6 +851,17 @@ export function CrearReportePagina() {
               bloqueado={crearReporte.isPending}
               alAplicarAnalisis={aplicarAnalisisReporte}
             />
+
+            <DuplicadosReportePanel
+              titulo={formulario.title}
+              descripcion={formulario.description}
+              categoria={formulario.category}
+              latitude={coordenadasValidas?.latitude ?? null}
+              longitude={coordenadasValidas?.longitude ?? null}
+              bloqueado={crearReporte.isPending}
+              revisionVigente={revisionDuplicados.revisado}
+              alCompletarRevision={completarRevisionDuplicados}
+            />
           </div>
 
           <aside className="crearReportePagina__columnaResumen">
@@ -832,7 +901,29 @@ export function CrearReportePagina() {
                       : 'Sin imágenes adjuntas'}
                   </strong>
                 </div>
+
+                <div>
+                  <span>Duplicados</span>
+                  <strong>
+                    {revisionDuplicados.revisado
+                      ? revisionDuplicados.totalCandidatos > 0
+                        ? `${revisionDuplicados.totalCandidatos} posible${
+                            revisionDuplicados.totalCandidatos === 1 ? '' : 's'
+                          } similar${revisionDuplicados.totalCandidatos === 1 ? '' : 'es'}`
+                        : 'Sin coincidencias'
+                      : 'Pendiente de revisar'}
+                  </strong>
+                </div>
               </div>
+
+              {revisionDuplicados.revisado && revisionDuplicados.hayDuplicados ? (
+                <Alerta variante="advertencia" titulo="Posibles duplicados">
+                  <p>
+                    Se encontraron reportes con alta similitud. Puedes enviar este reporte si
+                    corresponde a una incidencia diferente.
+                  </p>
+                </Alerta>
+              ) : null}
 
               <div className="crearReportePagina__accionesFormulario">
                 <Boton type="submit" disabled={crearReporte.isPending} anchoCompleto>
