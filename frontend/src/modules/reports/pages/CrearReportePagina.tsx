@@ -8,8 +8,12 @@ import { Alerta } from '../../../shared/components/feedback/Alerta';
 import { Boton } from '../../../shared/components/ui/Boton';
 import { Tarjeta } from '../../../shared/components/ui/Tarjeta';
 import { esErrorApi } from '../../../shared/types/errorApi';
-import { usarCrearReporte } from '../hooks/usarCrearReporte';
+import {
+  AnalisisReportePanel,
+  type AnalisisReporteAplicado
+} from '../components/AnalisisReportePanel';
 import { SelectorUbicacionMapa } from '../components/SelectorUbicacionMapa';
+import { usarCrearReporte } from '../hooks/usarCrearReporte';
 import {
   categoriasReporte,
   type CategoriaReporte,
@@ -323,7 +327,6 @@ export function CrearReportePagina() {
     });
   };
 
-
   const seleccionarCoordenadasMapa = (coordenadas: CoordenadasGeograficas) => {
     setFormulario((formularioActual) => ({
       ...formularioActual,
@@ -340,7 +343,9 @@ export function CrearReportePagina() {
 
     setMensajeError(null);
     setMensajeExito(null);
-    setMensajeUbicacion('Punto seleccionado en el mapa. Puedes ajustar los campos manualmente si es necesario.');
+    setMensajeUbicacion(
+      'Punto seleccionado en el mapa. Puedes ajustar los campos manualmente si es necesario.'
+    );
   };
 
   const limpiarUbicacion = () => {
@@ -404,6 +409,45 @@ export function CrearReportePagina() {
         timeout: 10000,
         maximumAge: 60000
       }
+    );
+  };
+
+  const aplicarAnalisisReporte = ({ analysis, location }: AnalisisReporteAplicado) => {
+    setFormulario((formularioActual) => ({
+      ...formularioActual,
+      title: analysis.title,
+      description: analysis.description,
+      category: analysis.category,
+      address: location.address ?? formularioActual.address,
+      latitude:
+        location.latitude !== null ? location.latitude.toFixed(6) : formularioActual.latitude,
+      longitude:
+        location.longitude !== null ? location.longitude.toFixed(6) : formularioActual.longitude
+    }));
+
+    setErrores((erroresActuales) => {
+      const erroresActualizados = { ...erroresActuales };
+      delete erroresActualizados.title;
+      delete erroresActualizados.description;
+      delete erroresActualizados.category;
+      delete erroresActualizados.address;
+      delete erroresActualizados.latitude;
+      delete erroresActualizados.longitude;
+      return erroresActualizados;
+    });
+
+    setMensajeError(null);
+    setMensajeExito(null);
+
+    if (location.found) {
+      setMensajeUbicacion(
+        'Ubicación sugerida aplicada. Puedes ajustarla manualmente antes de enviar.'
+      );
+      return;
+    }
+
+    setMensajeUbicacion(
+      'Sugerencias aplicadas. La ubicación puede completarse o ajustarse manualmente.'
     );
   };
 
@@ -742,6 +786,13 @@ export function CrearReportePagina() {
                 ) : null}
               </div>
             </Tarjeta>
+
+            <AnalisisReportePanel
+              imagenes={formulario.images}
+              direccion={formulario.address}
+              bloqueado={crearReporte.isPending}
+              alAplicarAnalisis={aplicarAnalisisReporte}
+            />
           </div>
 
           <aside className="crearReportePagina__columnaResumen">
