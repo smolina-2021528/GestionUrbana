@@ -10,6 +10,7 @@ import type {
   FiltrosComentariosReporte,
   FiltrosReportesSeguidos
 } from '../types/interaccionesReporteTipos';
+import type { FiltrosReportesSimilares } from '../types/reportesIaTipos';
 
 const claveBaseReportes = ['reportes'] as const;
 
@@ -52,5 +53,15 @@ export const clavesConsultaReportes = {
   reportesSeguidos: (filtros?: FiltrosReportesSeguidos) =>
     [...claveBaseReportes, 'reportes-seguidos', filtros ?? {}] as const,
 
-  listasSeguimiento: () => [...claveBaseReportes, 'reportes-seguidos'] as const
+  listasSeguimiento: () => [...claveBaseReportes, 'reportes-seguidos'] as const,
+
+  inteligencia: () => [...claveBaseReportes, 'inteligencia'] as const,
+
+  duplicados: () => [...claveBaseReportes, 'inteligencia', 'duplicados'] as const,
+
+  similaresReporte: (reporteId: string) =>
+    [...claveBaseReportes, 'inteligencia', 'similares', reporteId] as const,
+
+  reportesSimilares: (reporteId: string, filtros?: FiltrosReportesSimilares) =>
+    [...claveBaseReportes, 'inteligencia', 'similares', reporteId, filtros ?? {}] as const
 } as const;
