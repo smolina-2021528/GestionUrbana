@@ -1,0 +1,292 @@
+.resumenReportes--operativo {
+  display: grid;
+  gap: var(--espacio-5);
+}
+
+.resumenReportes__grid--operativo {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.resumenReportes__item--destacado {
+  border-color: var(--color-advertencia);
+  background:
+    radial-gradient(circle at top right, rgb(245 158 11 / 0.12), transparent 7rem),
+    var(--color-superficie);
+}
+
+.resumenReportes__panelesOperativos,
+.resumenReportes__inferiorOperativo {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--espacio-4);
+}
+
+.resumenReportes__panelOperativo,
+.resumenReportes__bloqueOperativo {
+  display: grid;
+  gap: var(--espacio-4);
+  min-width: 0;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-xl);
+  background:
+    radial-gradient(circle at top left, rgb(36 116 214 / 0.08), transparent 12rem),
+    var(--color-superficie);
+  padding: var(--espacio-4);
+}
+
+.resumenReportes__panelEncabezado,
+.resumenReportes__bloqueTitulo {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--espacio-3);
+}
+
+.resumenReportes__panelEncabezado span,
+.resumenReportes__bloqueTitulo span,
+.resumenReportes__metricasOperativas span,
+.resumenReportes__distribucionOperativa dt,
+.resumenReportes__calidadOperativa dt {
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-texto-xs);
+  font-weight: var(--peso-seminegrita);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.resumenReportes__panelEncabezado strong,
+.resumenReportes__bloqueTitulo strong {
+  display: block;
+  margin-top: var(--espacio-1);
+  color: var(--color-texto);
+  font-size: var(--tamano-texto-lg);
+  line-height: var(--alto-linea-titulo);
+}
+
+.resumenReportes__panelEncabezado small {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  border-radius: var(--radio-completo);
+  background: var(--color-principal-suave);
+  padding: 0.35rem 0.75rem;
+  color: var(--color-principal);
+  font-size: var(--tamano-texto-xs);
+  font-weight: var(--peso-seminegrita);
+}
+
+.resumenReportes__metricasOperativas {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--espacio-3);
+}
+
+.resumenReportes__metricasOperativas > div {
+  display: grid;
+  gap: var(--espacio-2);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  background: var(--color-superficie-secundaria);
+  padding: var(--espacio-3);
+}
+
+.resumenReportes__metricasOperativas strong {
+  color: var(--color-texto);
+  font-size: var(--tamano-texto-xl);
+  line-height: 1;
+}
+
+.resumenReportes__barra {
+  height: 0.5rem;
+  overflow: hidden;
+  border-radius: var(--radio-completo);
+  background: var(--color-borde);
+}
+
+.resumenReportes__barra span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-principal);
+}
+
+.resumenReportes__distribucionOperativa,
+.resumenReportes__calidadOperativa {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--espacio-3);
+  margin: 0;
+}
+
+.resumenReportes__calidadOperativa {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.resumenReportes__distribucionOperativa div,
+.resumenReportes__calidadOperativa div {
+  display: grid;
+  gap: var(--espacio-1);
+  min-width: 0;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  background: var(--color-superficie-secundaria);
+  padding: var(--espacio-3);
+}
+
+.resumenReportes__distribucionOperativa dd,
+.resumenReportes__calidadOperativa dd {
+  margin: 0;
+  color: var(--color-texto);
+  font-size: var(--tamano-texto-md);
+  font-weight: var(--peso-negrita);
+  line-height: var(--alto-linea-base);
+  overflow-wrap: anywhere;
+}
+
+.resumenReportes__casosOperativos,
+.resumenReportes__responsablesOperativos {
+  display: grid;
+  gap: var(--espacio-3);
+}
+
+.resumenReportes__casoOperativo {
+  display: grid;
+  gap: var(--espacio-1);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  background: var(--color-superficie-secundaria);
+  padding: var(--espacio-3);
+  color: inherit;
+  text-decoration: none;
+  transition:
+    border-color var(--transicion-rapida),
+    box-shadow var(--transicion-rapida),
+    transform var(--transicion-rapida);
+}
+
+.resumenReportes__casoOperativo:hover {
+  border-color: var(--color-principal);
+  box-shadow: var(--sombra-sm);
+  transform: translateY(-1px);
+}
+
+.resumenReportes__casoOperativo span {
+  color: var(--color-advertencia);
+  font-size: var(--tamano-texto-xs);
+  font-weight: var(--peso-seminegrita);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.resumenReportes__casoOperativo strong {
+  color: var(--color-texto);
+  font-size: var(--tamano-texto-sm);
+  line-height: var(--alto-linea-titulo);
+}
+
+.resumenReportes__casoOperativo small,
+.resumenReportes__responsableOperativo span,
+.resumenReportes__responsableOperativo small {
+  color: var(--color-texto-secundario);
+  font-size: var(--tamano-texto-xs);
+  line-height: var(--alto-linea-base);
+}
+
+.resumenReportes__responsableOperativo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-3);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  background: var(--color-superficie-secundaria);
+  padding: var(--espacio-3);
+}
+
+.resumenReportes__responsableOperativo div {
+  display: grid;
+  gap: var(--espacio-1);
+  min-width: 0;
+}
+
+.resumenReportes__responsableOperativo strong {
+  color: var(--color-texto);
+  font-size: var(--tamano-texto-sm);
+  line-height: var(--alto-linea-base);
+  overflow-wrap: anywhere;
+}
+
+.resumenReportes__responsableOperativo small {
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.resumenReportes__vacioOperativo {
+  display: grid;
+  gap: var(--espacio-1);
+  border: 1px dashed var(--color-borde);
+  border-radius: var(--radio-md);
+  background: var(--color-superficie-secundaria);
+  padding: var(--espacio-4);
+  text-align: center;
+}
+
+.resumenReportes__vacioOperativo--compacto {
+  padding: var(--espacio-3);
+}
+
+.resumenReportes__vacioOperativo strong {
+  color: var(--color-texto);
+  font-size: var(--tamano-texto-sm);
+}
+
+.resumenReportes__vacioOperativo p {
+  margin-bottom: 0;
+  color: var(--color-texto-secundario);
+  font-size: var(--tamano-texto-sm);
+}
+
+.resumenReportes__notaOperativa {
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  background: var(--color-principal-suave);
+  padding: var(--espacio-3);
+}
+
+.resumenReportes__notaOperativa span {
+  color: var(--color-principal);
+  font-size: var(--tamano-texto-sm);
+  font-weight: var(--peso-seminegrita);
+  line-height: var(--alto-linea-base);
+}
+
+@media (max-width: 1180px) {
+  .resumenReportes__grid--operativo {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .resumenReportes__panelesOperativos,
+  .resumenReportes__inferiorOperativo {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .resumenReportes__grid--operativo,
+  .resumenReportes__metricasOperativas,
+  .resumenReportes__distribucionOperativa,
+  .resumenReportes__calidadOperativa {
+    grid-template-columns: 1fr;
+  }
+
+  .resumenReportes__panelEncabezado,
+  .resumenReportes__bloqueTitulo,
+  .resumenReportes__responsableOperativo {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .resumenReportes__responsableOperativo small {
+    text-align: left;
+  }
+}
