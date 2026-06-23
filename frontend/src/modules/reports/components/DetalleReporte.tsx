@@ -3,7 +3,6 @@ import { InsigniaEstado } from '../../../shared/components/ui/InsigniaEstado';
 import { InsigniaPrioridad } from '../../../shared/components/ui/InsigniaPrioridad';
 import { Tarjeta } from '../../../shared/components/ui/Tarjeta';
 import type {
-  AnalisisIAReporte,
   CategoriaReporte,
   ImagenReporte,
   Reporte,
@@ -41,16 +40,6 @@ function formatearFecha(fecha: string | null | undefined) {
   }).format(fechaValida);
 }
 
-function formatearPorcentaje(valor: number | null | undefined) {
-  if (typeof valor !== 'number' || !Number.isFinite(valor)) {
-    return 'No disponible';
-  }
-
-  return `${new Intl.NumberFormat('es-GT', {
-    maximumFractionDigits: 1
-  }).format(valor * 100)}%`;
-}
-
 function obtenerNombreUsuario(usuario: UsuarioResumenReporte | null) {
   if (!usuario) {
     return 'Sin asignar';
@@ -63,31 +52,6 @@ function obtenerNombreUsuario(usuario: UsuarioResumenReporte | null) {
 
 function obtenerCategoria(categoria: CategoriaReporte) {
   return etiquetasCategoria[categoria] ?? categoria;
-}
-
-function obtenerEstadoIA(analisis: AnalisisIAReporte | null) {
-  if (!analisis) {
-    return 'Sin análisis registrado';
-  }
-
-  switch (analisis.status) {
-    case 'PENDING':
-      return 'Pendiente';
-    case 'OK':
-      return 'Procesado';
-    case 'FAILED':
-      return 'Fallido';
-    default:
-      return analisis.status;
-  }
-}
-
-function obtenerTextoSeguro(valor: string | null | undefined, respaldo = 'No disponible') {
-  if (!valor) {
-    return respaldo;
-  }
-
-  return valor;
 }
 
 function GaleriaEvidencia({ imagenes, titulo }: { imagenes: ImagenReporte[]; titulo: string }) {
@@ -123,7 +87,6 @@ export function DetalleReporte({
   actualizando = false
 }: PropiedadesDetalleReporte) {
   const categoria = obtenerCategoria(reporte.category);
-  const analisisIA = reporte.ai;
 
   return (
     <article className="detalleReporte">
@@ -201,40 +164,6 @@ export function DetalleReporte({
             <div className="detalleReporte__dato">
               <span>Responsable</span>
               <strong>{obtenerNombreUsuario(reporte.assignedTo)}</strong>
-            </div>
-          </div>
-        </Tarjeta>
-
-        <Tarjeta titulo="Análisis asistido" descripcion="Resultado del análisis registrado para el reporte.">
-          <div className="detalleReporte__listaDatos">
-            <div className="detalleReporte__dato">
-              <span>Estado del análisis</span>
-              <strong>{obtenerEstadoIA(analisisIA)}</strong>
-            </div>
-
-            <div className="detalleReporte__dato">
-              <span>Categoría sugerida</span>
-              <strong>{obtenerTextoSeguro(analisisIA?.category)}</strong>
-            </div>
-
-            <div className="detalleReporte__dato">
-              <span>Prioridad sugerida</span>
-              <strong>{obtenerTextoSeguro(analisisIA?.priority)}</strong>
-            </div>
-
-            <div className="detalleReporte__dato">
-              <span>Confianza</span>
-              <strong>{formatearPorcentaje(analisisIA?.confidence)}</strong>
-            </div>
-
-            <div className="detalleReporte__dato detalleReporte__dato--ancho">
-              <span>Razonamiento</span>
-              <strong>{obtenerTextoSeguro(analisisIA?.reasoning)}</strong>
-            </div>
-
-            <div className="detalleReporte__dato">
-              <span>Procesado</span>
-              <strong>{formatearFecha(analisisIA?.processedAt)}</strong>
             </div>
           </div>
         </Tarjeta>

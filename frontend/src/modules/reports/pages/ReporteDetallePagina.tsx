@@ -13,6 +13,7 @@ import { BotonSeguimientoReporte } from '../components/BotonSeguimientoReporte';
 import { ComentariosReporte } from '../components/ComentariosReporte';
 import { DetalleReporte } from '../components/DetalleReporte';
 import { HistorialReporte } from '../components/HistorialReporte';
+import { PanelInteligenciaReporte } from '../components/PanelInteligenciaReporte';
 import { ReportesSimilares } from '../components/ReportesSimilares';
 import { UbicacionReporte } from '../components/UbicacionReporte';
 import { usarReporteDetalle } from '../hooks/usarReporteDetalle';
@@ -152,6 +153,13 @@ export function ReporteDetallePagina() {
       <UbicacionReporte
         reporte={reporte}
         puedeGestionar={puedeGestionarUbicacion}
+        alCambioRealizado={actualizarDetalle}
+      />
+
+      <PanelInteligenciaReporte
+        reporte={reporte}
+        puedeReprocesar={esAdministrador}
+        actualizando={consultaDetalle.isFetching}
         alCambioRealizado={actualizarDetalle}
       />
 
