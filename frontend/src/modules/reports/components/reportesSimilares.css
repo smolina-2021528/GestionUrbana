@@ -1,0 +1,190 @@
+.reportesSimilares {
+  overflow: hidden;
+}
+
+.reportesSimilares__contenido {
+  display: grid;
+  gap: var(--espacio-4);
+}
+
+.reportesSimilares__estado {
+  display: grid;
+  min-height: 7rem;
+  place-items: center;
+}
+
+.reportesSimilares__alerta {
+  display: grid;
+  gap: var(--espacio-3);
+  justify-items: start;
+}
+
+.reportesSimilares__alerta p {
+  margin-bottom: 0;
+}
+
+.reportesSimilares__resumen {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr));
+  gap: var(--espacio-3);
+}
+
+.reportesSimilares__resumen article {
+  display: grid;
+  gap: var(--espacio-1);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  background: var(--color-superficie-secundaria);
+  padding: var(--espacio-3);
+}
+
+.reportesSimilares__resumen span,
+.reportesSimilares__datos dt {
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-texto-xs);
+  font-weight: var(--peso-seminegrita);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.reportesSimilares__resumen strong {
+  color: var(--color-texto);
+  font-size: var(--tamano-texto-sm);
+  font-weight: var(--peso-seminegrita);
+  line-height: var(--alto-linea-base);
+  overflow-wrap: anywhere;
+}
+
+.reportesSimilares__lista {
+  display: grid;
+  gap: var(--espacio-4);
+}
+
+.reportesSimilares__item {
+  display: grid;
+  gap: var(--espacio-3);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-lg);
+  background:
+    radial-gradient(circle at top left, rgb(36 116 214 / 0.08), transparent 13rem),
+    var(--color-superficie);
+  padding: var(--espacio-4);
+}
+
+.reportesSimilares__itemEncabezado {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--espacio-4);
+}
+
+.reportesSimilares__itemEncabezado h3 {
+  margin: var(--espacio-2) 0 0;
+  color: var(--color-texto);
+  font-size: var(--tamano-texto-lg);
+  line-height: var(--alto-linea-titulo);
+}
+
+.reportesSimilares__etiqueta {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  border-radius: var(--radio-completo);
+  background: var(--color-principal-suave);
+  padding: 0.25rem 0.65rem;
+  color: var(--color-principal);
+  font-size: var(--tamano-texto-xs);
+  font-weight: var(--peso-seminegrita);
+}
+
+.reportesSimilares__porcentaje {
+  flex-shrink: 0;
+  color: var(--color-principal);
+  font-size: var(--tamano-texto-2xl);
+  line-height: 1;
+}
+
+.reportesSimilares__item p {
+  margin-bottom: 0;
+  color: var(--color-texto-secundario);
+  font-size: var(--tamano-texto-sm);
+  line-height: var(--alto-linea-base);
+}
+
+.reportesSimilares__datos {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: var(--espacio-3);
+  margin: 0;
+}
+
+.reportesSimilares__datos div {
+  display: grid;
+  gap: var(--espacio-1);
+  min-width: 0;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  background: var(--color-superficie-secundaria);
+  padding: var(--espacio-3);
+}
+
+.reportesSimilares__datos dd {
+  margin: 0;
+  color: var(--color-texto);
+  font-size: var(--tamano-texto-sm);
+  font-weight: var(--peso-seminegrita);
+  overflow-wrap: anywhere;
+}
+
+.reportesSimilares__acciones {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.reportesSimilares__acciones a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radio-md);
+  background: var(--color-principal-suave);
+  padding: 0.6rem 0.9rem;
+  color: var(--color-principal);
+  font-size: var(--tamano-texto-sm);
+  font-weight: var(--peso-seminegrita);
+  text-decoration: none;
+  transition:
+    background-color var(--transicion-rapida),
+    color var(--transicion-rapida);
+}
+
+.reportesSimilares__acciones a:hover {
+  background: var(--color-principal);
+  color: var(--color-blanco);
+}
+
+@media (max-width: 980px) {
+  .reportesSimilares__resumen,
+  .reportesSimilares__datos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .reportesSimilares__itemEncabezado {
+    flex-direction: column;
+  }
+
+  .reportesSimilares__acciones {
+    justify-content: stretch;
+  }
+
+  .reportesSimilares__acciones a,
+  .reportesSimilares__alerta .boton {
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .reportesSimilares__resumen,
+  .reportesSimilares__datos {
+    grid-template-columns: 1fr;
+  }
+}

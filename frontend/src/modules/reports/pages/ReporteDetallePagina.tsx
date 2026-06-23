@@ -13,6 +13,7 @@ import { BotonSeguimientoReporte } from '../components/BotonSeguimientoReporte';
 import { ComentariosReporte } from '../components/ComentariosReporte';
 import { DetalleReporte } from '../components/DetalleReporte';
 import { HistorialReporte } from '../components/HistorialReporte';
+import { ReportesSimilares } from '../components/ReportesSimilares';
 import { UbicacionReporte } from '../components/UbicacionReporte';
 import { usarReporteDetalle } from '../hooks/usarReporteDetalle';
 import './reportesPagina.css';
@@ -159,6 +160,8 @@ export function ReporteDetallePagina() {
         tituloReporte={reporte.title}
         alCambioSeguimiento={actualizarDetalle}
       />
+
+      <ReportesSimilares reporteId={reporteId} />
 
       {esAdministrador ? (
         <AccionesAdministrativasReporte
