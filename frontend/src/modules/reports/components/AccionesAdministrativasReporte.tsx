@@ -1,18 +1,19 @@
 import type { FormEvent } from 'react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Alerta } from '../../../shared/components/feedback/Alerta';
 import { Boton } from '../../../shared/components/ui/Boton';
 import { Tarjeta } from '../../../shared/components/ui/Tarjeta';
 import { esErrorApi } from '../../../shared/types/errorApi';
+import { SelectorResponsableReporte } from './SelectorResponsableReporte';
+import { usarAsignarReporte } from '../hooks/usarAsignarReporte';
+import { usarCambiarEstadoReporte } from '../hooks/usarCambiarEstadoReporte';
+import { usarEliminarReporte } from '../hooks/usarEliminarReporte';
 import {
   estadosReporte,
   type EstadoReporte,
   type Reporte
 } from '../types/reportesTipos';
-import { usarAsignarReporte } from '../hooks/usarAsignarReporte';
-import { usarCambiarEstadoReporte } from '../hooks/usarCambiarEstadoReporte';
-import { usarEliminarReporte } from '../hooks/usarEliminarReporte';
 import './accionesReporte.css';
 
 type PropiedadesAccionesAdministrativasReporte = {
@@ -40,6 +41,19 @@ function limpiarTexto(valor: string) {
   return valor.trim();
 }
 
+function obtenerNombreResponsable(reporte: Reporte) {
+  if (!reporte.assignedTo) {
+    return 'Sin responsable asignado';
+  }
+
+  const nombreCompleto = [reporte.assignedTo.name, reporte.assignedTo.surname]
+    .filter(Boolean)
+    .join(' ')
+    .trim();
+
+  return nombreCompleto || reporte.assignedTo.username || 'Usuario asignado';
+}
+
 export function AccionesAdministrativasReporte({
   reporte,
   alCambioRealizado,
@@ -58,6 +72,17 @@ export function AccionesAdministrativasReporte({
 
   const accionEnProceso =
     cambiarEstado.isPending || asignarReporte.isPending || eliminarReporte.isPending;
+
+  const responsableActualId = reporte.assignedTo?.id ?? '';
+  const responsableSinCambios = limpiarTexto(responsableId) === responsableActualId;
+
+  useEffect(() => {
+    setEstadoSeleccionado(reporte.status);
+  }, [reporte.status]);
+
+  useEffect(() => {
+    setResponsableId(reporte.assignedTo?.id ?? '');
+  }, [reporte.assignedTo?.id]);
 
   const limpiarMensajes = () => {
     setMensajeError(null);
@@ -99,7 +124,12 @@ export function AccionesAdministrativasReporte({
     const responsable = limpiarTexto(responsableId);
 
     if (!responsable) {
-      setMensajeError('Ingresa el identificador del usuario responsable.');
+      setMensajeError('Selecciona un responsable municipal para asignar el reporte.');
+      return;
+    }
+
+    if (responsableSinCambios) {
+      setMensajeError('Selecciona un responsable diferente antes de guardar la asignación.');
       return;
     }
 
@@ -211,21 +241,29 @@ export function AccionesAdministrativasReporte({
             <div>
               <span className="accionesReporte__etiqueta">Responsable</span>
               <h3>Asignar reporte</h3>
-              <p>Define el usuario responsable de dar seguimiento al caso.</p>
+              <p>Selecciona personal municipal con permisos administrativos para dar seguimiento.</p>
             </div>
 
-            <label className="accionesReporte__campo">
-              <span>Identificador del responsable</span>
-              <input
-                type="text"
-                value={responsableId}
-                placeholder="ID del usuario responsable"
-                disabled={accionEnProceso}
-                onChange={(evento) => setResponsableId(evento.target.value)}
-              />
-            </label>
+            <div className="accionesReporte__responsableActual">
+              <span>Responsable actual</span>
+              <strong>{obtenerNombreResponsable(reporte)}</strong>
+            </div>
 
-            <Boton type="submit" variante="secundario" disabled={accionEnProceso}>
+            <SelectorResponsableReporte
+              responsableId={responsableId}
+              responsableActual={reporte.assignedTo}
+              bloqueado={accionEnProceso}
+              alCambiarResponsable={(nuevoResponsableId) => {
+                setResponsableId(nuevoResponsableId);
+                limpiarMensajes();
+              }}
+            />
+
+            <Boton
+              type="submit"
+              variante="secundario"
+              disabled={accionEnProceso || responsableSinCambios}
+            >
               {asignarReporte.isPending ? 'Asignando...' : 'Asignar responsable'}
             </Boton>
           </form>

@@ -112,6 +112,30 @@
   cursor: not-allowed;
 }
 
+.accionesReporte__responsableActual {
+  display: grid;
+  gap: var(--espacio-1);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  background: var(--color-principal-suave);
+  padding: var(--espacio-3);
+}
+
+.accionesReporte__responsableActual span {
+  color: var(--color-principal);
+  font-size: var(--tamano-texto-xs);
+  font-weight: var(--peso-seminegrita);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.accionesReporte__responsableActual strong {
+  color: var(--color-texto);
+  font-size: var(--tamano-texto-sm);
+  line-height: var(--alto-linea-base);
+  overflow-wrap: anywhere;
+}
+
 @media (max-width: 1120px) {
   .accionesReporte__grid {
     grid-template-columns: 1fr;
