@@ -1,0 +1,134 @@
+.transicionesEstadoReporte {
+  display: grid;
+  gap: var(--espacio-3);
+}
+
+.transicionesEstadoReporte__actual {
+  display: grid;
+  gap: var(--espacio-1);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  background: var(--color-principal-suave);
+  padding: var(--espacio-3);
+}
+
+.transicionesEstadoReporte__actual span,
+.transicionesEstadoReporte__opcion span {
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-texto-xs);
+  font-weight: var(--peso-seminegrita);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.transicionesEstadoReporte__actual strong {
+  color: var(--color-principal);
+  font-size: var(--tamano-texto-md);
+  line-height: var(--alto-linea-base);
+}
+
+.transicionesEstadoReporte__actual p {
+  margin-bottom: 0;
+  color: var(--color-texto-secundario);
+  font-size: var(--tamano-texto-sm);
+  line-height: var(--alto-linea-base);
+}
+
+.transicionesEstadoReporte__lista {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--espacio-3);
+}
+
+.transicionesEstadoReporte__opcion {
+  display: grid;
+  gap: var(--espacio-1);
+  min-height: 8.5rem;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  background: var(--color-superficie);
+  padding: var(--espacio-3);
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color var(--transicion-rapida),
+    background-color var(--transicion-rapida),
+    box-shadow var(--transicion-rapida),
+    transform var(--transicion-rapida);
+}
+
+.transicionesEstadoReporte__opcion:hover:not(:disabled) {
+  border-color: var(--color-principal);
+  background: var(--color-superficie);
+  box-shadow: var(--sombra-sm);
+  transform: translateY(-1px);
+}
+
+.transicionesEstadoReporte__opcion strong {
+  color: var(--color-texto);
+  font-size: var(--tamano-texto-sm);
+  line-height: var(--alto-linea-base);
+}
+
+.transicionesEstadoReporte__opcion small {
+  color: var(--color-texto-secundario);
+  font-size: var(--tamano-texto-xs);
+  line-height: var(--alto-linea-base);
+}
+
+.transicionesEstadoReporte__opcion--actual {
+  border-color: var(--color-principal);
+  background: var(--color-principal-suave);
+  cursor: default;
+}
+
+.transicionesEstadoReporte__opcion--actual strong {
+  color: var(--color-principal);
+}
+
+.transicionesEstadoReporte__opcion--seleccionada {
+  border-color: var(--color-exito);
+  background: var(--color-exito-suave);
+  box-shadow: 0 0 0 3px rgb(22 163 74 / 0.1);
+}
+
+.transicionesEstadoReporte__opcion--seleccionada strong {
+  color: var(--color-exito);
+}
+
+.transicionesEstadoReporte__opcion--bloqueada {
+  background: var(--color-superficie-secundaria);
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
+.transicionesEstadoReporte__sinTransiciones {
+  display: grid;
+  gap: var(--espacio-1);
+  border: 1px dashed var(--color-borde);
+  border-radius: var(--radio-md);
+  background: var(--color-superficie-secundaria);
+  padding: var(--espacio-3);
+}
+
+.transicionesEstadoReporte__sinTransiciones strong {
+  color: var(--color-texto);
+  font-size: var(--tamano-texto-sm);
+}
+
+.transicionesEstadoReporte__sinTransiciones p {
+  margin-bottom: 0;
+  color: var(--color-texto-secundario);
+  font-size: var(--tamano-texto-sm);
+}
+
+@media (max-width: 720px) {
+  .transicionesEstadoReporte__lista {
+    grid-template-columns: 1fr;
+  }
+
+  .transicionesEstadoReporte__opcion {
+    min-height: auto;
+  }
+}

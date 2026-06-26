@@ -6,27 +6,21 @@ import { Boton } from '../../../shared/components/ui/Boton';
 import { Tarjeta } from '../../../shared/components/ui/Tarjeta';
 import { esErrorApi } from '../../../shared/types/errorApi';
 import { SelectorResponsableReporte } from './SelectorResponsableReporte';
+import { TransicionesEstadoReporte } from './TransicionesEstadoReporte';
 import { usarAsignarReporte } from '../hooks/usarAsignarReporte';
 import { usarCambiarEstadoReporte } from '../hooks/usarCambiarEstadoReporte';
 import { usarEliminarReporte } from '../hooks/usarEliminarReporte';
+import type { EstadoReporte, Reporte } from '../types/reportesTipos';
 import {
-  estadosReporte,
-  type EstadoReporte,
-  type Reporte
-} from '../types/reportesTipos';
+  obtenerEtiquetaEstadoOperativo,
+  puedeCambiarEstadoReporte
+} from '../utils/reportesOperativosUtils';
 import './accionesReporte.css';
 
 type PropiedadesAccionesAdministrativasReporte = {
   reporte: Reporte;
   alCambioRealizado?: () => void;
   alReporteEliminado?: () => void;
-};
-
-const etiquetasEstado: Record<EstadoReporte, string> = {
-  PENDIENTE: 'Pendiente',
-  EN_PROCESO: 'En proceso',
-  RESUELTO: 'Resuelto',
-  RECHAZADO: 'Rechazado'
 };
 
 function obtenerMensajeError(error: unknown) {
@@ -75,6 +69,9 @@ export function AccionesAdministrativasReporte({
 
   const responsableActualId = reporte.assignedTo?.id ?? '';
   const responsableSinCambios = limpiarTexto(responsableId) === responsableActualId;
+  const estadoSinCambios = estadoSeleccionado === reporte.status;
+  const cambioEstadoPermitido =
+    !estadoSinCambios && puedeCambiarEstadoReporte(reporte.status, estadoSeleccionado);
 
   useEffect(() => {
     setEstadoSeleccionado(reporte.status);
@@ -92,6 +89,20 @@ export function AccionesAdministrativasReporte({
   const manejarCambioEstado = async (evento: FormEvent<HTMLFormElement>) => {
     evento.preventDefault();
     limpiarMensajes();
+
+    if (estadoSinCambios) {
+      setMensajeError('Selecciona un estado diferente antes de guardar el cambio.');
+      return;
+    }
+
+    if (!cambioEstadoPermitido) {
+      setMensajeError(
+        `No se puede cambiar directamente de ${obtenerEtiquetaEstadoOperativo(
+          reporte.status
+        )} a ${obtenerEtiquetaEstadoOperativo(estadoSeleccionado)}.`
+      );
+      return;
+    }
 
     try {
       const respuesta = await cambiarEstado.mutateAsync({
@@ -204,23 +215,18 @@ export function AccionesAdministrativasReporte({
             <div>
               <span className="accionesReporte__etiqueta">Estado del reporte</span>
               <h3>Cambiar estado</h3>
-              <p>Actualiza el avance operativo del caso.</p>
+              <p>Selecciona una transición operativa permitida para este caso.</p>
             </div>
 
-            <label className="accionesReporte__campo">
-              <span>Nuevo estado</span>
-              <select
-                value={estadoSeleccionado}
-                disabled={accionEnProceso}
-                onChange={(evento) => setEstadoSeleccionado(evento.target.value as EstadoReporte)}
-              >
-                {estadosReporte.map((estado) => (
-                  <option key={estado} value={estado}>
-                    {etiquetasEstado[estado]}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <TransicionesEstadoReporte
+              estadoActual={reporte.status}
+              estadoSeleccionado={estadoSeleccionado}
+              bloqueado={accionEnProceso}
+              alCambiarEstado={(estado) => {
+                setEstadoSeleccionado(estado);
+                limpiarMensajes();
+              }}
+            />
 
             <label className="accionesReporte__campo">
               <span>Notas internas</span>
@@ -232,7 +238,7 @@ export function AccionesAdministrativasReporte({
               />
             </label>
 
-            <Boton type="submit" disabled={accionEnProceso}>
+            <Boton type="submit" disabled={accionEnProceso || !cambioEstadoPermitido}>
               {cambiarEstado.isPending ? 'Actualizando...' : 'Actualizar estado'}
             </Boton>
           </form>
