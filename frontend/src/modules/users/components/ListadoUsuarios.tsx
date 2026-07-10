@@ -1,3 +1,4 @@
+import { GestionEstadoUsuario } from './GestionEstadoUsuario';
 import { GestionRolUsuario } from './GestionRolUsuario';
 import type { UsuarioSistema } from '../types/usuariosTipos';
 import { obtenerNombreCompletoUsuario } from '../types/usuariosTipos';
@@ -143,7 +144,9 @@ export function ListadoUsuarios({
       <div className="listadoUsuarios__resumen">
         <article>
           <span>Total registrados</span>
-          <strong>{formatearNumero(totalUsuarios)}</strong>
+          <strong>
+            {formatearNumero(totalUsuarios)}
+          </strong>
           <p>Usuarios encontrados en el sistema.</p>
         </article>
 
@@ -157,7 +160,9 @@ export function ListadoUsuarios({
 
         <article>
           <span>Cuentas activas</span>
-          <strong>{formatearNumero(totalActivos)}</strong>
+          <strong>
+            {formatearNumero(totalActivos)}
+          </strong>
           <p>Usuarios activos en la página actual.</p>
         </article>
 
@@ -176,7 +181,7 @@ export function ListadoUsuarios({
         <span>Rol</span>
         <span>Cuenta</span>
         <span>Registro</span>
-        <span>Permisos</span>
+        <span>Administración</span>
       </div>
 
       <div className="listadoUsuarios__filas">
@@ -284,15 +289,28 @@ export function ListadoUsuarios({
                 </small>
               </div>
 
-              <div className="listadoUsuarios__permisos">
+              <div className="listadoUsuarios__administracion">
                 <span className="listadoUsuarios__etiquetaMovil">
-                  Permisos
+                  Administración
                 </span>
 
-                <GestionRolUsuario
-                  usuario={usuario}
-                  esUsuarioActual={esUsuarioActual}
-                />
+                <div className="listadoUsuarios__accionAdministrativa">
+                  <span>Permisos</span>
+
+                  <GestionRolUsuario
+                    usuario={usuario}
+                    esUsuarioActual={esUsuarioActual}
+                  />
+                </div>
+
+                <div className="listadoUsuarios__accionAdministrativa">
+                  <span>Acceso</span>
+
+                  <GestionEstadoUsuario
+                    usuario={usuario}
+                    esUsuarioActual={esUsuarioActual}
+                  />
+                </div>
               </div>
             </article>
           );

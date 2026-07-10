@@ -1,0 +1,84 @@
+.gestionEstadoUsuario {
+  display: grid;
+  gap: var(--espacio-2);
+  min-width: 0;
+}
+
+.gestionEstadoUsuario__confirmacion {
+  display: grid;
+  gap: var(--espacio-3);
+  min-width: 14rem;
+}
+
+.gestionEstadoUsuario__confirmacion p {
+  margin-bottom: var(--espacio-2);
+}
+
+.gestionEstadoUsuario__confirmacion p:last-child {
+  margin-bottom: 0;
+}
+
+.gestionEstadoUsuario__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-2);
+}
+
+.gestionEstadoUsuario__bloqueado {
+  display: grid;
+  gap: var(--espacio-1);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  background: var(--color-superficie-secundaria);
+  padding: var(--espacio-3);
+}
+
+.gestionEstadoUsuario__bloqueado span {
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-texto-xs);
+  font-weight: var(--peso-seminegrita);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.gestionEstadoUsuario__bloqueado p {
+  margin-bottom: 0;
+  color: var(--color-texto-secundario);
+  font-size: var(--tamano-texto-xs);
+  line-height: var(--alto-linea-base);
+}
+
+.gestionEstadoUsuario__mensaje {
+  border-radius: var(--radio-md);
+  padding: 0.55rem 0.7rem;
+  font-size: var(--tamano-texto-xs);
+  font-weight: var(--peso-seminegrita);
+  line-height: var(--alto-linea-base);
+}
+
+.gestionEstadoUsuario__mensaje--error {
+  border: 1px solid rgb(220 38 38 / 0.25);
+  background: var(--color-error-suave);
+  color: var(--color-error);
+}
+
+.gestionEstadoUsuario__mensaje--exito {
+  border: 1px solid rgb(22 163 74 / 0.25);
+  background: var(--color-exito-suave);
+  color: var(--color-exito);
+}
+
+@media (max-width: 620px) {
+  .gestionEstadoUsuario__confirmacion {
+    min-width: 0;
+  }
+
+  .gestionEstadoUsuario__acciones {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .gestionEstadoUsuario__acciones .boton {
+    width: 100%;
+  }
+}
