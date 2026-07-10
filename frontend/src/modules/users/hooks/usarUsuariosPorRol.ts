@@ -1,32 +1,40 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { rolesSistema } from '../../../config/constantesSistema';
-import { usarAutenticacion } from '../../authentication/hooks/usarAutenticacion';
 import { usuariosServicio } from '../services/usuariosServicio';
 import { clavesConsultaUsuarios } from './clavesConsultaUsuarios';
+import { usarConsultaUsuariosHabilitada } from './usarConsultaUsuariosHabilitada';
 
 type OpcionesUsuariosPorRol = {
   habilitado?: boolean;
 };
 
-function tieneRolValido(nombreRol: string | undefined) {
-  return Boolean(nombreRol?.trim());
+function normalizarNombreRol(
+  nombreRol: string | undefined
+) {
+  return nombreRol?.trim().toUpperCase() ?? '';
 }
 
-export function usarUsuariosPorRol(nombreRol: string | undefined, opciones?: OpcionesUsuariosPorRol) {
-  const { estaAutenticado, cargandoSesion, roles } = usarAutenticacion();
+export function usarUsuariosPorRol(
+  nombreRol: string | undefined,
+  opciones?: OpcionesUsuariosPorRol
+) {
+  const {
+    consultaAdministrativaHabilitada
+  } = usarConsultaUsuariosHabilitada();
 
-  const esAdministrador = roles.includes(rolesSistema.administrador);
-  const consultaHabilitada =
-    estaAutenticado &&
-    !cargandoSesion &&
-    esAdministrador &&
-    tieneRolValido(nombreRol) &&
-    (opciones?.habilitado ?? true);
+  const rolNormalizado = normalizarNombreRol(nombreRol);
 
   return useQuery({
-    queryKey: clavesConsultaUsuarios.porRol(nombreRol ?? ''),
-    queryFn: () => usuariosServicio.obtenerUsuariosPorRol(nombreRol ?? ''),
-    enabled: consultaHabilitada
+    queryKey: clavesConsultaUsuarios.porRol(
+      rolNormalizado
+    ),
+    queryFn: () =>
+      usuariosServicio.obtenerUsuariosPorRol(
+        rolNormalizado
+      ),
+    enabled:
+      consultaAdministrativaHabilitada &&
+      Boolean(rolNormalizado) &&
+      (opciones?.habilitado ?? true)
   });
 }
