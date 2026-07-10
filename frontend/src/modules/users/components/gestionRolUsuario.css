@@ -1,0 +1,126 @@
+.gestionRolUsuario {
+  display: grid;
+  gap: var(--espacio-2);
+  min-width: 0;
+}
+
+.gestionRolUsuario__editor {
+  display: grid;
+  gap: var(--espacio-3);
+  min-width: 14rem;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  background: var(--color-superficie-secundaria);
+  padding: var(--espacio-3);
+}
+
+.gestionRolUsuario__editor label {
+  display: grid;
+  gap: var(--espacio-2);
+}
+
+.gestionRolUsuario__editor label > span {
+  color: var(--color-texto-secundario);
+  font-size: var(--tamano-texto-xs);
+  font-weight: var(--peso-seminegrita);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.gestionRolUsuario__editor select {
+  width: 100%;
+  min-height: 2.5rem;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  background: var(--color-superficie);
+  padding: 0.6rem 0.75rem;
+  color: var(--color-texto);
+  font: inherit;
+  font-size: var(--tamano-texto-sm);
+  outline: none;
+}
+
+.gestionRolUsuario__editor select:focus {
+  border-color: var(--color-principal);
+  box-shadow: 0 0 0 3px rgb(22 93 175 / 0.12);
+}
+
+.gestionRolUsuario__editor select:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.gestionRolUsuario__descripcion {
+  display: grid;
+  gap: var(--espacio-1);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  background: var(--color-superficie);
+  padding: var(--espacio-3);
+}
+
+.gestionRolUsuario__descripcion strong {
+  color: var(--color-texto);
+  font-size: var(--tamano-texto-sm);
+}
+
+.gestionRolUsuario__descripcion p {
+  margin-bottom: 0;
+  color: var(--color-texto-secundario);
+  font-size: var(--tamano-texto-xs);
+  line-height: var(--alto-linea-base);
+}
+
+.gestionRolUsuario__confirmacion {
+  display: grid;
+  gap: var(--espacio-3);
+}
+
+.gestionRolUsuario__confirmacion p {
+  margin-bottom: var(--espacio-2);
+}
+
+.gestionRolUsuario__confirmacion p:last-child {
+  margin-bottom: 0;
+}
+
+.gestionRolUsuario__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-2);
+}
+
+.gestionRolUsuario__mensaje {
+  border-radius: var(--radio-md);
+  padding: 0.55rem 0.7rem;
+  font-size: var(--tamano-texto-xs);
+  font-weight: var(--peso-seminegrita);
+  line-height: var(--alto-linea-base);
+}
+
+.gestionRolUsuario__mensaje--error {
+  border: 1px solid rgb(220 38 38 / 0.25);
+  background: var(--color-error-suave);
+  color: var(--color-error);
+}
+
+.gestionRolUsuario__mensaje--exito {
+  border: 1px solid rgb(22 163 74 / 0.25);
+  background: var(--color-exito-suave);
+  color: var(--color-exito);
+}
+
+@media (max-width: 620px) {
+  .gestionRolUsuario__editor {
+    min-width: 0;
+  }
+
+  .gestionRolUsuario__acciones {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .gestionRolUsuario__acciones .boton {
+    width: 100%;
+  }
+}

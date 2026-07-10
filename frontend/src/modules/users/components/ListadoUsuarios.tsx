@@ -1,3 +1,4 @@
+import { GestionRolUsuario } from './GestionRolUsuario';
 import type { UsuarioSistema } from '../types/usuariosTipos';
 import { obtenerNombreCompletoUsuario } from '../types/usuariosTipos';
 import './listadoUsuarios.css';
@@ -10,10 +11,16 @@ type PropiedadesListadoUsuarios = {
 
 type EstadoVerificacionUsuario = {
   etiqueta: string;
-  modificador: 'verificado' | 'pendiente' | 'desconocido';
+  modificador:
+    | 'verificado'
+    | 'pendiente'
+    | 'desconocido';
 };
 
-const etiquetasRol: Record<UsuarioSistema['role'], string> = {
+const etiquetasRol: Record<
+  UsuarioSistema['role'],
+  string
+> = {
   ADMIN_ROLE: 'Administrador',
   USER_ROLE: 'Ciudadano'
 };
@@ -38,11 +45,19 @@ function formatearFecha(fecha: string | undefined) {
   }).format(fechaValida);
 }
 
-function obtenerInicialesUsuario(usuario: UsuarioSistema) {
-  const inicialNombre = usuario.name?.trim().charAt(0);
-  const inicialApellido = usuario.surname?.trim().charAt(0);
+function obtenerInicialesUsuario(
+  usuario: UsuarioSistema
+) {
+  const inicialNombre =
+    usuario.name?.trim().charAt(0);
 
-  const iniciales = [inicialNombre, inicialApellido]
+  const inicialApellido =
+    usuario.surname?.trim().charAt(0);
+
+  const iniciales = [
+    inicialNombre,
+    inicialApellido
+  ]
     .filter(Boolean)
     .join('')
     .toUpperCase();
@@ -116,7 +131,8 @@ export function ListadoUsuarios({
   ).length;
 
   const totalAdministradores = usuarios.filter(
-    (usuario) => usuario.role === 'ADMIN_ROLE'
+    (usuario) =>
+      usuario.role === 'ADMIN_ROLE'
   ).length;
 
   return (
@@ -133,7 +149,9 @@ export function ListadoUsuarios({
 
         <article>
           <span>Página visible</span>
-          <strong>{formatearNumero(usuarios.length)}</strong>
+          <strong>
+            {formatearNumero(usuarios.length)}
+          </strong>
           <p>Cuentas cargadas en esta consulta.</p>
         </article>
 
@@ -158,6 +176,7 @@ export function ListadoUsuarios({
         <span>Rol</span>
         <span>Cuenta</span>
         <span>Registro</span>
+        <span>Permisos</span>
       </div>
 
       <div className="listadoUsuarios__filas">
@@ -181,7 +200,9 @@ export function ListadoUsuarios({
                 <div>
                   <div className="listadoUsuarios__nombre">
                     <strong>
-                      {obtenerNombreCompletoUsuario(usuario)}
+                      {obtenerNombreCompletoUsuario(
+                        usuario
+                      )}
                     </strong>
 
                     {esUsuarioActual ? (
@@ -203,7 +224,8 @@ export function ListadoUsuarios({
                 </a>
 
                 <small>
-                  {usuario.phone || 'Sin teléfono registrado'}
+                  {usuario.phone ||
+                    'Sin teléfono registrado'}
                 </small>
               </div>
 
@@ -235,7 +257,9 @@ export function ListadoUsuarios({
                       : 'listadoUsuarios__insignia listadoUsuarios__insignia--inactivo'
                   }
                 >
-                  {usuario.status ? 'Activa' : 'Inactiva'}
+                  {usuario.status
+                    ? 'Activa'
+                    : 'Inactiva'}
                 </span>
 
                 <small
@@ -255,8 +279,20 @@ export function ListadoUsuarios({
                 </strong>
 
                 <small>
-                  Actualizado {formatearFecha(usuario.updatedAt)}
+                  Actualizado{' '}
+                  {formatearFecha(usuario.updatedAt)}
                 </small>
+              </div>
+
+              <div className="listadoUsuarios__permisos">
+                <span className="listadoUsuarios__etiquetaMovil">
+                  Permisos
+                </span>
+
+                <GestionRolUsuario
+                  usuario={usuario}
+                  esUsuarioActual={esUsuarioActual}
+                />
               </div>
             </article>
           );

@@ -5,9 +5,8 @@ import {
 
 import { usarAutenticacion } from '../../authentication/hooks/usarAutenticacion';
 import { usuariosServicio } from '../services/usuariosServicio';
-import {
-  rolesAdministrablesUsuario,
-  type ParametrosCambiarRolUsuario
+import type {
+  ParametrosCambiarRolUsuario
 } from '../types/usuariosTipos';
 import { clavesConsultaUsuarios } from './clavesConsultaUsuarios';
 
@@ -30,32 +29,15 @@ export function usarCambiarRolUsuario() {
       ),
 
     onSuccess: async (respuesta, variables) => {
-      void queryClient.invalidateQueries({
-        queryKey: clavesConsultaUsuarios.listas()
+      if (respuesta.success === false) {
+        return;
+      }
+
+      await queryClient.invalidateQueries({
+        queryKey: clavesConsultaUsuarios.todos
       });
 
-      void queryClient.invalidateQueries({
-        queryKey: clavesConsultaUsuarios.roles(
-          variables.usuarioId
-        )
-      });
-
-      void queryClient.invalidateQueries({
-        queryKey: clavesConsultaUsuarios.detalle(
-          variables.usuarioId
-        )
-      });
-
-      rolesAdministrablesUsuario.forEach((rol) => {
-        void queryClient.invalidateQueries({
-          queryKey: clavesConsultaUsuarios.porRol(rol)
-        });
-      });
-
-      if (
-        respuesta.success === true &&
-        usuario?.id === variables.usuarioId
-      ) {
+      if (usuario?.id === variables.usuarioId) {
         await refrescarPerfil();
       }
     }
