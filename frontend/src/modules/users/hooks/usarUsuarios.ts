@@ -1,4 +1,7 @@
-import { useQuery } from '@tanstack/react-query';
+import {
+  keepPreviousData,
+  useQuery
+} from '@tanstack/react-query';
 
 import { usuariosServicio } from '../services/usuariosServicio';
 import type {
@@ -70,6 +73,7 @@ export function usarUsuarios(
       ),
     enabled:
       consultaAdministrativaHabilitada &&
-      (opciones?.habilitado ?? true)
+      (opciones?.habilitado ?? true),
+    placeholderData: keepPreviousData
   });
 }
