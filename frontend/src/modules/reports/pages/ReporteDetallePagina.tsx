@@ -1,6 +1,9 @@
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { rolesSistema, rutasAplicacion } from '../../../config/constantesSistema';
+import {
+  rolesSistema,
+  rutasAplicacion
+} from '../../../config/constantesSistema';
 import { EstadoVacio } from '../../../shared/components/data/EstadoVacio';
 import { Alerta } from '../../../shared/components/feedback/Alerta';
 import { Cargando } from '../../../shared/components/feedback/Cargando';
@@ -13,6 +16,10 @@ import { BotonSeguimientoReporte } from '../components/BotonSeguimientoReporte';
 import { ComentariosReporte } from '../components/ComentariosReporte';
 import { DetalleReporte } from '../components/DetalleReporte';
 import { HistorialReporte } from '../components/HistorialReporte';
+import {
+  idsSeccionesDetalleReporte,
+  PanelOperacionReporte
+} from '../components/PanelOperacionReporte';
 import { PanelInteligenciaReporte } from '../components/PanelInteligenciaReporte';
 import { ReportesSimilares } from '../components/ReportesSimilares';
 import { UbicacionReporte } from '../components/UbicacionReporte';
@@ -27,8 +34,15 @@ function obtenerMensajeError(error: unknown) {
   return 'No fue posible cargar el detalle del reporte. Intenta nuevamente.';
 }
 
-function obtenerMensajeRespuestaFallida(mensaje?: string, error?: string) {
-  return mensaje ?? error ?? 'No fue posible cargar el detalle del reporte. Intenta nuevamente.';
+function obtenerMensajeRespuestaFallida(
+  mensaje?: string,
+  error?: string
+) {
+  return (
+    mensaje ??
+    error ??
+    'No fue posible cargar el detalle del reporte. Intenta nuevamente.'
+  );
 }
 
 export function ReporteDetallePagina() {
@@ -39,11 +53,17 @@ export function ReporteDetallePagina() {
   const consultaDetalle = usarReporteDetalle(reporteId);
 
   const respuestaDetalle = consultaDetalle.data;
-  const reporte = respuestaDetalle?.success === true ? respuestaDetalle.data : undefined;
+  const reporte =
+    respuestaDetalle?.success === true
+      ? respuestaDetalle.data
+      : undefined;
 
   const mensajeRespuestaFallida =
     respuestaDetalle?.success === false
-      ? obtenerMensajeRespuestaFallida(respuestaDetalle.message, respuestaDetalle.error)
+      ? obtenerMensajeRespuestaFallida(
+          respuestaDetalle.message,
+          respuestaDetalle.error
+        )
       : undefined;
 
   const mensajeError =
@@ -51,9 +71,17 @@ export function ReporteDetallePagina() {
       ? obtenerMensajeError(consultaDetalle.error)
       : mensajeRespuestaFallida;
 
-  const esAdministrador = roles.includes(rolesSistema.administrador);
+  const esAdministrador = roles.includes(
+    rolesSistema.administrador
+  );
+
   const puedeGestionarUbicacion =
-    esAdministrador || Boolean(usuario?.id && reporte?.citizen?.id && usuario.id === reporte.citizen.id);
+    esAdministrador ||
+    Boolean(
+      usuario?.id &&
+        reporte?.citizen?.id &&
+        usuario.id === reporte.citizen.id
+    );
 
   const volver = () => {
     navigate(-1);
@@ -100,16 +128,25 @@ export function ReporteDetallePagina() {
   if (mensajeError && !reporte) {
     return (
       <main className="paginaTemporal reportesPagina">
-        <Alerta variante="error" titulo="No se pudo cargar el reporte">
+        <Alerta
+          variante="error"
+          titulo="No se pudo cargar el reporte"
+        >
           <div className="reportesPagina__alertaDetalle">
             <p>{mensajeError}</p>
 
             <div className="reportesPagina__accionesDetalle">
-              <Boton variante="secundario" onClick={actualizarDetalle}>
+              <Boton
+                variante="secundario"
+                onClick={actualizarDetalle}
+              >
                 Reintentar
               </Boton>
 
-              <Boton variante="fantasma" onClick={irAReportes}>
+              <Boton
+                variante="fantasma"
+                onClick={irAReportes}
+              >
                 Volver a reportes
               </Boton>
             </div>
@@ -138,50 +175,107 @@ export function ReporteDetallePagina() {
   return (
     <main className="paginaTemporal reportesPagina">
       {mensajeError ? (
-        <Alerta variante="advertencia" titulo="Los datos mostrados pueden no estar actualizados">
+        <Alerta
+          variante="advertencia"
+          titulo="Los datos mostrados pueden no estar actualizados"
+        >
           <p>{mensajeError}</p>
         </Alerta>
       ) : null}
 
-      <DetalleReporte
-        reporte={reporte}
-        alVolver={volver}
-        alActualizar={actualizarDetalle}
-        actualizando={consultaDetalle.isFetching}
-      />
-
-      <UbicacionReporte
-        reporte={reporte}
-        puedeGestionar={puedeGestionarUbicacion}
-        alCambioRealizado={actualizarDetalle}
-      />
-
-      <PanelInteligenciaReporte
-        reporte={reporte}
-        puedeReprocesar={esAdministrador}
-        actualizando={consultaDetalle.isFetching}
-        alCambioRealizado={actualizarDetalle}
-      />
-
-      <BotonSeguimientoReporte
-        reporteId={reporteId}
-        tituloReporte={reporte.title}
-        alCambioSeguimiento={actualizarDetalle}
-      />
-
-      <ReportesSimilares reporteId={reporteId} />
+      <div
+        id={idsSeccionesDetalleReporte.general}
+        className="reportesPagina__seccionAnclada"
+      >
+        <DetalleReporte
+          reporte={reporte}
+          alVolver={volver}
+          alActualizar={actualizarDetalle}
+          actualizando={consultaDetalle.isFetching}
+        />
+      </div>
 
       {esAdministrador ? (
-        <AccionesAdministrativasReporte
+        <div
+          id={idsSeccionesDetalleReporte.operacion}
+          className="reportesPagina__seccionAnclada"
+        >
+          <PanelOperacionReporte
+            reporte={reporte}
+            actualizando={consultaDetalle.isFetching}
+            alActualizar={actualizarDetalle}
+          />
+        </div>
+      ) : null}
+
+      <div
+        id={idsSeccionesDetalleReporte.ubicacion}
+        className="reportesPagina__seccionAnclada"
+      >
+        <UbicacionReporte
           reporte={reporte}
+          puedeGestionar={puedeGestionarUbicacion}
           alCambioRealizado={actualizarDetalle}
-          alReporteEliminado={manejarReporteEliminado}
         />
+      </div>
+
+      <div
+        id={idsSeccionesDetalleReporte.inteligencia}
+        className="reportesPagina__seccionAnclada"
+      >
+        <PanelInteligenciaReporte
+          reporte={reporte}
+          puedeReprocesar={esAdministrador}
+          actualizando={consultaDetalle.isFetching}
+          alCambioRealizado={actualizarDetalle}
+        />
+      </div>
+
+      <div
+        id={idsSeccionesDetalleReporte.seguimiento}
+        className="reportesPagina__seccionAnclada"
+      >
+        <BotonSeguimientoReporte
+          reporteId={reporteId}
+          tituloReporte={reporte.title}
+          alCambioSeguimiento={actualizarDetalle}
+        />
+      </div>
+
+      <div
+        id={idsSeccionesDetalleReporte.similares}
+        className="reportesPagina__seccionAnclada"
+      >
+        <ReportesSimilares reporteId={reporteId} />
+      </div>
+
+      {esAdministrador ? (
+        <div
+          id={idsSeccionesDetalleReporte.acciones}
+          className="reportesPagina__seccionAnclada"
+        >
+          <AccionesAdministrativasReporte
+            reporte={reporte}
+            alCambioRealizado={actualizarDetalle}
+            alReporteEliminado={manejarReporteEliminado}
+          />
+        </div>
       ) : null}
 
       <section className="reportesPagina__interaccionesDetalle">
-        <ComentariosReporte reporteId={reporteId} />
-        <HistorialReporte reporteId={reporteId} />
+        <div
+          id={idsSeccionesDetalleReporte.comentarios}
+          className="reportesPagina__interaccionBloque"
+        >
+          <ComentariosReporte reporteId={reporteId} />
+        </div>
+
+        <div
+          id={idsSeccionesDetalleReporte.historial}
+          className="reportesPagina__interaccionBloque"
+        >
+          <HistorialReporte reporteId={reporteId} />
+        </div>
       </section>
     </main>
   );
