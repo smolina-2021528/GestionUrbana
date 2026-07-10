@@ -11,6 +11,7 @@ import { Boton } from '../../../shared/components/ui/Boton';
 import { Tarjeta } from '../../../shared/components/ui/Tarjeta';
 import { esErrorApi } from '../../../shared/types/errorApi';
 import { usarAutenticacion } from '../../authentication/hooks/usarAutenticacion';
+import { EstadoActualizacionUsuarios } from '../components/EstadoActualizacionUsuarios';
 import {
   FiltrosUsuarios,
   type FiltroEstadoUsuarios,
@@ -91,7 +92,10 @@ function obtenerPaginasVisibles(
   }
 
   const inicio = Math.max(
-    Math.min(paginaActual - 2, totalPaginas - 4),
+    Math.min(
+      paginaActual - 2,
+      totalPaginas - 4
+    ),
     1
   );
 
@@ -163,6 +167,10 @@ export function UsuariosPagina() {
     totalPaginas
   );
 
+  const actualizandoUsuarios =
+    consultaUsuarios.isFetching &&
+    !consultaUsuarios.isLoading;
+
   const actualizarUsuarios = () => {
     void consultaUsuarios.refetch();
   };
@@ -184,10 +192,11 @@ export function UsuariosPagina() {
 
   const aplicarBusqueda = (busqueda: string) => {
     setFiltros((filtrosActuales) => {
-      const filtrosActualizados = {
-        ...filtrosActuales,
-        page: 1
-      };
+      const filtrosActualizados:
+        FiltrosConsultaUsuarios = {
+          ...filtrosActuales,
+          page: 1
+        };
 
       if (busqueda) {
         return {
@@ -197,6 +206,7 @@ export function UsuariosPagina() {
       }
 
       delete filtrosActualizados.search;
+
       return filtrosActualizados;
     });
   };
@@ -233,8 +243,8 @@ export function UsuariosPagina() {
             <h1>{textosSistema.navegacion.usuarios}</h1>
 
             <p>
-              Gestiona usuarios, roles y estado de las cuentas
-              registradas.
+              Gestiona usuarios, roles y estado de las
+              cuentas registradas.
             </p>
           </div>
         </section>
@@ -261,8 +271,8 @@ export function UsuariosPagina() {
             <h1>{textosSistema.navegacion.usuarios}</h1>
 
             <p>
-              Gestiona usuarios, roles y estado de las cuentas
-              registradas.
+              Gestiona usuarios, roles y estado de las
+              cuentas registradas.
             </p>
           </div>
         </section>
@@ -289,7 +299,7 @@ export function UsuariosPagina() {
   return (
     <main
       className="paginaTemporal usuariosPagina"
-      aria-busy={consultaUsuarios.isFetching}
+      aria-busy={actualizandoUsuarios}
     >
       <section className="encabezadoPaginaTemporal">
         <div>
@@ -300,8 +310,8 @@ export function UsuariosPagina() {
           <h1>{textosSistema.navegacion.usuarios}</h1>
 
           <p>
-            Busca cuentas registradas y revisa su rol,
-            estado y verificación.
+            Busca cuentas registradas y administra sus
+            roles, permisos y acceso a la plataforma.
           </p>
         </div>
 
@@ -327,6 +337,44 @@ export function UsuariosPagina() {
         </Alerta>
       ) : null}
 
+      <EstadoActualizacionUsuarios
+        visible={actualizandoUsuarios}
+      />
+
+      <Tarjeta
+        titulo="Modelo de acceso"
+        descripcion="Referencia rápida para administrar roles y cuentas de forma segura."
+      >
+        <div className="usuariosPagina__modeloAcceso">
+          <article>
+            <span>ADMIN_ROLE</span>
+            <strong>Administrador</strong>
+            <p>
+              Gestiona reportes, usuarios, responsables,
+              estados y herramientas administrativas.
+            </p>
+          </article>
+
+          <article>
+            <span>USER_ROLE</span>
+            <strong>Ciudadano</strong>
+            <p>
+              Crea reportes, consulta su actividad y utiliza
+              las funciones ciudadanas disponibles.
+            </p>
+          </article>
+
+          <article>
+            <span>Cuenta inactiva</span>
+            <strong>Acceso suspendido</strong>
+            <p>
+              Conserva su rol y datos, pero no puede iniciar
+              sesión hasta que sea reactivada.
+            </p>
+          </article>
+        </div>
+      </Tarjeta>
+
       <FiltrosUsuarios
         busqueda={filtros.search ?? ''}
         rol={filtroRol}
@@ -349,8 +397,8 @@ export function UsuariosPagina() {
             <span>Página actual</span>
 
             <strong>
-              {usuariosFiltrados.length} de {usuarios.length}
-              {' '}usuarios visibles
+              {usuariosFiltrados.length} de{' '}
+              {usuarios.length} usuarios visibles
             </strong>
           </div>
 
@@ -358,8 +406,8 @@ export function UsuariosPagina() {
             <span>Resultado de búsqueda</span>
 
             <strong>
-              {paginacion?.total ?? usuarios.length}
-              {' '}usuarios encontrados
+              {paginacion?.total ?? usuarios.length}{' '}
+              usuarios encontrados
             </strong>
           </div>
         </div>
@@ -449,6 +497,7 @@ export function UsuariosPagina() {
                 <button
                   type="button"
                   key={pagina}
+                  aria-label={`Ir a la página ${pagina}`}
                   aria-current={
                     pagina === paginaActual
                       ? 'page'

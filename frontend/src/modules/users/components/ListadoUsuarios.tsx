@@ -1,7 +1,12 @@
 import { GestionEstadoUsuario } from './GestionEstadoUsuario';
 import { GestionRolUsuario } from './GestionRolUsuario';
-import type { UsuarioSistema } from '../types/usuariosTipos';
-import { obtenerNombreCompletoUsuario } from '../types/usuariosTipos';
+import { PermisosUsuario } from './PermisosUsuario';
+import type {
+  UsuarioSistema
+} from '../types/usuariosTipos';
+import {
+  obtenerNombreCompletoUsuario
+} from '../types/usuariosTipos';
 import './listadoUsuarios.css';
 
 type PropiedadesListadoUsuarios = {
@@ -175,7 +180,10 @@ export function ListadoUsuarios({
         </article>
       </div>
 
-      <div className="listadoUsuarios__encabezadoTabla">
+      <div
+        className="listadoUsuarios__encabezadoTabla"
+        aria-hidden="true"
+      >
         <span>Usuario</span>
         <span>Contacto</span>
         <span>Rol</span>
@@ -194,17 +202,21 @@ export function ListadoUsuarios({
               usuario.isEmailVerified
             );
 
+          const idNombreUsuario =
+            `usuario-${usuario.id}-nombre`;
+
           return (
             <article
               className="listadoUsuarios__fila"
               key={usuario.id}
+              aria-labelledby={idNombreUsuario}
             >
               <div className="listadoUsuarios__identidad">
                 <AvatarUsuario usuario={usuario} />
 
                 <div>
                   <div className="listadoUsuarios__nombre">
-                    <strong>
+                    <strong id={idNombreUsuario}>
                       {obtenerNombreCompletoUsuario(
                         usuario
                       )}
@@ -310,6 +322,12 @@ export function ListadoUsuarios({
                     usuario={usuario}
                     esUsuarioActual={esUsuarioActual}
                   />
+                </div>
+
+                <div className="listadoUsuarios__accionAdministrativa">
+                  <span>Detalle de acceso</span>
+
+                  <PermisosUsuario usuario={usuario} />
                 </div>
               </div>
             </article>
