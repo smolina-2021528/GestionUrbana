@@ -5,7 +5,6 @@ import { Tarjeta } from '../../../shared/components/ui/Tarjeta';
 import type { PaginacionReportes, Reporte } from '../types/reportesTipos';
 import {
   evaluarAtencionOperativaReporte,
-  obtenerCargaTrabajoResponsables,
   obtenerEtiquetaEstadoOperativo,
   obtenerEtiquetaPrioridadOperativa,
   obtenerResumenOperativoReportes,
@@ -13,6 +12,7 @@ import {
   reporteTieneResponsable,
   reporteTieneUbicacion
 } from '../utils/reportesOperativosUtils';
+import { CargaTrabajoResponsables } from './CargaTrabajoResponsables';
 import './reportesComponentes.css';
 import './resumenReportes.css';
 
@@ -66,11 +66,17 @@ function formatearFecha(fecha: string | null | undefined) {
 
 function obtenerReportesAtencionInmediata(reportes: Reporte[]) {
   return ordenarReportesPorUrgenciaOperativa(reportes)
-    .filter((reporte) => evaluarAtencionOperativaReporte(reporte).requiereAtencion)
+    .filter(
+      (reporte) =>
+        evaluarAtencionOperativaReporte(reporte).requiereAtencion
+    )
     .slice(0, 4);
 }
 
-function construirIndicadores(reportes: Reporte[], paginacion?: PaginacionReportes) {
+function construirIndicadores(
+  reportes: Reporte[],
+  paginacion?: PaginacionReportes
+) {
   const resumen = obtenerResumenOperativoReportes(reportes);
   const totalConsulta = paginacion?.total ?? resumen.total;
 
@@ -124,17 +130,30 @@ function construirIndicadores(reportes: Reporte[], paginacion?: PaginacionReport
   };
 }
 
-export function ResumenReportes({ reportes, paginacion }: PropiedadesResumenReportes) {
-  const { indicadores, resumen, totalConsulta } = construirIndicadores(reportes, paginacion);
-  const reportesAtencion = obtenerReportesAtencionInmediata(reportes);
-  const cargasResponsables = obtenerCargaTrabajoResponsables(reportes).slice(0, 4);
-  const porcentajeAsignados = calcularPorcentaje(resumen.conResponsable, resumen.total);
-  const porcentajeUbicacion = calcularPorcentaje(resumen.conUbicacion, resumen.total);
+export function ResumenReportes({
+  reportes,
+  paginacion
+}: PropiedadesResumenReportes) {
+  const { indicadores, resumen, totalConsulta } =
+    construirIndicadores(reportes, paginacion);
+
+  const reportesAtencion =
+    obtenerReportesAtencionInmediata(reportes);
+
+  const porcentajeAsignados = calcularPorcentaje(
+    resumen.conResponsable,
+    resumen.total
+  );
+
+  const porcentajeUbicacion = calcularPorcentaje(
+    resumen.conUbicacion,
+    resumen.total
+  );
 
   return (
     <Tarjeta
       titulo="Resumen operativo"
-      descripcion="Indicadores rápidos del listado administrativo visible."
+      descripcion="Indicadores y distribución del listado administrativo visible."
     >
       <section
         className="resumenReportes resumenReportes--operativo"
@@ -150,11 +169,17 @@ export function ResumenReportes({ reportes, paginacion }: PropiedadesResumenRepo
               }
               key={indicador.id}
             >
-              <span className="resumenReportes__etiqueta">{indicador.etiqueta}</span>
+              <span className="resumenReportes__etiqueta">
+                {indicador.etiqueta}
+              </span>
+
               <strong className="resumenReportes__valor">
                 {formatearNumero(indicador.valor)}
               </strong>
-              <p className="resumenReportes__descripcion">{indicador.descripcion}</p>
+
+              <p className="resumenReportes__descripcion">
+                {indicador.descripcion}
+              </p>
             </article>
           ))}
         </div>
@@ -166,43 +191,93 @@ export function ResumenReportes({ reportes, paginacion }: PropiedadesResumenRepo
                 <span>Avance operativo</span>
                 <strong>Estado de atención</strong>
               </div>
-              <small>{formatearNumero(reportes.length)} visibles</small>
+
+              <small>
+                {formatearNumero(reportes.length)} visibles
+              </small>
             </div>
 
             <div className="resumenReportes__metricasOperativas">
               <div>
                 <span>Asignados</span>
-                <strong>{formatearPorcentaje(porcentajeAsignados)}</strong>
-                <div className="resumenReportes__barra" aria-hidden="true">
-                  <span style={{ width: `${porcentajeAsignados}%` }} />
+                <strong>
+                  {formatearPorcentaje(porcentajeAsignados)}
+                </strong>
+
+                <div
+                  className="resumenReportes__barra"
+                  aria-hidden="true"
+                >
+                  <span
+                    style={{
+                      width: `${porcentajeAsignados}%`
+                    }}
+                  />
                 </div>
               </div>
 
               <div>
                 <span>Con ubicación</span>
-                <strong>{formatearPorcentaje(porcentajeUbicacion)}</strong>
-                <div className="resumenReportes__barra" aria-hidden="true">
-                  <span style={{ width: `${porcentajeUbicacion}%` }} />
+                <strong>
+                  {formatearPorcentaje(porcentajeUbicacion)}
+                </strong>
+
+                <div
+                  className="resumenReportes__barra"
+                  aria-hidden="true"
+                >
+                  <span
+                    style={{
+                      width: `${porcentajeUbicacion}%`
+                    }}
+                  />
                 </div>
               </div>
             </div>
 
             <dl className="resumenReportes__distribucionOperativa">
               <div>
-                <dt>{obtenerEtiquetaEstadoOperativo('PENDIENTE')}</dt>
-                <dd>{formatearNumero(resumen.porEstado.PENDIENTE)}</dd>
+                <dt>
+                  {obtenerEtiquetaEstadoOperativo('PENDIENTE')}
+                </dt>
+                <dd>
+                  {formatearNumero(
+                    resumen.porEstado.PENDIENTE
+                  )}
+                </dd>
               </div>
+
               <div>
-                <dt>{obtenerEtiquetaEstadoOperativo('EN_PROCESO')}</dt>
-                <dd>{formatearNumero(resumen.porEstado.EN_PROCESO)}</dd>
+                <dt>
+                  {obtenerEtiquetaEstadoOperativo('EN_PROCESO')}
+                </dt>
+                <dd>
+                  {formatearNumero(
+                    resumen.porEstado.EN_PROCESO
+                  )}
+                </dd>
               </div>
+
               <div>
-                <dt>{obtenerEtiquetaEstadoOperativo('RESUELTO')}</dt>
-                <dd>{formatearNumero(resumen.porEstado.RESUELTO)}</dd>
+                <dt>
+                  {obtenerEtiquetaEstadoOperativo('RESUELTO')}
+                </dt>
+                <dd>
+                  {formatearNumero(
+                    resumen.porEstado.RESUELTO
+                  )}
+                </dd>
               </div>
+
               <div>
-                <dt>{obtenerEtiquetaEstadoOperativo('RECHAZADO')}</dt>
-                <dd>{formatearNumero(resumen.porEstado.RECHAZADO)}</dd>
+                <dt>
+                  {obtenerEtiquetaEstadoOperativo('RECHAZADO')}
+                </dt>
+                <dd>
+                  {formatearNumero(
+                    resumen.porEstado.RECHAZADO
+                  )}
+                </dd>
               </div>
             </dl>
           </article>
@@ -213,26 +288,42 @@ export function ResumenReportes({ reportes, paginacion }: PropiedadesResumenRepo
                 <span>Atención inmediata</span>
                 <strong>Casos a revisar</strong>
               </div>
-              <small>{formatearNumero(totalConsulta)} filtrados</small>
+
+              <small>
+                {formatearNumero(totalConsulta)} filtrados
+              </small>
             </div>
 
             {reportesAtencion.length > 0 ? (
               <div className="resumenReportes__casosOperativos">
                 {reportesAtencion.map((reporte) => {
-                  const evaluacion = evaluarAtencionOperativaReporte(reporte);
+                  const evaluacion =
+                    evaluarAtencionOperativaReporte(reporte);
 
                   return (
                     <Link
                       className="resumenReportes__casoOperativo"
-                      to={`${rutasAplicacion.reportes}/${encodeURIComponent(reporte.id)}`}
+                      to={`${rutasAplicacion.reportes}/${encodeURIComponent(
+                        reporte.id
+                      )}`}
                       key={reporte.id}
                     >
                       <span>{evaluacion.etiqueta}</span>
+
                       <strong>{reporte.title}</strong>
+
                       <small>
-                        {obtenerEtiquetaPrioridadOperativa(reporte.priority)} ·{' '}
-                        {obtenerEtiquetaEstadoOperativo(reporte.status)} ·{' '}
-                        {reporteTieneResponsable(reporte) ? 'Asignado' : 'Sin responsable'}
+                        {obtenerEtiquetaPrioridadOperativa(
+                          reporte.priority
+                        )}{' '}
+                        ·{' '}
+                        {obtenerEtiquetaEstadoOperativo(
+                          reporte.status
+                        )}{' '}
+                        ·{' '}
+                        {reporteTieneResponsable(reporte)
+                          ? 'Asignado'
+                          : 'Sin responsable'}
                       </small>
                     </Link>
                   );
@@ -240,91 +331,96 @@ export function ResumenReportes({ reportes, paginacion }: PropiedadesResumenRepo
               </div>
             ) : (
               <div className="resumenReportes__vacioOperativo">
-                <strong>Sin alertas operativas visibles</strong>
-                <p>No hay casos pendientes de atención inmediata en esta página.</p>
+                <strong>
+                  Sin alertas operativas visibles
+                </strong>
+
+                <p>
+                  No hay casos pendientes de atención inmediata
+                  en esta página.
+                </p>
               </div>
             )}
           </article>
         </div>
 
-        <div className="resumenReportes__inferiorOperativo">
-          <article className="resumenReportes__bloqueOperativo">
-            <div className="resumenReportes__bloqueTitulo">
-              <span>Carga por responsable</span>
-              <strong>Distribución visible</strong>
+        <CargaTrabajoResponsables
+          reportes={reportes}
+          paginacion={paginacion}
+        />
+
+        <article className="resumenReportes__bloqueOperativo">
+          <div className="resumenReportes__bloqueTitulo">
+            <span>Prioridad y ubicación</span>
+            <strong>Calidad de gestión</strong>
+          </div>
+
+          <dl className="resumenReportes__calidadOperativa">
+            <div>
+              <dt>
+                {obtenerEtiquetaPrioridadOperativa('ALTA')}
+              </dt>
+              <dd>
+                {formatearNumero(
+                  resumen.porPrioridad.ALTA
+                )}
+              </dd>
             </div>
 
-            {cargasResponsables.length > 0 ? (
-              <div className="resumenReportes__responsablesOperativos">
-                {cargasResponsables.map((carga) => (
-                  <div
-                    className="resumenReportes__responsableOperativo"
-                    key={carga.responsableId ?? 'SIN_RESPONSABLE'}
-                  >
-                    <div>
-                      <strong>{carga.nombreResponsable}</strong>
-                      <span>
-                        {formatearNumero(carga.total)} total ·{' '}
-                        {formatearNumero(carga.altaPrioridad)} alta prioridad
-                      </span>
-                    </div>
-                    <small>
-                      {formatearNumero(carga.pendientes)} pendientes ·{' '}
-                      {formatearNumero(carga.enProceso)} en proceso
-                    </small>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="resumenReportes__vacioOperativo resumenReportes__vacioOperativo--compacto">
-                <strong>Sin datos de carga</strong>
-                <p>No hay reportes visibles para calcular distribución.</p>
-              </div>
-            )}
-          </article>
-
-          <article className="resumenReportes__bloqueOperativo">
-            <div className="resumenReportes__bloqueTitulo">
-              <span>Prioridad y ubicación</span>
-              <strong>Calidad de gestión</strong>
+            <div>
+              <dt>
+                {obtenerEtiquetaPrioridadOperativa('MEDIA')}
+              </dt>
+              <dd>
+                {formatearNumero(
+                  resumen.porPrioridad.MEDIA
+                )}
+              </dd>
             </div>
 
-            <dl className="resumenReportes__calidadOperativa">
-              <div>
-                <dt>{obtenerEtiquetaPrioridadOperativa('ALTA')}</dt>
-                <dd>{formatearNumero(resumen.porPrioridad.ALTA)}</dd>
-              </div>
-              <div>
-                <dt>{obtenerEtiquetaPrioridadOperativa('MEDIA')}</dt>
-                <dd>{formatearNumero(resumen.porPrioridad.MEDIA)}</dd>
-              </div>
-              <div>
-                <dt>{obtenerEtiquetaPrioridadOperativa('BAJA')}</dt>
-                <dd>{formatearNumero(resumen.porPrioridad.BAJA)}</dd>
-              </div>
-              <div>
-                <dt>Con ubicación</dt>
-                <dd>{formatearNumero(resumen.conUbicacion)}</dd>
-              </div>
-              <div>
-                <dt>Sin ubicación</dt>
-                <dd>{formatearNumero(resumen.sinUbicacion)}</dd>
-              </div>
-              <div>
-                <dt>Último visible</dt>
-                <dd>{formatearFecha(reportes[0]?.createdAt)}</dd>
-              </div>
-            </dl>
-
-            <div className="resumenReportes__notaOperativa">
-              <span>
-                {reportes.some((reporte) => !reporteTieneUbicacion(reporte))
-                  ? 'Hay casos visibles que requieren confirmar ubicación para mejorar la gestión territorial.'
-                  : 'Los casos visibles tienen ubicación suficiente para seguimiento territorial.'}
-              </span>
+            <div>
+              <dt>
+                {obtenerEtiquetaPrioridadOperativa('BAJA')}
+              </dt>
+              <dd>
+                {formatearNumero(
+                  resumen.porPrioridad.BAJA
+                )}
+              </dd>
             </div>
-          </article>
-        </div>
+
+            <div>
+              <dt>Con ubicación</dt>
+              <dd>
+                {formatearNumero(resumen.conUbicacion)}
+              </dd>
+            </div>
+
+            <div>
+              <dt>Sin ubicación</dt>
+              <dd>
+                {formatearNumero(resumen.sinUbicacion)}
+              </dd>
+            </div>
+
+            <div>
+              <dt>Último visible</dt>
+              <dd>
+                {formatearFecha(reportes[0]?.createdAt)}
+              </dd>
+            </div>
+          </dl>
+
+          <div className="resumenReportes__notaOperativa">
+            <span>
+              {reportes.some(
+                (reporte) => !reporteTieneUbicacion(reporte)
+              )
+                ? 'Hay casos visibles que requieren confirmar ubicación para mejorar la gestión territorial.'
+                : 'Los casos visibles tienen ubicación suficiente para seguimiento territorial.'}
+            </span>
+          </div>
+        </article>
       </section>
     </Tarjeta>
   );
