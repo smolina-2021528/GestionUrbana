@@ -1,0 +1,312 @@
+.listadoUsuarios {
+  display: grid;
+  gap: var(--espacio-5);
+}
+
+.listadoUsuarios__resumen {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--espacio-3);
+}
+
+.listadoUsuarios__resumen article {
+  display: grid;
+  gap: var(--espacio-1);
+  min-width: 0;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-lg);
+  background:
+    radial-gradient(
+      circle at top right,
+      rgb(36 116 214 / 0.09),
+      transparent 8rem
+    ),
+    var(--color-superficie-secundaria);
+  padding: var(--espacio-4);
+}
+
+.listadoUsuarios__resumen span {
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-texto-xs);
+  font-weight: var(--peso-seminegrita);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.listadoUsuarios__resumen strong {
+  color: var(--color-texto);
+  font-size: var(--tamano-texto-2xl);
+  line-height: 1.1;
+}
+
+.listadoUsuarios__resumen p {
+  margin-bottom: 0;
+  color: var(--color-texto-secundario);
+  font-size: var(--tamano-texto-xs);
+  line-height: var(--alto-linea-base);
+}
+
+.listadoUsuarios__encabezadoTabla,
+.listadoUsuarios__fila {
+  display: grid;
+  grid-template-columns:
+    minmax(15rem, 1.25fr)
+    minmax(15rem, 1.2fr)
+    minmax(8rem, 0.65fr)
+    minmax(10rem, 0.75fr)
+    minmax(10rem, 0.75fr);
+  gap: var(--espacio-3);
+  align-items: center;
+}
+
+.listadoUsuarios__encabezadoTabla {
+  padding: 0 var(--espacio-4);
+}
+
+.listadoUsuarios__encabezadoTabla span {
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-texto-xs);
+  font-weight: var(--peso-seminegrita);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.listadoUsuarios__filas {
+  display: grid;
+  gap: var(--espacio-3);
+}
+
+.listadoUsuarios__fila {
+  min-width: 0;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-lg);
+  background: var(--color-superficie);
+  padding: var(--espacio-4);
+  transition:
+    border-color var(--transicion-rapida),
+    box-shadow var(--transicion-rapida),
+    transform var(--transicion-rapida);
+}
+
+.listadoUsuarios__fila:hover {
+  border-color: var(--color-azul-civico-100);
+  box-shadow: var(--sombra-sm);
+  transform: translateY(-1px);
+}
+
+.listadoUsuarios__identidad {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: var(--espacio-3);
+}
+
+.listadoUsuarios__avatar {
+  position: relative;
+  display: grid;
+  width: 3rem;
+  height: 3rem;
+  flex-shrink: 0;
+  overflow: hidden;
+  place-items: center;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-completo);
+  background: var(--color-principal-suave);
+  color: var(--color-principal);
+  font-size: var(--tamano-texto-sm);
+  font-weight: var(--peso-negrita);
+}
+
+.listadoUsuarios__avatar img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.listadoUsuarios__identidad > div:last-child,
+.listadoUsuarios__contacto,
+.listadoUsuarios__estadoCuenta,
+.listadoUsuarios__registro,
+.listadoUsuarios__celda {
+  display: grid;
+  min-width: 0;
+  gap: var(--espacio-1);
+}
+
+.listadoUsuarios__nombre {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-2);
+}
+
+.listadoUsuarios__nombre strong {
+  overflow: hidden;
+  color: var(--color-texto);
+  font-size: var(--tamano-texto-sm);
+  line-height: var(--alto-linea-base);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.listadoUsuarios__nombre span {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  border-radius: var(--radio-completo);
+  background: var(--color-principal-suave);
+  padding: 0.2rem 0.55rem;
+  color: var(--color-principal);
+  font-size: var(--tamano-texto-xs);
+  font-weight: var(--peso-seminegrita);
+}
+
+.listadoUsuarios__identidad small,
+.listadoUsuarios__contacto small,
+.listadoUsuarios__estadoCuenta small,
+.listadoUsuarios__registro small {
+  color: var(--color-texto-secundario);
+  font-size: var(--tamano-texto-xs);
+  line-height: var(--alto-linea-base);
+}
+
+.listadoUsuarios__contacto a {
+  overflow: hidden;
+  color: var(--color-principal);
+  font-size: var(--tamano-texto-sm);
+  font-weight: var(--peso-seminegrita);
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.listadoUsuarios__contacto a:hover {
+  text-decoration: underline;
+}
+
+.listadoUsuarios__insignia {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  border-radius: var(--radio-completo);
+  padding: 0.3rem 0.7rem;
+  font-size: var(--tamano-texto-xs);
+  font-weight: var(--peso-seminegrita);
+}
+
+.listadoUsuarios__insignia--administrador {
+  background: var(--color-principal-suave);
+  color: var(--color-principal);
+}
+
+.listadoUsuarios__insignia--ciudadano {
+  background: var(--color-superficie-secundaria);
+  color: var(--color-texto-secundario);
+}
+
+.listadoUsuarios__insignia--activo {
+  background: var(--color-exito-suave);
+  color: var(--color-exito);
+}
+
+.listadoUsuarios__insignia--inactivo {
+  background: var(--color-error-suave);
+  color: var(--color-error);
+}
+
+.listadoUsuarios__verificacion {
+  width: fit-content;
+}
+
+.listadoUsuarios__verificacion--verificado {
+  color: var(--color-exito);
+}
+
+.listadoUsuarios__verificacion--pendiente {
+  color: var(--color-advertencia);
+}
+
+.listadoUsuarios__verificacion--desconocido {
+  color: var(--color-texto-suave);
+}
+
+.listadoUsuarios__registro strong {
+  color: var(--color-texto);
+  font-size: var(--tamano-texto-sm);
+  line-height: var(--alto-linea-base);
+}
+
+.listadoUsuarios__etiquetaMovil {
+  display: none;
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-texto-xs);
+  font-weight: var(--peso-seminegrita);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+@media (max-width: 1180px) {
+  .listadoUsuarios__resumen {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .listadoUsuarios__encabezadoTabla {
+    display: none;
+  }
+
+  .listadoUsuarios__fila {
+    grid-template-columns:
+      minmax(14rem, 1.2fr)
+      minmax(14rem, 1fr)
+      repeat(3, minmax(9rem, 0.7fr));
+    overflow-x: auto;
+  }
+
+  .listadoUsuarios__etiquetaMovil {
+    display: inline;
+  }
+}
+
+@media (max-width: 860px) {
+  .listadoUsuarios__fila {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    overflow: visible;
+  }
+
+  .listadoUsuarios__identidad {
+    grid-column: 1 / -1;
+    border-bottom: 1px solid var(--color-borde);
+    padding-bottom: var(--espacio-3);
+  }
+}
+
+@media (max-width: 620px) {
+  .listadoUsuarios__resumen,
+  .listadoUsuarios__fila {
+    grid-template-columns: 1fr;
+  }
+
+  .listadoUsuarios__fila:hover {
+    box-shadow: none;
+    transform: none;
+  }
+
+  .listadoUsuarios__nombre strong,
+  .listadoUsuarios__contacto a {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .listadoUsuarios__fila {
+    transition: none;
+  }
+
+  .listadoUsuarios__fila:hover {
+    transform: none;
+  }
+}
