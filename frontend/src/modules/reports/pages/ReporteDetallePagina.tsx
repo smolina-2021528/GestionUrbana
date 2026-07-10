@@ -15,6 +15,7 @@ import { AccionesAdministrativasReporte } from '../components/AccionesAdministra
 import { BotonSeguimientoReporte } from '../components/BotonSeguimientoReporte';
 import { ComentariosReporte } from '../components/ComentariosReporte';
 import { DetalleReporte } from '../components/DetalleReporte';
+import { EstadoActualizacionReporte } from '../components/EstadoActualizacionReporte';
 import { HistorialReporte } from '../components/HistorialReporte';
 import {
   idsSeccionesDetalleReporte,
@@ -53,6 +54,7 @@ export function ReporteDetallePagina() {
   const consultaDetalle = usarReporteDetalle(reporteId);
 
   const respuestaDetalle = consultaDetalle.data;
+
   const reporte =
     respuestaDetalle?.success === true
       ? respuestaDetalle.data
@@ -82,6 +84,10 @@ export function ReporteDetallePagina() {
         reporte?.citizen?.id &&
         usuario.id === reporte.citizen.id
     );
+
+  const actualizandoDetalle =
+    consultaDetalle.isFetching &&
+    !consultaDetalle.isLoading;
 
   const volver = () => {
     navigate(-1);
@@ -117,7 +123,10 @@ export function ReporteDetallePagina() {
 
   if (consultaDetalle.isLoading) {
     return (
-      <main className="paginaTemporal reportesPagina">
+      <main
+        className="paginaTemporal reportesPagina"
+        aria-busy="true"
+      >
         <Tarjeta className="reportesPagina__estadoDetalle">
           <Cargando texto="Cargando detalle del reporte..." />
         </Tarjeta>
@@ -173,7 +182,10 @@ export function ReporteDetallePagina() {
   }
 
   return (
-    <main className="paginaTemporal reportesPagina">
+    <main
+      className="paginaTemporal reportesPagina"
+      aria-busy={actualizandoDetalle}
+    >
       {mensajeError ? (
         <Alerta
           variante="advertencia"
@@ -183,15 +195,23 @@ export function ReporteDetallePagina() {
         </Alerta>
       ) : null}
 
+      <EstadoActualizacionReporte
+        visible={actualizandoDetalle}
+      />
+
       <div
         id={idsSeccionesDetalleReporte.general}
         className="reportesPagina__seccionAnclada"
+        tabIndex={-1}
+        aria-label="Información general del reporte"
       >
         <DetalleReporte
           reporte={reporte}
           alVolver={volver}
-          alActualizar={actualizarDetalle}
-          actualizando={consultaDetalle.isFetching}
+          alActualizar={
+            esAdministrador ? undefined : actualizarDetalle
+          }
+          actualizando={actualizandoDetalle}
         />
       </div>
 
@@ -199,10 +219,12 @@ export function ReporteDetallePagina() {
         <div
           id={idsSeccionesDetalleReporte.operacion}
           className="reportesPagina__seccionAnclada"
+          tabIndex={-1}
+          aria-label="Centro operativo del reporte"
         >
           <PanelOperacionReporte
             reporte={reporte}
-            actualizando={consultaDetalle.isFetching}
+            actualizando={actualizandoDetalle}
             alActualizar={actualizarDetalle}
           />
         </div>
@@ -211,6 +233,8 @@ export function ReporteDetallePagina() {
       <div
         id={idsSeccionesDetalleReporte.ubicacion}
         className="reportesPagina__seccionAnclada"
+        tabIndex={-1}
+        aria-label="Ubicación del reporte"
       >
         <UbicacionReporte
           reporte={reporte}
@@ -222,11 +246,13 @@ export function ReporteDetallePagina() {
       <div
         id={idsSeccionesDetalleReporte.inteligencia}
         className="reportesPagina__seccionAnclada"
+        tabIndex={-1}
+        aria-label="Inteligencia del reporte"
       >
         <PanelInteligenciaReporte
           reporte={reporte}
           puedeReprocesar={esAdministrador}
-          actualizando={consultaDetalle.isFetching}
+          actualizando={actualizandoDetalle}
           alCambioRealizado={actualizarDetalle}
         />
       </div>
@@ -234,6 +260,8 @@ export function ReporteDetallePagina() {
       <div
         id={idsSeccionesDetalleReporte.seguimiento}
         className="reportesPagina__seccionAnclada"
+        tabIndex={-1}
+        aria-label="Seguimiento del reporte"
       >
         <BotonSeguimientoReporte
           reporteId={reporteId}
@@ -245,6 +273,8 @@ export function ReporteDetallePagina() {
       <div
         id={idsSeccionesDetalleReporte.similares}
         className="reportesPagina__seccionAnclada"
+        tabIndex={-1}
+        aria-label="Reportes similares"
       >
         <ReportesSimilares reporteId={reporteId} />
       </div>
@@ -253,6 +283,8 @@ export function ReporteDetallePagina() {
         <div
           id={idsSeccionesDetalleReporte.acciones}
           className="reportesPagina__seccionAnclada"
+          tabIndex={-1}
+          aria-label="Acciones administrativas del reporte"
         >
           <AccionesAdministrativasReporte
             reporte={reporte}
@@ -262,10 +294,15 @@ export function ReporteDetallePagina() {
         </div>
       ) : null}
 
-      <section className="reportesPagina__interaccionesDetalle">
+      <section
+        className="reportesPagina__interaccionesDetalle"
+        aria-label="Interacciones e historial del reporte"
+      >
         <div
           id={idsSeccionesDetalleReporte.comentarios}
           className="reportesPagina__interaccionBloque"
+          tabIndex={-1}
+          aria-label="Comentarios del reporte"
         >
           <ComentariosReporte reporteId={reporteId} />
         </div>
@@ -273,6 +310,8 @@ export function ReporteDetallePagina() {
         <div
           id={idsSeccionesDetalleReporte.historial}
           className="reportesPagina__interaccionBloque"
+          tabIndex={-1}
+          aria-label="Historial del reporte"
         >
           <HistorialReporte reporteId={reporteId} />
         </div>

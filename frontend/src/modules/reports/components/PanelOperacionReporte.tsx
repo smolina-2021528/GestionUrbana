@@ -1,6 +1,9 @@
 import { Boton } from '../../../shared/components/ui/Boton';
 import { Tarjeta } from '../../../shared/components/ui/Tarjeta';
-import type { Reporte, UsuarioResumenReporte } from '../types/reportesTipos';
+import type {
+  Reporte,
+  UsuarioResumenReporte
+} from '../types/reportesTipos';
 import type {
   EvaluacionOperativaReporte,
   NivelAtencionOperativa
@@ -56,7 +59,9 @@ const modificadoresNivel: Record<NivelAtencionOperativa, string> = {
   BAJO: 'bajo'
 };
 
-function obtenerNombreUsuario(usuario: UsuarioResumenReporte | null) {
+function obtenerNombreUsuario(
+  usuario: UsuarioResumenReporte | null
+) {
   if (!usuario) {
     return 'Sin responsable';
   }
@@ -94,7 +99,10 @@ function obtenerAntiguedadReporte(fechaCreacion: string) {
   }
 
   const diferencia = Date.now() - fecha.getTime();
-  const dias = Math.max(Math.floor(diferencia / 86_400_000), 0);
+  const dias = Math.max(
+    Math.floor(diferencia / 86_400_000),
+    0
+  );
 
   if (dias === 0) {
     return 'Creado hoy';
@@ -233,7 +241,20 @@ function obtenerAlertasOperativas(reporte: Reporte) {
   return alertas;
 }
 
-function desplazarASeccion(seccionId: string) {
+function debeReducirMovimiento() {
+  if (
+    typeof window === 'undefined' ||
+    typeof window.matchMedia !== 'function'
+  ) {
+    return false;
+  }
+
+  return window.matchMedia(
+    '(prefers-reduced-motion: reduce)'
+  ).matches;
+}
+
+function irASeccion(seccionId: string) {
   const elemento = document.getElementById(seccionId);
 
   if (!elemento) {
@@ -241,8 +262,12 @@ function desplazarASeccion(seccionId: string) {
   }
 
   elemento.scrollIntoView({
-    behavior: 'smooth',
+    behavior: debeReducirMovimiento() ? 'auto' : 'smooth',
     block: 'start'
+  });
+
+  elemento.focus({
+    preventScroll: true
   });
 }
 
@@ -320,7 +345,9 @@ export function PanelOperacionReporte({
             disabled={actualizando}
             onClick={alActualizar}
           >
-            {actualizando ? 'Actualizando...' : 'Actualizar datos'}
+            {actualizando
+              ? 'Actualizando...'
+              : 'Actualizar datos'}
           </Boton>
         ) : null
       }
@@ -337,7 +364,7 @@ export function PanelOperacionReporte({
 
             <Boton
               onClick={() =>
-                desplazarASeccion(accionSugerida.seccionDestino)
+                irASeccion(accionSugerida.seccionDestino)
               }
             >
               {accionSugerida.etiquetaBoton}
@@ -348,13 +375,17 @@ export function PanelOperacionReporte({
         <dl className="panelOperacionReporte__metricas">
           <div>
             <dt>Estado actual</dt>
-            <dd>{obtenerEtiquetaEstadoOperativo(reporte.status)}</dd>
+            <dd>
+              {obtenerEtiquetaEstadoOperativo(reporte.status)}
+            </dd>
           </div>
 
           <div>
             <dt>Prioridad</dt>
             <dd>
-              {obtenerEtiquetaPrioridadOperativa(reporte.priority)}
+              {obtenerEtiquetaPrioridadOperativa(
+                reporte.priority
+              )}
             </dd>
           </div>
 
@@ -379,7 +410,9 @@ export function PanelOperacionReporte({
 
           <div>
             <dt>Antigüedad</dt>
-            <dd>{obtenerAntiguedadReporte(reporte.createdAt)}</dd>
+            <dd>
+              {obtenerAntiguedadReporte(reporte.createdAt)}
+            </dd>
           </div>
 
           <div>
@@ -391,7 +424,9 @@ export function PanelOperacionReporte({
             <dt>Evidencia</dt>
             <dd>
               {reporte.images.length}{' '}
-              {reporte.images.length === 1 ? 'imagen' : 'imágenes'}
+              {reporte.images.length === 1
+                ? 'imagen'
+                : 'imágenes'}
             </dd>
           </div>
         </dl>
@@ -417,7 +452,7 @@ export function PanelOperacionReporte({
                   <button
                     type="button"
                     onClick={() =>
-                      desplazarASeccion(alerta.seccionDestino)
+                      irASeccion(alerta.seccionDestino)
                     }
                   >
                     {alerta.etiquetaAccion}
@@ -428,10 +463,13 @@ export function PanelOperacionReporte({
           </section>
         ) : (
           <div className="panelOperacionReporte__sinAlertas">
-            <strong>Sin alertas operativas adicionales</strong>
+            <strong>
+              Sin alertas operativas adicionales
+            </strong>
+
             <p>
-              El reporte cuenta con la información necesaria para continuar
-              su seguimiento.
+              El reporte cuenta con la información necesaria
+              para continuar su seguimiento.
             </p>
           </div>
         )}
@@ -447,7 +485,8 @@ export function PanelOperacionReporte({
               <button
                 type="button"
                 key={acceso.id}
-                onClick={() => desplazarASeccion(acceso.id)}
+                aria-label={`Ir a la sección ${acceso.etiqueta}`}
+                onClick={() => irASeccion(acceso.id)}
               >
                 {acceso.etiqueta}
               </button>
