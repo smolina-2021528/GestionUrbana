@@ -1,16 +1,38 @@
 ﻿import { getUserRoleNames } from '../helpers/role-db.js';
 import { ADMIN_ROLE } from '../helpers/role-constants.js';
 
-// Middleware que verifica si el usuario autenticado tiene el rol ADMIN_ROLE
-// Debe usarse DESPUÃ‰S de validateJWT
+const obtenerRolesDesdeRequest = (req) => {
+  if (Array.isArray(req.userRoles) && req.userRoles.length > 0) {
+    return req.userRoles;
+  }
+
+  const rolesUsuario = req.user?.UserRoles?.map((userRole) => userRole.Role?.Name).filter(Boolean) ?? [];
+
+  if (rolesUsuario.length > 0) {
+    return rolesUsuario;
+  }
+
+  if (req.userRole) {
+    return [req.userRole];
+  }
+
+  return null;
+};
+
+// Middleware que verifica si el usuario autenticado tiene el rol ADMIN_ROLE.
+// Debe usarse después de validateJWT.
 export const validateAdmin = async (req, res, next) => {
   try {
     const userId = req.userId;
 
-    // Usar los roles ya cargados en el request o consultarlos si no estÃ¡n disponibles
-    const roles =
-      req.user?.UserRoles?.map((ur) => ur.Role?.Name).filter(Boolean) ??
-      (await getUserRoleNames(userId));
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: 'Usuario no autenticado.',
+      });
+    }
+
+    const roles = obtenerRolesDesdeRequest(req) ?? (await getUserRoleNames(userId));
 
     if (!roles.includes(ADMIN_ROLE)) {
       return res.status(403).json({
@@ -22,8 +44,9 @@ export const validateAdmin = async (req, res, next) => {
     next();
   } catch (error) {
     console.error('Error en validateAdmin:', error);
-    return res.status(500).json({ success: false, message: 'Error interno del servidor.' });
+    return res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor.',
+    });
   }
 };
-
-

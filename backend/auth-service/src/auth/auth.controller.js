@@ -162,27 +162,22 @@ export const login = async (req, res) => {
       });
     }
 
-    // Verificar que la cuenta estÃ© activa
+    // Verificar que la cuenta esté activa
     if (!user.Status) {
-      return res.status(403).json({
+      return res.status(423).json({
         success: false,
         message: 'Cuenta desactivada. Contacta al administrador.',
       });
     }
 
-    const roles = user.UserRoles.map((ur) => ur.Role.Name);
+    const roles = user.UserRoles?.map((userRole) => userRole.Role?.Name).filter(Boolean) ?? [];
     const token = await generateJWT(user.Id, { roles });
 
     return res.status(200).json({
       success: true,
       message: `Bienvenido/a, ${user.Name}`,
       token,
-      user: {
-        id: user.Id,
-        username: user.Username,
-        email: user.Email,
-        roles,
-      },
+      user: buildUserResponse(user),
     });
   } catch (error) {
     console.error('Error en login:', error);
@@ -396,4 +391,3 @@ export const logout = async (req, res) => {
     });
   }
 };
-

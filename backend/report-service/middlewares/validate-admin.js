@@ -1,6 +1,24 @@
 ﻿import { ADMIN_ROLE } from '../helpers/role-constants.js';
 import { getUserRoleNames } from '../helpers/role-db.js';
 
+const obtenerRolesDesdeRequest = (req) => {
+  if (Array.isArray(req.userRoles) && req.userRoles.length > 0) {
+    return req.userRoles;
+  }
+
+  const rolesUsuario = req.user?.UserRoles?.map((userRole) => userRole.Role?.Name).filter(Boolean) ?? [];
+
+  if (rolesUsuario.length > 0) {
+    return rolesUsuario;
+  }
+
+  if (req.userRole) {
+    return [req.userRole];
+  }
+
+  return null;
+};
+
 export const validateAdmin = async (req, res, next) => {
   try {
     const userId = req.userId || req.user?.Id;
@@ -12,9 +30,7 @@ export const validateAdmin = async (req, res, next) => {
       });
     }
 
-    const roles = req.userRole
-      ? [req.userRole]
-      : await getUserRoleNames(userId);
+    const roles = obtenerRolesDesdeRequest(req) ?? (await getUserRoleNames(userId));
 
     if (!roles.includes(ADMIN_ROLE)) {
       return res.status(403).json({

@@ -2,14 +2,29 @@ import { verifyJWT } from '../helpers/generate-jwt.js';
 import { findUserById } from '../helpers/user-db.js';
 import { isTokenRevoked } from '../helpers/token-blacklist.js';
 
+const extraerToken = (req) => {
+  let token =
+    req.header('x-token') ||
+    req.header('authorization') ||
+    req.body.token ||
+    req.query.token;
+
+  if (!token || typeof token !== 'string') {
+    return null;
+  }
+
+  return token.replace(/^Bearer\s+/i, '').trim();
+};
+
+const obtenerRolesUsuario = (user) => {
+  const roles = user.UserRoles?.map((userRole) => userRole.Role?.Name).filter(Boolean) ?? [];
+  return [...new Set(roles)];
+};
+
 // Middleware que valida el JWT en cada petición protegida
 export const validateJWT = async (req, res, next) => {
   try {
-    let token =
-      req.header('x-token') ||
-      req.header('authorization') ||
-      req.body.token ||
-      req.query.token;
+    const token = extraerToken(req);
 
     if (!token) {
       return res.status(401).json({
@@ -18,12 +33,10 @@ export const validateJWT = async (req, res, next) => {
       });
     }
 
-    // Limpiar Bearer si viene con ese prefijo
-    token = token.replace(/^Bearer\s+/, '');
-
     const decoded = await verifyJWT(token);
 
-    // Verificar que el token no haya sido revocado por logout
+    // Verificar que el token no haya sido revocado por logout en este servicio.
+    // Nota: esta blacklist es local al report-service y vive en memoria.
     if (isTokenRevoked(decoded.jti)) {
       return res.status(401).json({
         success: false,
@@ -47,9 +60,13 @@ export const validateJWT = async (req, res, next) => {
       });
     }
 
-    req.user         = user;
-    req.userId       = user.Id.toString();
-    req.userRole     = user.UserRoles?.[0]?.Role?.Name ?? null;
+    const roles = obtenerRolesUsuario(user);
+
+    req.user = user;
+    req.userId = user.Id.toString();
+    req.userRole = roles[0] ?? null;
+    req.userRoles = roles;
+    req.token = token;
     req.tokenPayload = decoded;
 
     next();

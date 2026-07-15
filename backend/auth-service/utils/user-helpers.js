@@ -1,11 +1,18 @@
 ﻿import { getFullImageUrl } from '../../shared/cloudinary-service.js';
 
+export const getUserRoleNamesFromUser = (user) => {
+  const roles = user.UserRoles?.map((userRole) => userRole.Role?.Name).filter(Boolean) ?? [];
+  return [...new Set(roles)];
+};
+
 // Construye la respuesta normalizada de un usuario (DTO de salida)
 export const buildUserResponse = (user) => {
   const profilePictureUrl =
     user.UserProfile && user.UserProfile.ProfilePicture
       ? getFullImageUrl(user.UserProfile.ProfilePicture)
       : null;
+
+  const roles = getUserRoleNamesFromUser(user);
 
   return {
     id: user.Id,
@@ -15,11 +22,11 @@ export const buildUserResponse = (user) => {
     email: user.Email,
     phone: user.UserProfile?.Phone || '',
     profilePicture: profilePictureUrl,
-    role: user.UserRoles?.[0]?.Role?.Name ?? 'USER_ROLE',
+    role: roles[0] ?? 'USER_ROLE',
+    roles: roles.length > 0 ? roles : ['USER_ROLE'],
     status: user.Status,
     isEmailVerified: user.UserEmail ? user.UserEmail.EmailVerified : false,
     createdAt: user.CreatedAt,
     updatedAt: user.UpdatedAt,
   };
 };
-

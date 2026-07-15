@@ -7,6 +7,10 @@ import type {
   UsuarioAutenticado
 } from '../../modules/authentication/types/autenticacionTipos';
 import { almacenamientoToken } from '../../shared/services/almacenamientoToken';
+import {
+  eventoSesionInvalida,
+  type DetalleSesionInvalida
+} from '../../shared/services/clienteHttp';
 import { esErrorApi } from '../../shared/types/errorApi';
 
 type ContextoAutenticacionValor = {
@@ -15,8 +19,10 @@ type ContextoAutenticacionValor = {
   roles: RolUsuario[];
   estaAutenticado: boolean;
   cargandoSesion: boolean;
+  mensajeSesion: string | null;
   iniciarSesion: (token: string, usuario: UsuarioAutenticado) => void;
   cerrarSesion: () => Promise<void>;
+  limpiarMensajeSesion: () => void;
   refrescarPerfil: () => Promise<UsuarioAutenticado | null>;
 };
 
@@ -30,11 +36,21 @@ export function ProveedorAutenticacion({ children }: PropiedadesProveedorAutenti
   const [token, setToken] = useState<string | null>(() => almacenamientoToken.obtenerToken());
   const [usuario, setUsuario] = useState<UsuarioAutenticado | null>(null);
   const [cargandoSesion, setCargandoSesion] = useState(Boolean(token));
+  const [mensajeSesion, setMensajeSesion] = useState<string | null>(null);
 
-  const limpiarSesion = useCallback(() => {
+  const limpiarSesion = useCallback((mensaje?: string) => {
     almacenamientoToken.eliminarToken();
     setToken(null);
     setUsuario(null);
+    setCargandoSesion(false);
+
+    if (mensaje) {
+      setMensajeSesion(mensaje);
+    }
+  }, []);
+
+  const limpiarMensajeSesion = useCallback(() => {
+    setMensajeSesion(null);
   }, []);
 
   const refrescarPerfil = useCallback(async () => {
@@ -50,11 +66,15 @@ export function ProveedorAutenticacion({ children }: PropiedadesProveedorAutenti
 
     try {
       const respuesta = await autenticacionServicio.obtenerPerfilAutenticado();
+      setToken(tokenActual);
       setUsuario(respuesta.data);
       return respuesta.data;
     } catch (error) {
-      if (esErrorApi(error) && error.codigo === 'NO_AUTENTICADO') {
-        limpiarSesion();
+      if (
+        esErrorApi(error) &&
+        (error.codigo === 'NO_AUTENTICADO' || error.codigo === 'CUENTA_DESACTIVADA')
+      ) {
+        limpiarSesion(error.mensaje);
       }
 
       return null;
@@ -67,6 +87,7 @@ export function ProveedorAutenticacion({ children }: PropiedadesProveedorAutenti
     almacenamientoToken.guardarToken(nuevoToken);
     setToken(nuevoToken);
     setUsuario(nuevoUsuario);
+    setMensajeSesion(null);
   }, []);
 
   const cerrarSesion = useCallback(async () => {
@@ -74,9 +95,24 @@ export function ProveedorAutenticacion({ children }: PropiedadesProveedorAutenti
       await autenticacionServicio.cerrarSesion();
     } catch {
       // La sesión local siempre debe limpiarse aunque el servicio no responda.
+      // El token también puede seguir siendo válido en otros microservicios hasta expirar,
+      // porque la revocación actual se guarda en memoria por servicio.
     } finally {
       limpiarSesion();
     }
+  }, [limpiarSesion]);
+
+  useEffect(() => {
+    const manejarSesionInvalida = (evento: Event) => {
+      const detalle = (evento as CustomEvent<DetalleSesionInvalida>).detail;
+      limpiarSesion(detalle?.mensaje ?? 'Tu sesión ya no es válida. Inicia sesión nuevamente.');
+    };
+
+    window.addEventListener(eventoSesionInvalida, manejarSesionInvalida);
+
+    return () => {
+      window.removeEventListener(eventoSesionInvalida, manejarSesionInvalida);
+    };
   }, [limpiarSesion]);
 
   useEffect(() => {
@@ -96,11 +132,22 @@ export function ProveedorAutenticacion({ children }: PropiedadesProveedorAutenti
       roles: usuario?.roles ?? [],
       estaAutenticado: Boolean(token && usuario),
       cargandoSesion,
+      mensajeSesion,
       iniciarSesion,
       cerrarSesion,
+      limpiarMensajeSesion,
       refrescarPerfil
     }),
-    [usuario, token, cargandoSesion, iniciarSesion, cerrarSesion, refrescarPerfil]
+    [
+      usuario,
+      token,
+      cargandoSesion,
+      mensajeSesion,
+      iniciarSesion,
+      cerrarSesion,
+      limpiarMensajeSesion,
+      refrescarPerfil
+    ]
   );
 
   return (

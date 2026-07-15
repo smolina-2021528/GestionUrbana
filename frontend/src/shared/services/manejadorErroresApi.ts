@@ -113,6 +113,15 @@ function construirErrorPorEstado(
     };
   }
 
+  if (estadoHttp === 423) {
+    return {
+      codigo: 'CUENTA_DESACTIVADA',
+      estadoHttp,
+      mensaje: mensajeBackend ?? 'Tu cuenta está desactivada. Contacta al administrador.',
+      detalles
+    };
+  }
+
   if (estadoHttp === 404) {
     return {
       codigo: 'RECURSO_NO_ENCONTRADO',

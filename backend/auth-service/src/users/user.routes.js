@@ -11,7 +11,7 @@ import { validateAdmin } from '../../middlewares/validate-admin.js';
 
 const router = Router();
 
-// Todas las rutas de usuarios requieren JWT
+// Todas las rutas de usuarios requieren JWT y permisos administrativos.
 
 // GET /gestionurbana/v1/users
 // Lista todos los usuarios (admin)
@@ -22,8 +22,8 @@ router.get('/', validateJWT, validateAdmin, getAllUsers);
 router.get('/by-role/:roleName', validateJWT, validateAdmin, getUsersByRole);
 
 // GET /gestionurbana/v1/users/:userId/roles
-// Consulta roles de un usuario
-router.get('/:userId/roles', validateJWT, getUserRoles);
+// Consulta roles de un usuario (admin)
+router.get('/:userId/roles', validateJWT, validateAdmin, getUserRoles);
 
 // PUT /gestionurbana/v1/users/:userId/role
 // Cambia el rol de un usuario (admin)

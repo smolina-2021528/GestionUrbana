@@ -1,6 +1,7 @@
 export type CodigoErrorApi =
   | 'ERROR_VALIDACION'
   | 'NO_AUTENTICADO'
+  | 'CUENTA_DESACTIVADA'
   | 'NO_AUTORIZADO'
   | 'RECURSO_NO_ENCONTRADO'
   | 'CONFLICTO'

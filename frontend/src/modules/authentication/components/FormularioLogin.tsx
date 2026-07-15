@@ -29,7 +29,7 @@ type ValoresFormularioLogin = z.infer<typeof esquemaLogin>;
 export function FormularioLogin() {
   const navegar = useNavigate();
   const ubicacion = useLocation();
-  const { iniciarSesion } = usarAutenticacion();
+  const { iniciarSesion, mensajeSesion, limpiarMensajeSesion } = usarAutenticacion();
   const [mensajeError, setMensajeError] = useState<string | null>(null);
 
   const estadoNavegacion = ubicacion.state as EstadoNavegacion | null;
@@ -48,6 +48,7 @@ export function FormularioLogin() {
 
   const enviarFormulario: SubmitHandler<ValoresFormularioLogin> = async (valores) => {
     setMensajeError(null);
+    limpiarMensajeSesion();
 
     try {
       const respuesta = await autenticacionServicio.iniciarSesion({
@@ -70,6 +71,12 @@ export function FormularioLogin() {
 
   return (
     <form className="formularioAutenticacion" onSubmit={handleSubmit(enviarFormulario)}>
+      {mensajeSesion ? (
+        <Alerta variante="advertencia" titulo="Sesión finalizada">
+          {mensajeSesion}
+        </Alerta>
+      ) : null}
+
       {mensajeError ? (
         <Alerta variante="error" titulo="No fue posible iniciar sesión">
           {mensajeError}
