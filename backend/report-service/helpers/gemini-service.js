@@ -1,36 +1,36 @@
 ﻿import fs from 'fs';
 import path from 'path';
-import { geminiModel } from '../configs/gemini-config.js';
+import { getGeminiModel } from '../configs/gemini-config.js';
 import {
-    GEMINI_ANALYZE_PROMPT,
-    AI_REPORT_CATEGORIES,
-    AI_REPORT_PRIORITIES,
+  GEMINI_ANALYZE_PROMPT,
+  AI_REPORT_CATEGORIES,
+  AI_REPORT_PRIORITIES,
 } from './ai-constants.js';
 import { cacheGet, cacheSet } from './ai-cache.js';
 
 // Mapeo de extensiones a MIME types soportados
 const MIME_TYPES = {
-    '.jpg':  'image/jpeg',
-    '.jpeg': 'image/jpeg',
-    '.png':  'image/png',
-    '.webp': 'image/webp',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.png': 'image/png',
+  '.webp': 'image/webp',
 };
 
 /**
- * Detecta el MIME type a partir de la extensiÃ³n del archivo.
- * Lanza un error si la extensiÃ³n no estÃ¡ soportada.
+ * Detecta el MIME type a partir de la extensión del archivo.
+ * Lanza un error si la extensión no está soportada.
  */
 const getMimeType = (filePath) => {
-    const ext = path.extname(filePath).toLowerCase();
-    const mimeType = MIME_TYPES[ext];
+  const ext = path.extname(filePath).toLowerCase();
+  const mimeType = MIME_TYPES[ext];
 
-    if (!mimeType) {
-        throw new Error(
-            `Tipo de archivo no soportado: "${ext}". Se permiten: jpg, jpeg, png, webp.`
-        );
-    }
+  if (!mimeType) {
+    throw new Error(
+      `Tipo de archivo no soportado: "${ext}". Se permiten: jpg, jpeg, png, webp.`,
+    );
+  }
 
-    return mimeType;
+  return mimeType;
 };
 
 /**
@@ -38,76 +38,78 @@ const getMimeType = (filePath) => {
  * Retorna el objeto limpio y normalizado.
  */
 const validateGeminiResponse = (parsed) => {
-    if (!parsed || typeof parsed !== 'object') {
-        throw new Error('Gemini no retornÃ³ un JSON vÃ¡lido');
-    }
+  if (!parsed || typeof parsed !== 'object') {
+    throw new Error('Gemini no retornó un JSON válido');
+  }
 
-    const { title, description, category, priority } = parsed;
+  const { title, description, category, priority } = parsed;
 
-    if (!title || typeof title !== 'string' || title.trim() === '') {
-        throw new Error('Gemini no retornÃ³ un JSON vÃ¡lido: falta el campo "title"');
-    }
+  if (!title || typeof title !== 'string' || title.trim() === '') {
+    throw new Error('Gemini no retornó un JSON válido: falta el campo "title"');
+  }
 
-    if (!description || typeof description !== 'string' || description.trim() === '') {
-        throw new Error('Gemini no retornÃ³ un JSON vÃ¡lido: falta el campo "description"');
-    }
+  if (!description || typeof description !== 'string' || description.trim() === '') {
+    throw new Error('Gemini no retornó un JSON válido: falta el campo "description"');
+  }
 
-    const normalizedCategory = AI_REPORT_CATEGORIES.includes(category)
-        ? category
-        : 'INFRAESTRUCTURA';
+  const normalizedCategory = AI_REPORT_CATEGORIES.includes(category)
+    ? category
+    : 'INFRAESTRUCTURA';
 
-    const normalizedPriority = AI_REPORT_PRIORITIES.includes(priority)
-        ? priority
-        : 'BAJA';
+  const normalizedPriority = AI_REPORT_PRIORITIES.includes(priority)
+    ? priority
+    : 'BAJA';
 
-    return {
-        title:       title.trim().slice(0, 150),
-        description: description.trim().slice(0, 2000),
-        category:    normalizedCategory,
-        priority:    normalizedPriority,
-    };
+  return {
+    title: title.trim().slice(0, 150),
+    description: description.trim().slice(0, 2000),
+    category: normalizedCategory,
+    priority: normalizedPriority,
+  };
 };
 
-// FunciÃ³n principal para analizar la imagen de un reporte usando Gemini
+// Función principal para analizar la imagen de un reporte usando Gemini
 export const analyzeReportImage = async (imagePath) => {
-    // 1. Intentar servir desde cachÃ©
-    const cached = cacheGet(imagePath);
-    if (cached) {
-        return cached;
-    }
+  const geminiModel = getGeminiModel();
 
-    const mimeType  = getMimeType(imagePath);
-    const imageData = fs.readFileSync(imagePath);
-    const base64    = imageData.toString('base64');
+  // 1. Intentar servir desde caché
+  const cached = cacheGet(imagePath);
+  if (cached) {
+    return cached;
+  }
 
-    const imagePart = {
-        inlineData: {
-            data:     base64,
-            mimeType,
-        },
-    };
+  const mimeType = getMimeType(imagePath);
+  const imageData = fs.readFileSync(imagePath);
+  const base64 = imageData.toString('base64');
 
-    const result       = await geminiModel.generateContent([GEMINI_ANALYZE_PROMPT, imagePart]);
-    const rawText      = result.response.text();
+  const imagePart = {
+    inlineData: {
+      data: base64,
+      mimeType,
+    },
+  };
 
-    const cleanedText  = rawText
-        .replace(/^```(?:json)?\s*/i, '')
-        .replace(/\s*```$/,           '')
-        .trim();
+  const result = await geminiModel.generateContent([GEMINI_ANALYZE_PROMPT, imagePart]);
+  const rawText = result.response.text();
 
-    let parsed;
-    try {
-        parsed = JSON.parse(cleanedText);
-    } catch {
-        throw new Error(
-            `Gemini no retornÃ³ un JSON vÃ¡lido. Respuesta recibida: "${rawText.slice(0, 200)}"`
-        );
-    }
+  const cleanedText = rawText
+    .replace(/^```(?:json)?\s*/i, '')
+    .replace(/\s*```$/, '')
+    .trim();
 
-    const validated = validateGeminiResponse(parsed);
+  let parsed;
+  try {
+    parsed = JSON.parse(cleanedText);
+  } catch {
+    throw new Error(
+      `Gemini no retornó un JSON válido. Respuesta recibida: "${rawText.slice(0, 200)}"`,
+    );
+  }
 
-    // 2. Guardar en cachÃ© antes de retornar
-    cacheSet(imagePath, validated);
+  const validated = validateGeminiResponse(parsed);
 
-    return validated;
+  // 2. Guardar en caché antes de retornar
+  cacheSet(imagePath, validated);
+
+  return validated;
 };

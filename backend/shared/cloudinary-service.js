@@ -2,9 +2,6 @@ import { v2 as cloudinary } from 'cloudinary';
 import { config } from '../auth-service/configs/config.js';
 import fs from 'fs/promises';
 
-// Bypass SSL en desarrollo
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-
 cloudinary.config({
   cloud_name: config.cloudinary.cloudName,
   api_key: config.cloudinary.apiKey,

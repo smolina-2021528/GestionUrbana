@@ -3,12 +3,12 @@
 import { validateJWT } from '../../middlewares/validate-JWT.js';
 import { uploadSingleImage, handleReportUploadError } from '../../../shared/file-upload.js';
 import { validateSingleReportImage } from '../../middlewares/validate-report-images.js';
+import { requireAIEnabled } from '../../middlewares/require-ai-enabled.js';
 import { validateAnalyzeReport, validateAiCreateReport } from '../../middlewares/validation.js';
 import { analyzeReport, aiCreateReport } from './ai.controller.js';
 
 const router = Router();
 
-// este metodo nos garantiza que los errores de Multer llegan a handleReportUploadError
 const uploadSingleImageSafe = (req, res, next) => {
   uploadSingleImage(req, res, (err) => {
     if (err) return handleReportUploadError(err, req, res, next);
@@ -20,6 +20,7 @@ const uploadSingleImageSafe = (req, res, next) => {
 router.post(
   '/analyze',
   validateJWT,
+  requireAIEnabled,
   uploadSingleImageSafe,
   validateSingleReportImage,
   validateAnalyzeReport,
@@ -30,6 +31,7 @@ router.post(
 router.post(
   '/ai-create',
   validateJWT,
+  requireAIEnabled,
   uploadSingleImageSafe,
   validateSingleReportImage,
   validateAiCreateReport,
@@ -37,5 +39,3 @@ router.post(
 );
 
 export default router;
-
-
