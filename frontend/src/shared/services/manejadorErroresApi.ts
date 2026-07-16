@@ -2,6 +2,7 @@ import axios from 'axios';
 
 import { esErrorApi } from '../types/errorApi';
 import type { ErrorApi } from '../types/errorApi';
+import { normalizarTextoMojibake } from '../utils/normalizarTextoMojibake';
 
 type DetalleErrorValidacion = {
   field?: string;
@@ -15,30 +16,12 @@ type RespuestaErrorBackend = {
   errors?: unknown;
 };
 
-function repararCaracteresEspeciales(texto: string) {
-  return texto
-    .replaceAll('Ã¡', 'á')
-    .replaceAll('Ã©', 'é')
-    .replaceAll('Ã­', 'í')
-    .replaceAll('Ã³', 'ó')
-    .replaceAll('Ãº', 'ú')
-    .replaceAll('ÃÁ', 'Á')
-    .replaceAll('Ã‰', 'É')
-    .replaceAll('ÃÍ', 'Í')
-    .replaceAll('Ã“', 'Ó')
-    .replaceAll('Ãš', 'Ú')
-    .replaceAll('Ã±', 'ñ')
-    .replaceAll('Ã‘', 'Ñ')
-    .replaceAll('Â¡', '¡')
-    .replaceAll('Â¿', '¿');
-}
-
 function normalizarMensaje(mensaje?: string) {
   if (!mensaje || mensaje.trim().length === 0) {
     return undefined;
   }
 
-  return repararCaracteresEspeciales(mensaje.trim());
+  return normalizarTextoMojibake(mensaje.trim());
 }
 
 function obtenerMensajeDesdeRespuesta(data: unknown) {
@@ -86,7 +69,7 @@ function construirErrorPorEstado(
   mensajeBackend?: string,
   detalles?: unknown
 ): ErrorApi {
-  if (estadoHttp === 400) {
+  if (estadoHttp === 400 || estadoHttp === 422) {
     return {
       codigo: 'ERROR_VALIDACION',
       estadoHttp,
@@ -140,6 +123,24 @@ function construirErrorPorEstado(
     };
   }
 
+  if (estadoHttp === 429) {
+    return {
+      codigo: 'DEMASIADAS_PETICIONES',
+      estadoHttp,
+      mensaje: mensajeBackend ?? 'Realizaste demasiadas solicitudes. Espera un momento e intenta nuevamente.',
+      detalles
+    };
+  }
+
+  if (estadoHttp === 503) {
+    return {
+      codigo: 'SERVICIO_NO_DISPONIBLE',
+      estadoHttp,
+      mensaje: mensajeBackend ?? 'El servicio no está disponible temporalmente.',
+      detalles
+    };
+  }
+
   if (estadoHttp >= 500) {
     return {
       codigo: 'ERROR_SERVIDOR',
@@ -161,7 +162,7 @@ export function normalizarErrorApi(error: unknown): ErrorApi {
   if (esErrorApi(error)) {
     return {
       ...error,
-      mensaje: repararCaracteresEspeciales(error.mensaje)
+      mensaje: normalizarTextoMojibake(error.mensaje)
     };
   }
 

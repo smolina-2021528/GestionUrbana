@@ -8,8 +8,10 @@
     "dev:auth": "cd backend/auth-service && nodemon index.js",
     "dev:report": "cd backend/report-service && nodemon index.js",
     "start": "concurrently --names \"AUTH,REPORT\" \"cd backend/auth-service && node index.js\" \"cd backend/report-service && node index.js\"",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "check:backend": "node scripts/check-backend-syntax.js",
+    "verify:backend": "node scripts/check-backend-syntax.js",
+    "lint": "node scripts/check-backend-syntax.js",
+    "lint:fix": "node scripts/check-backend-syntax.js"
   },
   "keywords": [
     "gestion-urbana",
