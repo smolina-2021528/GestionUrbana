@@ -1,7 +1,11 @@
 import { clienteReportes } from '../../../shared/services/clienteHttp';
 import type {
+  ContenedorReportes,
   CrearReportePayload,
-  CrearReporteResponse
+  CrearReporteResponse,
+  MisReportesNormalizados,
+  MisReportesResponse,
+  ReporteResumen
 } from '../types/reportes.types';
 
 type ArchivoReactNative = {
@@ -60,6 +64,40 @@ function construirFormData(payload: CrearReportePayload) {
   return formData;
 }
 
+function esContenedorReportes(valor: unknown): valor is ContenedorReportes {
+  return Boolean(valor && typeof valor === 'object');
+}
+
+function extraerReportes(respuesta: MisReportesResponse): ReporteResumen[] {
+  if (Array.isArray(respuesta.data)) {
+    return respuesta.data;
+  }
+
+  if (Array.isArray(respuesta.reports)) {
+    return respuesta.reports;
+  }
+
+  if (esContenedorReportes(respuesta.data)) {
+    if (Array.isArray(respuesta.data.reports)) {
+      return respuesta.data.reports;
+    }
+
+    if (Array.isArray(respuesta.data.items)) {
+      return respuesta.data.items;
+    }
+
+    if (Array.isArray(respuesta.data.rows)) {
+      return respuesta.data.rows;
+    }
+
+    if (Array.isArray(respuesta.data.data)) {
+      return respuesta.data.data;
+    }
+  }
+
+  return [];
+}
+
 export const reportesService = {
   async crearReporte(payload: CrearReportePayload) {
     const formData = construirFormData(payload);
@@ -75,5 +113,16 @@ export const reportesService = {
     );
 
     return respuesta.data;
+  },
+
+  async obtenerMisReportes(): Promise<MisReportesNormalizados> {
+    const respuesta = await clienteReportes.get<MisReportesResponse>('/reports/my-reports');
+    const reportes = extraerReportes(respuesta.data);
+
+    return {
+      success: respuesta.data.success,
+      message: respuesta.data.message,
+      reportes
+    };
   }
 };

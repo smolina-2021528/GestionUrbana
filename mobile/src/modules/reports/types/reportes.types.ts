@@ -23,6 +23,13 @@ export type CrearReportePayload = CrearReporteFormulario & {
   coordinates?: CoordenadasReporte | null;
 };
 
+export type ImagenReporte = {
+  id?: string;
+  imageUrl?: string;
+  url?: string;
+  publicId?: string;
+};
+
 export type ReporteResumen = {
   id: string;
   title: string;
@@ -35,10 +42,33 @@ export type ReporteResumen = {
   longitude?: number | null;
   createdAt?: string;
   updatedAt?: string;
+  images?: ImagenReporte[];
 };
 
 export type CrearReporteResponse = {
   success: boolean;
   message?: string;
   data?: ReporteResumen;
+};
+
+export type ContenedorReportes = {
+  reports?: ReporteResumen[];
+  items?: ReporteResumen[];
+  rows?: ReporteResumen[];
+  data?: ReporteResumen[];
+  total?: number;
+};
+
+export type MisReportesResponse = {
+  success: boolean;
+  message?: string;
+  error?: string;
+  data?: ReporteResumen[] | ContenedorReportes;
+  reports?: ReporteResumen[];
+};
+
+export type MisReportesNormalizados = {
+  success: boolean;
+  message?: string;
+  reportes: ReporteResumen[];
 };
