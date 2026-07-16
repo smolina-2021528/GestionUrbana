@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Link, router } from 'expo-router';
+import { Link, router, type Href } from 'expo-router';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import {
@@ -17,6 +17,9 @@ import type { ErrorApi } from '../src/shared/services/manejadorErroresApi';
 import { authService } from '../src/modules/auth/services/auth.service';
 import { colores } from '../src/theme/colores';
 import { espaciado } from '../src/theme/espaciado';
+
+
+const rutaVerificarCorreo = '/verificar-correo' as Href;
 
 const esquemaRegistro = z.object({
   name: z.string().trim().min(2, 'Ingresa tu nombre.'),
@@ -205,10 +208,15 @@ export default function RegistroScreen() {
       </View>
 
       <View style={styles.pie}>
-        <Text style={styles.textoPie}>¿Ya tienes cuenta?</Text>
-        <Link href="/login" style={styles.enlace}>
-          Iniciar sesión
-        </Link>
+              <Text style={styles.textoPie}>¿Todavía no tienes cuenta?</Text>
+              <Link href="/registro" style={styles.enlace}>
+                Crear cuenta ciudadana
+              </Link>
+      
+              <Text style={styles.textoPie}>¿Ya tienes token de verificación?</Text>
+              <Link href={rutaVerificarCorreo} style={styles.enlace}>
+                Verificar correo
+              </Link>
       </View>
     </Pantalla>
   );

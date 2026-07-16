@@ -4,7 +4,9 @@ import type {
   LoginResponse,
   PerfilResponse,
   RegistroPayload,
-  RegistroResponse
+  RegistroResponse,
+  VerificarCorreoPayload,
+  VerificarCorreoResponse
 } from '../types/auth.types';
 
 function usuarioEsAdministrador(roles: string[]) {
@@ -30,6 +32,11 @@ export const authService = {
 
   async registrarUsuario(payload: RegistroPayload) {
     const respuesta = await clienteAuth.post<RegistroResponse>('/auth/register', payload);
+    return respuesta.data;
+  },
+
+  async verificarCorreo(payload: VerificarCorreoPayload) {
+    const respuesta = await clienteAuth.post<VerificarCorreoResponse>('/auth/verify-email', payload);
     return respuesta.data;
   },
 

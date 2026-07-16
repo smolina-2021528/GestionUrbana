@@ -28,6 +28,10 @@ export type RegistroPayload = {
   phone: string;
 };
 
+export type VerificarCorreoPayload = {
+  token: string;
+};
+
 export type LoginResponse = {
   success: boolean;
   message?: string;
@@ -41,6 +45,11 @@ export type PerfilResponse = {
 };
 
 export type RegistroResponse = {
+  success: boolean;
+  message: string;
+};
+
+export type VerificarCorreoResponse = {
   success: boolean;
   message: string;
 };
