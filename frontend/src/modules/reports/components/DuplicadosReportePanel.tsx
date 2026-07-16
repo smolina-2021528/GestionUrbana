@@ -19,6 +19,8 @@ export type ResultadoRevisionDuplicados = {
   revisado: true;
   hayDuplicados: boolean;
   totalCandidatos: number;
+  revisionTecnicaFallida?: boolean;
+  mensaje?: string;
 };
 
 type PropiedadesDuplicadosReportePanel = {
@@ -180,6 +182,7 @@ export function DuplicadosReportePanel({
   const tieneCandidatos = candidatos.length > 0;
   const puedeRevisar =
     erroresRevision.length === 0 && !bloqueado && !verificarDuplicados.isPending;
+  const puedeContinuarSinRevisionTecnica = Boolean(mensajeError) && puedeRevisar;
 
   useEffect(() => {
     if (!revisionVigente) {
@@ -235,12 +238,31 @@ export function DuplicadosReportePanel({
       alCompletarRevision({
         revisado: true,
         hayDuplicados: Boolean(respuestaDuplicados.data?.hasDuplicates),
-        totalCandidatos: obtenerTotalCandidatos(candidatosEncontrados)
+        totalCandidatos: obtenerTotalCandidatos(candidatosEncontrados),
+        revisionTecnicaFallida: false
       });
     } catch (error) {
       setRespuesta(null);
       setMensajeError(obtenerMensajeError(error));
     }
+  };
+
+  const continuarSinRevisionTecnica = () => {
+    const mensaje =
+      mensajeError ??
+      'La revisión de duplicados no estuvo disponible. El reporte se enviará con revisión manual pendiente.';
+
+    setRespuesta(null);
+    setMensajeError(null);
+    setMensajeExito('Continuarás sin revisión automática de duplicados. El equipo podrá validar el caso después.');
+
+    alCompletarRevision({
+      revisado: true,
+      hayDuplicados: false,
+      totalCandidatos: 0,
+      revisionTecnicaFallida: true,
+      mensaje
+    });
   };
 
   return (
@@ -289,6 +311,14 @@ export function DuplicadosReportePanel({
         {mensajeError ? (
           <Alerta variante="advertencia" titulo="Revisión no completada">
             <p>{mensajeError}</p>
+
+            {puedeContinuarSinRevisionTecnica ? (
+              <div className="duplicadosReportePanel__accionesCandidato">
+                <Boton variante="secundario" tamano="sm" onClick={continuarSinRevisionTecnica}>
+                  Continuar sin revisión automática
+                </Boton>
+              </div>
+            ) : null}
           </Alerta>
         ) : null}
 

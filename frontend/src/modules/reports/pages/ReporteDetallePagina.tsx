@@ -102,7 +102,7 @@ export function ReporteDetallePagina() {
   };
 
   const manejarReporteEliminado = () => {
-    navigate(rutasAplicacion.reportes);
+    navigate(esAdministrador ? rutasAplicacion.reportes : rutasAplicacion.misReportes);
   };
 
   if (!reporteId) {

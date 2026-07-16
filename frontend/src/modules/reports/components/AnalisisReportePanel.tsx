@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { Alerta } from '../../../shared/components/feedback/Alerta';
 import { Boton } from '../../../shared/components/ui/Boton';
@@ -85,6 +85,12 @@ export function AnalisisReportePanel({
   const tieneDireccion = direccionLimpia.length > 0;
   const tieneVariasImagenes = imagenes.length > 1;
   const puedeAnalizar = tieneImagen && tieneDireccion && !bloqueado && !analizarReporte.isPending;
+
+  useEffect(() => {
+    setResultado(null);
+    setMensajeError(null);
+    setMensajeExito(null);
+  }, [imagenPrincipal, direccionLimpia]);
 
   const analizarEvidencia = async () => {
     setMensajeError(null);
