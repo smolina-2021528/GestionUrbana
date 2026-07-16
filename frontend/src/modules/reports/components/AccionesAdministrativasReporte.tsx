@@ -48,6 +48,15 @@ function obtenerNombreResponsable(reporte: Reporte) {
   return nombreCompleto || reporte.assignedTo.username || 'Usuario asignado';
 }
 
+function obtenerMensajeEstadoInvalido(
+  estadoActual: EstadoReporte,
+  estadoNuevo: EstadoReporte
+) {
+  return `No se puede cambiar directamente de ${obtenerEtiquetaEstadoOperativo(
+    estadoActual
+  )} a ${obtenerEtiquetaEstadoOperativo(estadoNuevo)}.`;
+}
+
 export function AccionesAdministrativasReporte({
   reporte,
   alCambioRealizado,
@@ -68,10 +77,14 @@ export function AccionesAdministrativasReporte({
     cambiarEstado.isPending || asignarReporte.isPending || eliminarReporte.isPending;
 
   const responsableActualId = reporte.assignedTo?.id ?? '';
-  const responsableSinCambios = limpiarTexto(responsableId) === responsableActualId;
+  const responsableNormalizado = limpiarTexto(responsableId);
+  const responsableSinCambios = responsableNormalizado === responsableActualId;
   const estadoSinCambios = estadoSeleccionado === reporte.status;
   const cambioEstadoPermitido =
     !estadoSinCambios && puedeCambiarEstadoReporte(reporte.status, estadoSeleccionado);
+
+  const puedeGuardarAsignacion =
+    Boolean(responsableNormalizado) && !responsableSinCambios && !accionEnProceso;
 
   useEffect(() => {
     setEstadoSeleccionado(reporte.status);
@@ -96,11 +109,7 @@ export function AccionesAdministrativasReporte({
     }
 
     if (!cambioEstadoPermitido) {
-      setMensajeError(
-        `No se puede cambiar directamente de ${obtenerEtiquetaEstadoOperativo(
-          reporte.status
-        )} a ${obtenerEtiquetaEstadoOperativo(estadoSeleccionado)}.`
-      );
+      setMensajeError(obtenerMensajeEstadoInvalido(reporte.status, estadoSeleccionado));
       return;
     }
 
@@ -120,6 +129,10 @@ export function AccionesAdministrativasReporte({
         return;
       }
 
+      if (respuesta.data?.status) {
+        setEstadoSeleccionado(respuesta.data.status);
+      }
+
       setMensajeExito(respuesta.message ?? 'Estado actualizado correctamente.');
       setNotasEstado('');
       alCambioRealizado?.();
@@ -132,9 +145,7 @@ export function AccionesAdministrativasReporte({
     evento.preventDefault();
     limpiarMensajes();
 
-    const responsable = limpiarTexto(responsableId);
-
-    if (!responsable) {
+    if (!responsableNormalizado) {
       setMensajeError('Selecciona un responsable municipal para asignar el reporte.');
       return;
     }
@@ -148,7 +159,7 @@ export function AccionesAdministrativasReporte({
       const respuesta = await asignarReporte.mutateAsync({
         reporteId: reporte.id,
         datos: {
-          assignedTo: responsable
+          assignedTo: responsableNormalizado
         }
       });
 
@@ -159,6 +170,7 @@ export function AccionesAdministrativasReporte({
         return;
       }
 
+      setResponsableId(respuesta.data?.assignedTo?.id ?? responsableNormalizado);
       setMensajeExito(respuesta.message ?? 'Responsable asignado correctamente.');
       alCambioRealizado?.();
     } catch (error) {
@@ -186,6 +198,7 @@ export function AccionesAdministrativasReporte({
       }
 
       setMensajeExito(respuesta.message ?? 'Reporte eliminado correctamente.');
+      setConfirmacionEliminacion('');
       alReporteEliminado?.();
     } catch (error) {
       setMensajeError(obtenerMensajeError(error));
@@ -247,7 +260,10 @@ export function AccionesAdministrativasReporte({
             <div>
               <span className="accionesReporte__etiqueta">Responsable</span>
               <h3>Asignar reporte</h3>
-              <p>Selecciona personal municipal con permisos administrativos para dar seguimiento.</p>
+              <p>
+                Selecciona personal municipal activo con permisos administrativos para dar
+                seguimiento.
+              </p>
             </div>
 
             <div className="accionesReporte__responsableActual">
@@ -265,11 +281,7 @@ export function AccionesAdministrativasReporte({
               }}
             />
 
-            <Boton
-              type="submit"
-              variante="secundario"
-              disabled={accionEnProceso || responsableSinCambios}
-            >
+            <Boton type="submit" variante="secundario" disabled={!puedeGuardarAsignacion}>
               {asignarReporte.isPending ? 'Asignando...' : 'Asignar responsable'}
             </Boton>
           </form>

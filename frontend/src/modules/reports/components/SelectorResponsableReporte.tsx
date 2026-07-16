@@ -4,6 +4,7 @@ import { rolesSistema } from '../../../config/constantesSistema';
 import { Alerta } from '../../../shared/components/feedback/Alerta';
 import { Cargando } from '../../../shared/components/feedback/Cargando';
 import { Boton } from '../../../shared/components/ui/Boton';
+import { esErrorApi } from '../../../shared/types/errorApi';
 import { usarUsuariosPorRol } from '../../users/hooks/usarUsuariosPorRol';
 import type { UsuarioSistema } from '../../users/types/usuariosTipos';
 import type { UsuarioResumenReporte } from '../types/reportesTipos';
@@ -34,6 +35,14 @@ function obtenerDetalleUsuario(usuario: UsuarioSistema | UsuarioResumenReporte) 
   return usuario.username;
 }
 
+function obtenerMensajeError(error: unknown) {
+  if (esErrorApi(error)) {
+    return error.mensaje;
+  }
+
+  return 'No fue posible cargar los responsables. Puedes volver a intentar.';
+}
+
 function usuarioEstaActivo(usuario: UsuarioSistema) {
   return usuario.status !== false;
 }
@@ -46,7 +55,7 @@ function construirUsuarioDesdeResumen(usuario: UsuarioResumenReporte): UsuarioSi
     username: usuario.username,
     email: '',
     role: rolesSistema.administrador,
-    status: true
+    status: false
   };
 }
 
@@ -64,6 +73,17 @@ function obtenerUsuariosAsignables(
   }
 
   return usuariosActivos;
+}
+
+function obtenerEtiquetaOpcion(usuario: UsuarioSistema) {
+  const nombre = obtenerNombreUsuario(usuario);
+  const detalle = obtenerDetalleUsuario(usuario);
+
+  if (!usuario.status) {
+    return `${nombre} · ${detalle} · actual no disponible`;
+  }
+
+  return `${nombre} · ${detalle}`;
 }
 
 export function SelectorResponsableReporte({
@@ -88,6 +108,10 @@ export function SelectorResponsableReporte({
         'No fue posible cargar el listado de responsables.'
       : null;
 
+  const mensajeErrorConsulta = consultaUsuarios.error
+    ? obtenerMensajeError(consultaUsuarios.error)
+    : null;
+
   const cambiarResponsable = (evento: ChangeEvent<HTMLSelectElement>) => {
     alCambiarResponsable(evento.target.value);
   };
@@ -100,6 +124,10 @@ export function SelectorResponsableReporte({
     (usuario) => usuario.id === limpiarTexto(responsableId)
   );
 
+  const responsableActualFueraCatalogo =
+    Boolean(responsableActual) &&
+    !usuarios.some((usuario) => usuario.id === responsableActual?.id);
+
   return (
     <div className="selectorResponsableReporte">
       <label className="accionesReporte__campo">
@@ -111,8 +139,8 @@ export function SelectorResponsableReporte({
         >
           <option value="">Selecciona un responsable</option>
           {usuariosAsignables.map((usuario) => (
-            <option key={usuario.id} value={usuario.id}>
-              {obtenerNombreUsuario(usuario)} · {obtenerDetalleUsuario(usuario)}
+            <option key={usuario.id} value={usuario.id} disabled={!usuario.status}>
+              {obtenerEtiquetaOpcion(usuario)}
             </option>
           ))}
         </select>
@@ -124,11 +152,12 @@ export function SelectorResponsableReporte({
         </div>
       ) : null}
 
-      {mensajeRespuestaFallida || consultaUsuarios.error ? (
+      {mensajeRespuestaFallida || mensajeErrorConsulta ? (
         <Alerta variante="advertencia" titulo="Responsables no disponibles">
           <div className="selectorResponsableReporte__alerta">
             <p>
               {mensajeRespuestaFallida ??
+                mensajeErrorConsulta ??
                 'No fue posible cargar los responsables. Puedes volver a intentar.'}
             </p>
 
@@ -147,6 +176,15 @@ export function SelectorResponsableReporte({
       {!consultaUsuarios.isLoading && !mensajeRespuestaFallida && usuariosAsignables.length === 0 ? (
         <Alerta variante="informacion" titulo="Sin responsables activos">
           <p>No se encontraron usuarios administradores activos para asignar este reporte.</p>
+        </Alerta>
+      ) : null}
+
+      {responsableActualFueraCatalogo ? (
+        <Alerta variante="advertencia" titulo="Responsable actual no disponible">
+          <p>
+            El responsable actual ya no aparece como administrador activo. Selecciona otro
+            responsable para continuar la gestión operativa.
+          </p>
         </Alerta>
       ) : null}
 
