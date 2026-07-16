@@ -77,6 +77,7 @@ const applyRoutes = (app) => {
 export const initServer = async () => {
   const app = express();
   const PORT = process.env.REPORT_PORT || process.env.PORT || 3007;
+  const HOST = process.env.SERVER_HOST || '0.0.0.0';
 
   app.set('trust proxy', 1);
 
@@ -94,9 +95,10 @@ export const initServer = async () => {
 
     app.use(errorHandler);
 
-    app.listen(PORT, () => {
-      console.log(`Report Service corriendo en puerto ${PORT}`);
-      console.log(`Health: http://localhost:${PORT}${BASE_PATH}/health`);
+    app.listen(PORT, HOST, () => {
+      console.log(`Report Service corriendo en http://${HOST}:${PORT}`);
+      console.log(`Health local: http://localhost:${PORT}${BASE_PATH}/health`);
+      console.log(`Health red local: http://TU_IP_LOCAL:${PORT}${BASE_PATH}/health`);
     });
   } catch (err) {
     console.error(`[FATAL] Error iniciando report-service: ${err.message}`);

@@ -7,7 +7,6 @@
     "scheme": "ciudadactiva",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
-    "icon": "./assets/icon.png",
     "splash": {
       "backgroundColor": "#0F172A"
     },
@@ -25,9 +24,6 @@
     },
     "android": {
       "package": "com.ciudadactiva.mobile",
-      "adaptiveIcon": {
-        "backgroundColor": "#0F172A"
-      },
       "permissions": [
         "CAMERA",
         "ACCESS_FINE_LOCATION",
