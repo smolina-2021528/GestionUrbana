@@ -33,3 +33,12 @@ logs/
 Thumbs.db
 
 package-lock.json
+
+
+# App móvil
+mobile/.env
+mobile/.env.local
+mobile/.expo/
+mobile/node_modules/
+mobile/dist/
+mobile/web-build/

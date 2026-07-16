@@ -1,0 +1,38 @@
+{
+  "expo": {
+    "name": "Ciudad Activa",
+    "slug": "ciudad-activa-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "ciudadactiva",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "icon": "./assets/icon.png",
+    "splash": {
+      "backgroundColor": "#0F172A"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.ciudadactiva.mobile"
+    },
+    "android": {
+      "package": "com.ciudadactiva.mobile",
+      "adaptiveIcon": {
+        "backgroundColor": "#0F172A"
+      }
+    },
+    "web": {
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
