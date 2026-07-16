@@ -8,13 +8,39 @@ cloudinary.config({
   api_secret: config.cloudinary.apiSecret,
 });
 
-// Sube una imagen al folder configurado en Cloudinary
+const safeUnlink = async (filePath) => {
+  try {
+    if (!filePath) return false;
+    await fs.unlink(filePath);
+    return true;
+  } catch (error) {
+    if (error?.code !== 'ENOENT') {
+      console.warn('Advertencia: No se pudo eliminar el archivo local:', filePath);
+    }
+    return false;
+  }
+};
+
+const assertCloudinaryConfigured = () => {
+  if (!config.cloudinary.cloudName || !config.cloudinary.apiKey || !config.cloudinary.apiSecret) {
+    throw new Error('Cloudinary no está configurado. Revisa CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY y CLOUDINARY_API_SECRET.');
+  }
+};
+
+const normalizeCloudinaryDestroyResult = (result) => {
+  if (!result?.result) return false;
+  return ['ok', 'not found'].includes(result.result);
+};
+
+// Sube una imagen al folder configurado en Cloudinary.
 export const uploadImage = async (filePath, fileName) => {
   try {
+    assertCloudinaryConfigured();
+
     const folder = config.cloudinary.folder;
     const options = {
       public_id: fileName,
-      folder: folder,
+      folder,
       resource_type: 'image',
       transformation: [
         { width: 400, height: 400, crop: 'fill', gravity: 'face' },
@@ -24,13 +50,6 @@ export const uploadImage = async (filePath, fileName) => {
 
     const result = await cloudinary.uploader.upload(filePath, options);
 
-    // Eliminar archivo local tras subir
-    try {
-      await fs.unlink(filePath);
-    } catch {
-      console.warn('Advertencia: No se pudo eliminar el archivo local:', filePath);
-    }
-
     if (result.error) {
       throw new Error(`Error subiendo imagen: ${result.error.message}`);
     }
@@ -38,21 +57,18 @@ export const uploadImage = async (filePath, fileName) => {
     return fileName;
   } catch (error) {
     console.error('Error subiendo a Cloudinary:', error?.message || error);
-
-    try {
-      await fs.unlink(filePath);
-    } catch {
-      console.warn('Advertencia: No se pudo eliminar el archivo local después del error');
-    }
-
     throw new Error(`Error al subir imagen a Cloudinary: ${error?.message || ''}`);
+  } finally {
+    await safeUnlink(filePath);
   }
 };
 
-// Elimina una imagen de Cloudinary
+// Elimina una imagen de Cloudinary.
 export const deleteImage = async (imagePath) => {
   try {
     if (!imagePath) return true;
+
+    assertCloudinaryConfigured();
 
     const folder = config.cloudinary.folder;
     const publicId = imagePath.includes('/')
@@ -60,14 +76,14 @@ export const deleteImage = async (imagePath) => {
       : `${folder}/${imagePath}`;
 
     const result = await cloudinary.uploader.destroy(publicId);
-    return result.result;
+    return normalizeCloudinaryDestroyResult(result);
   } catch (error) {
-    console.error('Error eliminando imagen de Cloudinary:', error);
+    console.error('Error eliminando imagen de Cloudinary:', error?.message || error);
     return false;
   }
 };
 
-// Construye la URL completa de una imagen a partir del nombre de archivo almacenado
+// Construye la URL completa de una imagen a partir del nombre de archivo almacenado.
 export const getFullImageUrl = (imagePath) => {
   if (!imagePath) return null;
 
@@ -81,13 +97,15 @@ export const getFullImageUrl = (imagePath) => {
   return `https://res.cloudinary.com/${cloudName}/image/upload/${pathToUse}`;
 };
 
-// Sube una imagen de reporte al folder de reportes en Cloudinary
+// Sube una imagen de reporte al folder de reportes en Cloudinary.
 export const uploadReportImage = async (filePath, fileName) => {
   try {
+    assertCloudinaryConfigured();
+
     const folder = config.cloudinary.folderReports;
     const options = {
       public_id: fileName,
-      folder: folder,
+      folder,
       resource_type: 'image',
       transformation: [
         { quality: 'auto', fetch_format: 'auto' },
@@ -96,13 +114,6 @@ export const uploadReportImage = async (filePath, fileName) => {
 
     const result = await cloudinary.uploader.upload(filePath, options);
 
-    // Eliminar archivo local tras subir
-    try {
-      await fs.unlink(filePath);
-    } catch {
-      console.warn('Advertencia: No se pudo eliminar el archivo local:', filePath);
-    }
-
     if (result.error) {
       throw new Error(`Error subiendo imagen de reporte: ${result.error.message}`);
     }
@@ -110,18 +121,13 @@ export const uploadReportImage = async (filePath, fileName) => {
     return { fileName, publicId: result.public_id };
   } catch (error) {
     console.error('Error subiendo imagen de reporte a Cloudinary:', error?.message || error);
-
-    try {
-      await fs.unlink(filePath);
-    } catch {
-      console.warn('Advertencia: No se pudo eliminar el archivo local después del error');
-    }
-
     throw new Error(`Error al subir imagen de reporte a Cloudinary: ${error?.message || ''}`);
+  } finally {
+    await safeUnlink(filePath);
   }
 };
 
-// Construye la URL completa de una imagen de reporte a partir del public_id almacenado
+// Construye la URL completa de una imagen de reporte a partir del public_id almacenado.
 export const getReportImageUrl = (imagePath) => {
   if (!imagePath) return null;
 
