@@ -1,6 +1,23 @@
 import { getReportImageUrl } from '../../shared/cloudinary-service.js';
 import { PRIORITY_COLORS } from '../helpers/report-constants.js';
 
+const ordenarImagenesReporte = (images = []) =>
+    [...images].sort((imageA, imageB) => (imageA.Order ?? 0) - (imageB.Order ?? 0));
+
+const buildReportImageResponse = (image) => {
+    const publicId = image.PublicId ?? null;
+    const storedImagePath = image.ImageUrl ?? publicId;
+    const resolvedUrl = getReportImageUrl(storedImagePath) ?? getReportImageUrl(publicId);
+
+    return {
+        id: image.Id,
+        url: resolvedUrl,
+        publicId,
+        order: image.Order ?? 0,
+        createdAt: image.CreatedAt ?? null,
+    };
+};
+
 // Construye la respuesta normalizada de un reporte (DTO de salida).
 export const buildReportResponse = (report) => {
     return {
@@ -11,11 +28,7 @@ export const buildReportResponse = (report) => {
         priority: report.Priority,
         status: report.Status,
         priorityColor: PRIORITY_COLORS[report.Priority],
-        images: report.Images?.map((img) => ({
-            id: img.Id,
-            url: getReportImageUrl(img.ImageUrl),
-            order: img.Order,
-        })) ?? [],
+        images: ordenarImagenesReporte(report.Images ?? []).map(buildReportImageResponse),
         citizen: report.Citizen
             ? {
                 id: report.Citizen.Id,

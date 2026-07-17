@@ -1,4 +1,7 @@
 import { clienteReportes } from '../../../shared/services/clienteHttp';
+import {
+  normalizarImagenesReporte
+} from '../utils/imagenesReporte';
 import type {
   ContenedorReportes,
   CrearReportePayload,
@@ -70,30 +73,37 @@ function esContenedorReportes(valor: unknown): valor is ContenedorReportes {
   return Boolean(valor && typeof valor === 'object');
 }
 
+function normalizarReporte(reporte: ReporteResumen): ReporteResumen {
+  return {
+    ...reporte,
+    images: normalizarImagenesReporte(reporte.images)
+  };
+}
+
 function extraerReportes(respuesta: MisReportesResponse): ReporteResumen[] {
   if (Array.isArray(respuesta.data)) {
-    return respuesta.data;
+    return respuesta.data.map(normalizarReporte);
   }
 
   if (Array.isArray(respuesta.reports)) {
-    return respuesta.reports;
+    return respuesta.reports.map(normalizarReporte);
   }
 
   if (esContenedorReportes(respuesta.data)) {
     if (Array.isArray(respuesta.data.reports)) {
-      return respuesta.data.reports;
+      return respuesta.data.reports.map(normalizarReporte);
     }
 
     if (Array.isArray(respuesta.data.items)) {
-      return respuesta.data.items;
+      return respuesta.data.items.map(normalizarReporte);
     }
 
     if (Array.isArray(respuesta.data.rows)) {
-      return respuesta.data.rows;
+      return respuesta.data.rows.map(normalizarReporte);
     }
 
     if (Array.isArray(respuesta.data.data)) {
-      return respuesta.data.data;
+      return respuesta.data.data.map(normalizarReporte);
     }
   }
 
@@ -102,11 +112,11 @@ function extraerReportes(respuesta: MisReportesResponse): ReporteResumen[] {
 
 function extraerReporteDetalle(respuesta: ReporteDetalleResponse) {
   if (respuesta.data) {
-    return respuesta.data;
+    return normalizarReporte(respuesta.data);
   }
 
   if (respuesta.report) {
-    return respuesta.report;
+    return normalizarReporte(respuesta.report);
   }
 
   return null;

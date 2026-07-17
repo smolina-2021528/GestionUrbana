@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router, type Href } from 'expo-router';
 import {
   ActivityIndicator,
+  Image,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -21,6 +22,10 @@ import type {
   PrioridadReporte,
   ReporteResumen
 } from '../src/modules/reports/types/reportes.types';
+import {
+  obtenerImagenPrincipalReporte,
+  obtenerImagenesVisiblesReporte
+} from '../src/modules/reports/utils/imagenesReporte';
 import { colores } from '../src/theme/colores';
 import { espaciado } from '../src/theme/espaciado';
 
@@ -124,10 +129,12 @@ function truncarTexto(texto: string, limite = 120) {
 function TarjetaReporte({ reporte }: { reporte: ReporteResumen }) {
   const estado = obtenerColorEstado(reporte.status);
   const tieneUbicacion = Boolean(reporte.address || reporte.latitude || reporte.longitude);
+  const imagenPrincipal = obtenerImagenPrincipalReporte(reporte);
+  const totalImagenes = obtenerImagenesVisiblesReporte(reporte).length;
 
   const abrirDetalle = () => {
-  router.push(`/reporte/${encodeURIComponent(reporte.id)}` as Href);
-};
+    router.push(`/reporte/${encodeURIComponent(reporte.id)}` as Href);
+  };
 
   return (
     <Pressable
@@ -138,6 +145,23 @@ function TarjetaReporte({ reporte }: { reporte: ReporteResumen }) {
         pressed ? styles.tarjetaReportePresionada : null
       ]}
     >
+      {imagenPrincipal ? (
+        <View style={styles.imagenReporteContenedor}>
+          <Image
+            source={{ uri: imagenPrincipal.url }}
+            style={styles.imagenReporte}
+            resizeMode="cover"
+          />
+
+          {totalImagenes > 1 ? (
+            <View style={styles.contadorImagenes}>
+              <Ionicons name="images-outline" size={14} color="#FFFFFF" />
+              <Text style={styles.contadorImagenesTexto}>{totalImagenes}</Text>
+            </View>
+          ) : null}
+        </View>
+      ) : null}
+
       <View style={styles.tarjetaReporteEncabezado}>
         <View style={styles.iconoCategoria}>
           <Ionicons
@@ -442,6 +466,34 @@ const styles = StyleSheet.create({
   },
   tarjetaReportePresionada: {
     opacity: 0.82
+  },
+  imagenReporteContenedor: {
+    overflow: 'hidden',
+    borderRadius: 18,
+    backgroundColor: '#E2E8F0',
+    borderWidth: 1,
+    borderColor: colores.borde
+  },
+  imagenReporte: {
+    width: '100%',
+    height: 160
+  },
+  contadorImagenes: {
+    position: 'absolute',
+    right: espaciado.sm,
+    bottom: espaciado.sm,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    borderRadius: 999,
+    backgroundColor: 'rgba(15, 23, 42, 0.76)',
+    paddingVertical: 5,
+    paddingHorizontal: 9
+  },
+  contadorImagenesTexto: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '900'
   },
   tarjetaReporteEncabezado: {
     flexDirection: 'row',

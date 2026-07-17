@@ -32,6 +32,28 @@ const normalizeCloudinaryDestroyResult = (result) => {
   return ['ok', 'not found'].includes(result.result);
 };
 
+const isAbsoluteImageUrl = (imagePath) => /^https?:\/\//i.test(imagePath);
+
+const buildCloudinaryImageUrl = (imagePath, folder) => {
+  if (!imagePath) return null;
+
+  const cleanImagePath = String(imagePath).trim();
+  if (!cleanImagePath) return null;
+
+  if (isAbsoluteImageUrl(cleanImagePath)) {
+    return cleanImagePath;
+  }
+
+  const cloudName = config.cloudinary.cloudName;
+  if (!cloudName) return null;
+
+  const pathToUse = cleanImagePath.includes('/')
+    ? cleanImagePath
+    : `${folder}/${cleanImagePath}`;
+
+  return `https://res.cloudinary.com/${cloudName}/image/upload/${pathToUse}`;
+};
+
 // Sube una imagen al folder configurado en Cloudinary.
 export const uploadImage = async (filePath, fileName) => {
   try {
@@ -84,18 +106,7 @@ export const deleteImage = async (imagePath) => {
 };
 
 // Construye la URL completa de una imagen a partir del nombre de archivo almacenado.
-export const getFullImageUrl = (imagePath) => {
-  if (!imagePath) return null;
-
-  const folder = config.cloudinary.folder;
-  const cloudName = config.cloudinary.cloudName;
-
-  const pathToUse = imagePath.includes('/')
-    ? imagePath
-    : `${folder}/${imagePath}`;
-
-  return `https://res.cloudinary.com/${cloudName}/image/upload/${pathToUse}`;
-};
+export const getFullImageUrl = (imagePath) => buildCloudinaryImageUrl(imagePath, config.cloudinary.folder);
 
 // Sube una imagen de reporte al folder de reportes en Cloudinary.
 export const uploadReportImage = async (filePath, fileName) => {
@@ -127,19 +138,8 @@ export const uploadReportImage = async (filePath, fileName) => {
   }
 };
 
-// Construye la URL completa de una imagen de reporte a partir del public_id almacenado.
-export const getReportImageUrl = (imagePath) => {
-  if (!imagePath) return null;
-
-  const folder = config.cloudinary.folderReports;
-  const cloudName = config.cloudinary.cloudName;
-
-  const pathToUse = imagePath.includes('/')
-    ? imagePath
-    : `${folder}/${imagePath}`;
-
-  return `https://res.cloudinary.com/${cloudName}/image/upload/${pathToUse}`;
-};
+// Construye la URL completa de una imagen de reporte a partir del public_id o nombre almacenado.
+export const getReportImageUrl = (imagePath) => buildCloudinaryImageUrl(imagePath, config.cloudinary.folderReports);
 
 export default {
   uploadImage,

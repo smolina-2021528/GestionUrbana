@@ -4,10 +4,13 @@ import { InsigniaPrioridad } from '../../../shared/components/ui/InsigniaPriorid
 import { Tarjeta } from '../../../shared/components/ui/Tarjeta';
 import type {
   CategoriaReporte,
-  ImagenReporte,
   Reporte,
   UsuarioResumenReporte
 } from '../types/reportesTipos';
+import {
+  type ImagenReporteVisible,
+  obtenerImagenesVisiblesReporte
+} from '../utils/imagenesReporte';
 import './reportesComponentes.css';
 
 type PropiedadesDetalleReporte = {
@@ -54,7 +57,13 @@ function obtenerCategoria(categoria: CategoriaReporte) {
   return etiquetasCategoria[categoria] ?? categoria;
 }
 
-function GaleriaEvidencia({ imagenes, titulo }: { imagenes: ImagenReporte[]; titulo: string }) {
+function GaleriaEvidencia({
+  imagenes,
+  titulo
+}: {
+  imagenes: ImagenReporteVisible[];
+  titulo: string;
+}) {
   if (imagenes.length === 0) {
     return (
       <div className="detalleReporte__sinEvidencia">
@@ -87,6 +96,7 @@ export function DetalleReporte({
   actualizando = false
 }: PropiedadesDetalleReporte) {
   const categoria = obtenerCategoria(reporte.category);
+  const imagenesVisibles = obtenerImagenesVisiblesReporte(reporte);
 
   return (
     <article className="detalleReporte">
@@ -173,7 +183,7 @@ export function DetalleReporte({
         titulo="Evidencia visual"
         descripcion="Imágenes registradas por el ciudadano para documentar la incidencia."
       >
-        <GaleriaEvidencia imagenes={reporte.images} titulo={reporte.title} />
+        <GaleriaEvidencia imagenes={imagenesVisibles} titulo={reporte.title} />
       </Tarjeta>
     </article>
   );

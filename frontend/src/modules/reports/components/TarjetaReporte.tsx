@@ -5,6 +5,10 @@ import { InsigniaEstado } from '../../../shared/components/ui/InsigniaEstado';
 import { InsigniaPrioridad } from '../../../shared/components/ui/InsigniaPrioridad';
 import { Tarjeta } from '../../../shared/components/ui/Tarjeta';
 import type { CategoriaReporte, Reporte, UsuarioResumenReporte } from '../types/reportesTipos';
+import {
+  obtenerImagenPrincipalReporte,
+  obtenerImagenesVisiblesReporte
+} from '../utils/imagenesReporte';
 import './reportesComponentes.css';
 
 type PropiedadesTarjetaReporte = {
@@ -79,8 +83,8 @@ export function TarjetaReporte({
   mostrarAsignado = true,
   alVerDetalle
 }: PropiedadesTarjetaReporte) {
-  const imagenPrincipal = reporte.images[0];
-  const totalImagenes = reporte.images.length;
+  const imagenPrincipal = obtenerImagenPrincipalReporte(reporte);
+  const totalImagenes = obtenerImagenesVisiblesReporte(reporte).length;
   const categoria = etiquetasCategoria[reporte.category] ?? reporte.category;
   const fechaCreacion = formatearFecha(reporte.createdAt);
   const ubicacion = obtenerUbicacion(reporte);

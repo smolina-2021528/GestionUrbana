@@ -32,8 +32,16 @@ export type UsuarioResumenReporte = {
 
 export type ImagenReporte = {
   id: string;
-  url: string;
+  url: string | null;
+  publicId: string | null;
   order: number;
+  createdAt: FechaIsoONulo;
+
+  // Compatibilidad defensiva con respuestas anteriores.
+  imageUrl?: string | null;
+  ImageUrl?: string | null;
+  PublicId?: string | null;
+  CreatedAt?: string | null;
 };
 
 export type AnalisisIAReporte = {

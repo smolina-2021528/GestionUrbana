@@ -25,11 +25,16 @@ export type CrearReportePayload = CrearReporteFormulario & {
 
 export type ImagenReporte = {
   id?: string;
-  imageUrl?: string;
-  ImageUrl?: string;
-  url?: string;
-  publicId?: string;
-  PublicId?: string;
+  Id?: string;
+  url?: string | null;
+  imageUrl?: string | null;
+  ImageUrl?: string | null;
+  publicId?: string | null;
+  PublicId?: string | null;
+  order?: number;
+  Order?: number;
+  createdAt?: string | null;
+  CreatedAt?: string | null;
 };
 
 export type UsuarioResumenReporte = {
