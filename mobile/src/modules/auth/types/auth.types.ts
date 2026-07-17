@@ -32,6 +32,12 @@ export type VerificarCorreoPayload = {
   token: string;
 };
 
+export type ActualizarPerfilPayload = {
+  name: string;
+  surname: string;
+  phone?: string;
+};
+
 export type LoginResponse = {
   success: boolean;
   message?: string;
@@ -41,6 +47,7 @@ export type LoginResponse = {
 
 export type PerfilResponse = {
   success: boolean;
+  message?: string;
   data: UsuarioAutenticado;
 };
 
@@ -52,4 +59,10 @@ export type RegistroResponse = {
 export type VerificarCorreoResponse = {
   success: boolean;
   message: string;
+};
+
+export type ActualizarPerfilResponse = {
+  success: boolean;
+  message: string;
+  data: UsuarioAutenticado;
 };

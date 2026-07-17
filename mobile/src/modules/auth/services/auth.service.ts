@@ -1,5 +1,7 @@
 import { clienteAuth } from '../../../shared/services/clienteHttp';
 import type {
+  ActualizarPerfilPayload,
+  ActualizarPerfilResponse,
   LoginPayload,
   LoginResponse,
   PerfilResponse,
@@ -42,6 +44,21 @@ export const authService = {
 
   async obtenerPerfil() {
     const respuesta = await clienteAuth.get<PerfilResponse>('/auth/profile');
+
+    if (usuarioEsAdministrador(respuesta.data.data.roles ?? [])) {
+      throw {
+        codigo: 'NO_AUTORIZADO',
+        estadoHttp: 403,
+        mensaje:
+          'Esta aplicación móvil es exclusiva para ciudadanos. Los administradores deben usar la versión web.'
+      };
+    }
+
+    return respuesta.data;
+  },
+
+  async actualizarPerfil(payload: ActualizarPerfilPayload) {
+    const respuesta = await clienteAuth.patch<ActualizarPerfilResponse>('/profile', payload);
 
     if (usuarioEsAdministrador(respuesta.data.data.roles ?? [])) {
       throw {

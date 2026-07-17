@@ -1,16 +1,22 @@
 import { Router } from 'express';
-import { updateProfile, changePassword } from './profile.controller.js';
+
+import {
+  updateProfile,
+  updateMyProfile,
+  changePassword
+} from './profile.controller.js';
 import { validateJWT } from '../../middlewares/validate-JWT.js';
 import { upload, handleUploadError } from '../../../shared/file-upload.js';
 import {
   validateUpdateProfile,
-  validateChangePassword,
+  validateChangePassword
 } from '../../middlewares/validation.js';
 
 const router = Router();
 
 // PUT /gestionurbana/v1/profile
-// Actualiza nombre, apellido, username, teléfono y foto del usuario autenticado
+// Actualiza nombre, apellido, username, teléfono y foto del usuario autenticado.
+// Esta ruta se mantiene para la app web.
 router.put(
   '/',
   validateJWT,
@@ -20,8 +26,19 @@ router.put(
   updateProfile
 );
 
+// PATCH /gestionurbana/v1/profile
+// Actualiza datos básicos desde la app móvil.
+// No toca username, correo ni foto.
+router.patch('/', validateJWT, updateMyProfile);
+
 // PUT /gestionurbana/v1/profile/change-password
-// Cambia la contraseña verificando la actual
-router.put('/change-password', validateJWT, validateChangePassword, changePassword);
+// Cambia la contraseña verificando la actual.
+// Esta ruta se mantiene para la app web.
+router.put(
+  '/change-password',
+  validateJWT,
+  validateChangePassword,
+  changePassword
+);
 
 export default router;

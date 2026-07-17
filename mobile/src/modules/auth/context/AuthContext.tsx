@@ -1,67 +1,78 @@
-import type { ReactNode } from 'react';
 import {
   createContext,
   useCallback,
   useEffect,
   useMemo,
-  useState
+  useState,
+  type ReactNode
 } from 'react';
 
 import { almacenamientoSesion } from '../../../shared/services/almacenamientoSesion';
 import { authService } from '../services/auth.service';
 import type {
+  ActualizarPerfilPayload,
   LoginPayload,
-  UsuarioAutenticado
+  RegistroPayload,
+  UsuarioAutenticado,
+  VerificarCorreoPayload
 } from '../types/auth.types';
 
-type EstadoAuth = {
+type AuthContextValue = {
   usuario: UsuarioAutenticado | null;
   token: string | null;
-  cargandoSesion: boolean;
-  estaAutenticado: boolean;
+  cargando: boolean;
+  autenticado: boolean;
   iniciarSesion: (payload: LoginPayload) => Promise<void>;
+  registrarUsuario: (payload: RegistroPayload) => Promise<void>;
+  verificarCorreo: (payload: VerificarCorreoPayload) => Promise<void>;
+  refrescarPerfil: () => Promise<UsuarioAutenticado | null>;
+  actualizarPerfil: (payload: ActualizarPerfilPayload) => Promise<UsuarioAutenticado>;
   cerrarSesion: () => Promise<void>;
-  refrescarPerfil: () => Promise<void>;
 };
 
-export const AuthContext = createContext<EstadoAuth | null>(null);
+export const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-type PropiedadesAuthProvider = {
-  children: ReactNode;
-};
-
-export function AuthProvider({ children }: PropiedadesAuthProvider) {
+export function AuthProvider({ children }: { children: ReactNode }) {
   const [usuario, setUsuario] = useState<UsuarioAutenticado | null>(null);
   const [token, setToken] = useState<string | null>(null);
-  const [cargandoSesion, setCargandoSesion] = useState(true);
+  const [cargando, setCargando] = useState(true);
 
   const limpiarSesion = useCallback(async () => {
     await almacenamientoSesion.eliminarToken();
-    setToken(null);
     setUsuario(null);
+    setToken(null);
   }, []);
 
   const refrescarPerfil = useCallback(async () => {
     const tokenGuardado = await almacenamientoSesion.obtenerToken();
 
     if (!tokenGuardado) {
-      setToken(null);
       setUsuario(null);
-      setCargandoSesion(false);
-      return;
+      setToken(null);
+      return null;
     }
 
-    try {
-      setCargandoSesion(true);
-      const perfil = await authService.obtenerPerfil();
-      setToken(tokenGuardado);
-      setUsuario(perfil.data);
-    } catch {
-      await limpiarSesion();
-    } finally {
-      setCargandoSesion(false);
-    }
-  }, [limpiarSesion]);
+    const respuesta = await authService.obtenerPerfil();
+
+    setUsuario(respuesta.data);
+    setToken(tokenGuardado);
+
+    return respuesta.data;
+  }, []);
+
+  useEffect(() => {
+    const cargarSesion = async () => {
+      try {
+        await refrescarPerfil();
+      } catch {
+        await limpiarSesion();
+      } finally {
+        setCargando(false);
+      }
+    };
+
+    void cargarSesion();
+  }, [limpiarSesion, refrescarPerfil]);
 
   const iniciarSesion = useCallback(async (payload: LoginPayload) => {
     const respuesta = await authService.iniciarSesion(payload);
@@ -72,43 +83,61 @@ export function AuthProvider({ children }: PropiedadesAuthProvider) {
     setUsuario(respuesta.user);
   }, []);
 
+  const registrarUsuario = useCallback(async (payload: RegistroPayload) => {
+    await authService.registrarUsuario(payload);
+  }, []);
+
+  const verificarCorreo = useCallback(async (payload: VerificarCorreoPayload) => {
+    await authService.verificarCorreo(payload);
+  }, []);
+
+  const actualizarPerfil = useCallback(async (payload: ActualizarPerfilPayload) => {
+    const respuesta = await authService.actualizarPerfil(payload);
+
+    setUsuario((usuarioActual) => ({
+      ...(usuarioActual ?? respuesta.data),
+      ...respuesta.data,
+      roles: respuesta.data.roles ?? usuarioActual?.roles ?? []
+    }));
+
+    return respuesta.data;
+  }, []);
+
   const cerrarSesion = useCallback(async () => {
     try {
       await authService.cerrarSesion();
     } catch {
-      // Aunque el backend no responda, la app debe limpiar la sesión local.
+      // Aunque el backend falle, limpiamos la sesión local.
     } finally {
       await limpiarSesion();
     }
   }, [limpiarSesion]);
 
-  useEffect(() => {
-    void refrescarPerfil();
-  }, [refrescarPerfil]);
-
-  const valor = useMemo<EstadoAuth>(
+  const valor = useMemo<AuthContextValue>(
     () => ({
       usuario,
       token,
-      cargandoSesion,
-      estaAutenticado: Boolean(token && usuario),
+      cargando,
+      autenticado: Boolean(usuario && token),
       iniciarSesion,
-      cerrarSesion,
-      refrescarPerfil
+      registrarUsuario,
+      verificarCorreo,
+      refrescarPerfil,
+      actualizarPerfil,
+      cerrarSesion
     }),
     [
       usuario,
       token,
-      cargandoSesion,
+      cargando,
       iniciarSesion,
-      cerrarSesion,
-      refrescarPerfil
+      registrarUsuario,
+      verificarCorreo,
+      refrescarPerfil,
+      actualizarPerfil,
+      cerrarSesion
     ]
   );
 
-  return (
-    <AuthContext.Provider value={valor}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={valor}>{children}</AuthContext.Provider>;
 }
