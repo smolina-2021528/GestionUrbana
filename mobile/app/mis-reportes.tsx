@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { router, type Href } from 'expo-router';
 import {
   ActivityIndicator,
   Pressable,
@@ -125,9 +125,14 @@ function TarjetaReporte({ reporte }: { reporte: ReporteResumen }) {
   const estado = obtenerColorEstado(reporte.status);
   const tieneUbicacion = Boolean(reporte.address || reporte.latitude || reporte.longitude);
 
+  const abrirDetalle = () => {
+  router.push(`/reporte/${encodeURIComponent(reporte.id)}` as Href);
+};
+
   return (
     <Pressable
       accessibilityRole="button"
+      onPress={abrirDetalle}
       style={({ pressed }) => [
         styles.tarjetaReporte,
         pressed ? styles.tarjetaReportePresionada : null
@@ -146,6 +151,8 @@ function TarjetaReporte({ reporte }: { reporte: ReporteResumen }) {
           <Text style={styles.reporteTitulo}>{reporte.title}</Text>
           <Text style={styles.reporteFecha}>{formatearFecha(reporte.createdAt)}</Text>
         </View>
+
+        <Ionicons name="chevron-forward" size={20} color={colores.textoSuave} />
       </View>
 
       <Text style={styles.reporteDescripcion}>{truncarTexto(reporte.description)}</Text>

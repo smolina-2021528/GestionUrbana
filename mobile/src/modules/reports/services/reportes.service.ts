@@ -5,6 +5,8 @@ import type {
   CrearReporteResponse,
   MisReportesNormalizados,
   MisReportesResponse,
+  ReporteDetalleNormalizado,
+  ReporteDetalleResponse,
   ReporteResumen
 } from '../types/reportes.types';
 
@@ -98,6 +100,18 @@ function extraerReportes(respuesta: MisReportesResponse): ReporteResumen[] {
   return [];
 }
 
+function extraerReporteDetalle(respuesta: ReporteDetalleResponse) {
+  if (respuesta.data) {
+    return respuesta.data;
+  }
+
+  if (respuesta.report) {
+    return respuesta.report;
+  }
+
+  return null;
+}
+
 export const reportesService = {
   async crearReporte(payload: CrearReportePayload) {
     const formData = construirFormData(payload);
@@ -123,6 +137,18 @@ export const reportesService = {
       success: respuesta.data.success,
       message: respuesta.data.message,
       reportes
+    };
+  },
+
+  async obtenerReporteDetalle(reporteId: string): Promise<ReporteDetalleNormalizado> {
+    const respuesta = await clienteReportes.get<ReporteDetalleResponse>(
+      `/reports/${encodeURIComponent(reporteId)}`
+    );
+
+    return {
+      success: respuesta.data.success,
+      message: respuesta.data.message,
+      reporte: extraerReporteDetalle(respuesta.data)
     };
   }
 };

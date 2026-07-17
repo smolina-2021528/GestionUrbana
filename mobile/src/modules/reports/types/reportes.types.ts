@@ -26,8 +26,17 @@ export type CrearReportePayload = CrearReporteFormulario & {
 export type ImagenReporte = {
   id?: string;
   imageUrl?: string;
+  ImageUrl?: string;
   url?: string;
   publicId?: string;
+  PublicId?: string;
+};
+
+export type UsuarioResumenReporte = {
+  id?: string;
+  name?: string;
+  surname?: string;
+  username?: string;
 };
 
 export type ReporteResumen = {
@@ -43,6 +52,7 @@ export type ReporteResumen = {
   createdAt?: string;
   updatedAt?: string;
   images?: ImagenReporte[];
+  citizen?: UsuarioResumenReporte | null;
 };
 
 export type CrearReporteResponse = {
@@ -71,4 +81,18 @@ export type MisReportesNormalizados = {
   success: boolean;
   message?: string;
   reportes: ReporteResumen[];
+};
+
+export type ReporteDetalleResponse = {
+  success: boolean;
+  message?: string;
+  error?: string;
+  data?: ReporteResumen;
+  report?: ReporteResumen;
+};
+
+export type ReporteDetalleNormalizado = {
+  success: boolean;
+  message?: string;
+  reporte: ReporteResumen | null;
 };
