@@ -9,8 +9,7 @@ import { Boton } from '../../../shared/components/ui/Boton';
 import { Tarjeta } from '../../../shared/components/ui/Tarjeta';
 import { esErrorApi } from '../../../shared/types/errorApi';
 import { ListadoReportes } from '../components/ListadoReportes';
-import { ReportesSeguidos } from '../components/ReportesSeguidos';
-import { ResumenReportes } from '../components/ResumenReportes';
+import { ResumenCiudadanoReportes } from '../components/ResumenCiudadanoReportes';
 import { usarMisReportes } from '../hooks/usarMisReportes';
 import type { FiltrosMisReportes, Reporte } from '../types/reportesTipos';
 import './reportesPagina.css';
@@ -73,12 +72,12 @@ export function MisReportesPagina() {
     navigate(rutasAplicacion.crearReporte);
   };
 
-  const irADetalleReporte = (reporte: Reporte) => {
-    navigate(`${rutasAplicacion.reportes}/${encodeURIComponent(reporte.id)}`);
+  const irANotificaciones = () => {
+    navigate(rutasAplicacion.notificaciones);
   };
 
-  const irADetalleReportePorId = (reporteId: string) => {
-    navigate(`${rutasAplicacion.reportes}/${encodeURIComponent(reporteId)}`);
+  const irADetalleReporte = (reporte: Reporte) => {
+    navigate(`${rutasAplicacion.reportes}/${encodeURIComponent(reporte.id)}`);
   };
 
   const limpiarFiltros = () => {
@@ -142,8 +141,8 @@ export function MisReportesPagina() {
           <span className="etiquetaInicial">Seguimiento ciudadano</span>
           <h1>{textosSistema.reportes.tituloMisReportes}</h1>
           <p>
-            Consulta el estado de los reportes urbanos que has registrado y da seguimiento a su
-            avance.
+            Revisa tus reportes, consulta su estado y da seguimiento a las actualizaciones más
+            importantes sin entrar a vistas administrativas.
           </p>
         </div>
 
@@ -162,10 +161,17 @@ export function MisReportesPagina() {
         </div>
       </section>
 
-      <Tarjeta
-        titulo="Filtros de seguimiento"
-        descripcion="Refina tus reportes por fecha de creación."
-      >
+      <ResumenCiudadanoReportes
+        reportes={reportes}
+        paginacion={paginacion}
+        actualizando={consultaMisReportes.isFetching}
+        alCrearReporte={irACrearReporte}
+        alVerNotificaciones={irANotificaciones}
+        alActualizar={actualizarReportes}
+        alVerDetalle={irADetalleReporte}
+      />
+
+      <Tarjeta titulo="Buscar por fecha" descripcion="Filtra tus reportes por fecha de creación.">
         <div className="reportesPagina__filtrosSimples">
           <label className="reportesPagina__campoFiltro">
             <span>Desde</span>
@@ -205,17 +211,13 @@ export function MisReportesPagina() {
         </Alerta>
       ) : null}
 
-      {reportes.length > 0 ? (
-        <ResumenReportes reportes={reportes} paginacion={paginacion} />
-      ) : null}
-
       <ListadoReportes
         reportes={reportes}
         cargando={estaCargando}
         mensajeError={mensajeError}
         paginacion={paginacion}
         mostrarCiudadano={false}
-        mostrarAsignado
+        mostrarAsignado={false}
         tituloVacio="Aún no has registrado reportes"
         descripcionVacia="Cuando crees un reporte urbano, podrás darle seguimiento desde esta sección."
         accionVacia={
@@ -260,8 +262,6 @@ export function MisReportesPagina() {
           </div>
         </Tarjeta>
       ) : null}
-
-      <ReportesSeguidos alVerDetalle={irADetalleReportePorId} />
     </main>
   );
 }

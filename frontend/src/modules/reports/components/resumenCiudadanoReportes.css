@@ -1,0 +1,193 @@
+.resumenCiudadano {
+  display: grid;
+  gap: var(--espacio-5);
+}
+
+.resumenCiudadano__bienvenida {
+  overflow: hidden;
+  border-color: rgb(36 116 214 / 0.18);
+  background:
+    radial-gradient(circle at 8% 15%, rgb(36 116 214 / 0.16), transparent 16rem),
+    radial-gradient(circle at 92% 18%, rgb(13 136 79 / 0.12), transparent 14rem),
+    linear-gradient(135deg, var(--color-superficie) 0%, var(--color-gris-urbano-50) 100%);
+}
+
+.resumenCiudadano__bienvenidaContenido {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--espacio-5);
+}
+
+.resumenCiudadano__etiqueta,
+.resumenCiudadano__categoria {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  border-radius: var(--radio-completo);
+  background: rgb(36 116 214 / 0.1);
+  padding: 0.35rem 0.7rem;
+  color: var(--color-principal);
+  font-size: var(--tamano-texto-xs);
+  font-weight: var(--peso-negrita);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.resumenCiudadano__bienvenida h2 {
+  max-width: 42rem;
+  margin: var(--espacio-3) 0 var(--espacio-2);
+  font-size: clamp(1.45rem, 4vw, 2.2rem);
+  line-height: 1.08;
+  letter-spacing: -0.04em;
+}
+
+.resumenCiudadano__bienvenida p {
+  max-width: 48rem;
+  margin: 0;
+  color: var(--color-texto-secundario);
+  font-size: var(--tamano-texto-md);
+}
+
+.resumenCiudadano__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--espacio-3);
+  min-width: fit-content;
+}
+
+.resumenCiudadano__metricas {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--espacio-4);
+}
+
+.resumenCiudadano__metrica {
+  background: var(--color-superficie);
+}
+
+.resumenCiudadano__metrica .tarjeta__contenido {
+  display: grid;
+  gap: var(--espacio-2);
+}
+
+.resumenCiudadano__metrica span {
+  color: var(--color-texto-secundario);
+  font-size: var(--tamano-texto-sm);
+  font-weight: var(--peso-seminegrita);
+}
+
+.resumenCiudadano__metrica strong {
+  color: var(--color-texto);
+  font-size: clamp(2rem, 6vw, 3rem);
+  line-height: 1;
+  letter-spacing: -0.06em;
+}
+
+.resumenCiudadano__metrica p {
+  margin: 0;
+  color: var(--color-texto-secundario);
+  font-size: var(--tamano-texto-sm);
+}
+
+.resumenCiudadano__estados {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--espacio-3);
+}
+
+.resumenCiudadano__estado {
+  display: grid;
+  gap: var(--espacio-2);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-lg);
+  background: var(--color-gris-urbano-50);
+  padding: var(--espacio-4);
+}
+
+.resumenCiudadano__estado span {
+  color: var(--color-texto-secundario);
+  font-size: var(--tamano-texto-sm);
+  font-weight: var(--peso-seminegrita);
+}
+
+.resumenCiudadano__estado strong {
+  color: var(--color-texto);
+  font-size: var(--tamano-texto-2xl);
+  line-height: 1;
+}
+
+.resumenCiudadano__ultimoReporte {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--espacio-5);
+}
+
+.resumenCiudadano__ultimoReporte h3 {
+  margin: var(--espacio-3) 0 var(--espacio-2);
+  font-size: var(--tamano-texto-xl);
+}
+
+.resumenCiudadano__ultimoReporte p {
+  max-width: 42rem;
+  margin: 0;
+  color: var(--color-texto-secundario);
+}
+
+.resumenCiudadano__ultimoEstado {
+  display: flex;
+  min-width: fit-content;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--espacio-2);
+}
+
+.resumenCiudadano__ultimoEstado small {
+  flex-basis: 100%;
+  color: var(--color-texto-secundario);
+  font-size: var(--tamano-texto-xs);
+  text-align: right;
+}
+
+@media (max-width: 980px) {
+  .resumenCiudadano__bienvenidaContenido,
+  .resumenCiudadano__ultimoReporte {
+    flex-direction: column;
+  }
+
+  .resumenCiudadano__acciones {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .resumenCiudadano__ultimoEstado {
+    justify-content: flex-start;
+  }
+
+  .resumenCiudadano__ultimoEstado small {
+    text-align: left;
+  }
+
+  .resumenCiudadano__metricas,
+  .resumenCiudadano__estados {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .resumenCiudadano__acciones {
+    display: grid;
+  }
+
+  .resumenCiudadano__acciones .boton {
+    width: 100%;
+  }
+
+  .resumenCiudadano__metricas,
+  .resumenCiudadano__estados {
+    grid-template-columns: 1fr;
+  }
+}
