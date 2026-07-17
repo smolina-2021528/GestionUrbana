@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { router, type Href } from 'expo-router';
 import {
   ActivityIndicator,
+  Image,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -23,6 +24,8 @@ import type {
 import { colores } from '../src/theme/colores';
 import { espaciado } from '../src/theme/espaciado';
 
+const rutaPerfil = '/perfil' as Href;
+
 const etiquetasEstado: Record<EstadoReporte, string> = {
   PENDIENTE: 'Pendiente',
   EN_PROCESO: 'En proceso',
@@ -36,6 +39,14 @@ function obtenerPrimerNombre(nombre?: string) {
   }
 
   return nombre.trim().split(' ')[0];
+}
+
+function obtenerInicial(nombre?: string) {
+  if (!nombre?.trim()) {
+    return 'C';
+  }
+
+  return nombre.trim().charAt(0).toUpperCase();
 }
 
 function obtenerMensajeError(error: unknown) {
@@ -210,7 +221,7 @@ function UltimoReporteCard({ reporte }: { reporte: ReporteResumen | null }) {
   return (
     <Pressable
       accessibilityRole="button"
-      onPress={() => router.push(`/reporte/${encodeURIComponent(reporte.id)}` as never)}
+      onPress={() => router.push(`/reporte/${encodeURIComponent(reporte.id)}` as Href)}
       style={({ pressed }) => [
         styles.ultimoReporte,
         pressed ? styles.accesoPresionado : null
@@ -285,11 +296,26 @@ export default function InicioScreen() {
       >
         <View style={styles.hero}>
           <View style={styles.heroSuperior}>
-            <View style={styles.avatar}>
-              <Text style={styles.avatarTexto}>
-                {obtenerPrimerNombre(usuario?.name).charAt(0).toUpperCase()}
-              </Text>
-            </View>
+            <Pressable
+              accessibilityRole="button"
+              style={({ pressed }) => [
+                styles.avatarBoton,
+                pressed ? styles.avatarBotonPresionado : null
+              ]}
+              onPress={() => router.push(rutaPerfil)}
+            >
+              {usuario?.profilePicture ? (
+                <Image source={{ uri: usuario.profilePicture }} style={styles.avatarImagen} />
+              ) : (
+                <View style={styles.avatar}>
+                  <Text style={styles.avatarTexto}>{obtenerInicial(usuario?.name)}</Text>
+                </View>
+              )}
+
+              <View style={styles.avatarIndicador}>
+                <Ionicons name="person-outline" size={13} color={colores.textoInvertido} />
+              </View>
+            </Pressable>
 
             <Pressable
               accessibilityRole="button"
@@ -300,15 +326,22 @@ export default function InicioScreen() {
             </Pressable>
           </View>
 
-          <View style={styles.heroTexto}>
+          <Pressable
+            accessibilityRole="button"
+            style={({ pressed }) => [
+              styles.heroTexto,
+              pressed ? styles.heroTextoPresionado : null
+            ]}
+            onPress={() => router.push(rutaPerfil)}
+          >
             <Text style={styles.heroEtiqueta}>Ciudad Activa</Text>
             <Text style={styles.heroTitulo}>
               Hola, {obtenerPrimerNombre(usuario?.name)}
             </Text>
             <Text style={styles.heroDescripcion}>
-              Reporta problemas urbanos y revisa el avance de tus solicitudes ciudadanas.
+              Toca aquí para ver tu perfil o administra tus reportes ciudadanos.
             </Text>
-          </View>
+          </Pressable>
         </View>
 
         {mensajeError ? (
@@ -435,17 +468,44 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center'
   },
+  avatarBoton: {
+    width: 58,
+    height: 58,
+    borderRadius: 22,
+    position: 'relative'
+  },
+  avatarBotonPresionado: {
+    opacity: 0.82
+  },
   avatar: {
-    width: 52,
-    height: 52,
-    borderRadius: 20,
+    width: 58,
+    height: 58,
+    borderRadius: 22,
     backgroundColor: colores.primario,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  avatarImagen: {
+    width: 58,
+    height: 58,
+    borderRadius: 22
+  },
+  avatarIndicador: {
+    position: 'absolute',
+    right: -3,
+    bottom: -3,
+    width: 23,
+    height: 23,
+    borderRadius: 12,
+    backgroundColor: colores.primario,
+    borderWidth: 2,
+    borderColor: colores.texto,
     alignItems: 'center',
     justifyContent: 'center'
   },
   avatarTexto: {
     color: colores.textoInvertido,
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: '900'
   },
   botonCerrarSesion: {
@@ -458,6 +518,9 @@ const styles = StyleSheet.create({
   },
   heroTexto: {
     gap: espaciado.sm
+  },
+  heroTextoPresionado: {
+    opacity: 0.88
   },
   heroEtiqueta: {
     color: '#93C5FD',
