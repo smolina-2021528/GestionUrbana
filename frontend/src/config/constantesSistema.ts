@@ -52,7 +52,7 @@ export const rutasNavegacionPrincipal: RutaNavegacionPrincipal[] = [
     etiqueta: textosSistema.navegacion.reportes,
     descripcion: 'Mapa y gestión de incidencias.',
     iconoId: 'reportes',
-    roles: [rolesSistema.administrador, rolesSistema.ciudadano]
+    roles: [rolesSistema.administrador]
   },
   {
     ruta: rutasAplicacion.misReportes,

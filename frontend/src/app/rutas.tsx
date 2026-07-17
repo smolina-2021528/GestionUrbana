@@ -74,7 +74,15 @@ export function RutasAplicacion() {
             }
           />
 
-          <Route path={rutasAplicacion.reportes} element={<ReportesPagina />} />
+          <Route
+            path={rutasAplicacion.reportes}
+            element={
+              <RutaProtegida rolesPermitidos={rolesAdministrador}>
+                <ReportesPagina />
+              </RutaProtegida>
+            }
+          />
+
           <Route path={`${rutasAplicacion.reportes}/:reporteId`} element={<ReporteDetallePagina />} />
           <Route path={rutasAplicacion.misReportes} element={<MisReportesPagina />} />
           <Route path={rutasAplicacion.crearReporte} element={<CrearReportePagina />} />
