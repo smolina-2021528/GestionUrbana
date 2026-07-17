@@ -1,50 +1,99 @@
-const DEFAULT_DEVELOPMENT_ORIGINS = [
+'use strict';
+
+const DEFAULT_ALLOWED_ORIGINS = [
   'http://localhost:5173',
-  'http://127.0.0.1:5173',
+  'http://127.0.0.1:5173'
 ];
 
-const isProduction = () => process.env.NODE_ENV === 'production';
+function obtenerOrigenesDesdeEnv() {
+  const frontendUrl = process.env.FRONTEND_URL;
+  const corsAllowedOrigins = process.env.CORS_ALLOWED_ORIGINS;
 
-const parseAllowedOrigins = () => {
-  const configuredOrigins = process.env.CORS_ALLOWED_ORIGINS || process.env.FRONTEND_URL || '';
+  const origenes = [
+    frontendUrl,
+    ...(corsAllowedOrigins ? corsAllowedOrigins.split(',') : [])
+  ];
 
-  return configuredOrigins
-    .split(',')
-    .map((origin) => origin.trim())
+  return origenes
+    .map((origin) => origin?.trim())
     .filter(Boolean);
-};
+}
 
-const getAllowedOrigins = () => [
-  ...new Set([
-    ...(isProduction() ? [] : DEFAULT_DEVELOPMENT_ORIGINS),
-    ...parseAllowedOrigins(),
-  ]),
-];
+function obtenerOrigenesPermitidos() {
+  const origenesEnv = obtenerOrigenesDesdeEnv();
 
-const isLocalDevelopmentOrigin = (origin) => {
-  if (isProduction()) return false;
+  return Array.from(
+    new Set([
+      ...DEFAULT_ALLOWED_ORIGINS,
+      ...origenesEnv
+    ])
+  );
+}
 
-  return /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
-};
+function esOrigenLocalPermitidoEnDesarrollo(origin) {
+  if (process.env.NODE_ENV === 'production') {
+    return false;
+  }
 
-const validateOrigin = (origin, callback) => {
+  try {
+    const url = new URL(origin);
+    const hostname = url.hostname;
+
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+      return false;
+    }
+
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return true;
+    }
+
+    if (/^192\.168\.\d{1,3}\.\d{1,3}$/.test(hostname)) {
+      return true;
+    }
+
+    if (/^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(hostname)) {
+      return true;
+    }
+
+    if (/^172\.(1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3}$/.test(hostname)) {
+      return true;
+    }
+
+    return false;
+  } catch {
+    return false;
+  }
+}
+
+function validateOrigin(origin, callback) {
+  const allowedOrigins = obtenerOrigenesPermitidos();
+
   if (!origin) {
-    return callback(null, true);
+    callback(null, true);
+    return;
   }
 
-  const allowedOrigins = getAllowedOrigins();
-
-  if (allowedOrigins.includes(origin) || isLocalDevelopmentOrigin(origin)) {
-    return callback(null, true);
+  if (allowedOrigins.includes(origin)) {
+    callback(null, true);
+    return;
   }
 
-  return callback(new Error(`Origen no permitido por CORS: ${origin}`));
-};
+  if (esOrigenLocalPermitidoEnDesarrollo(origin)) {
+    console.warn(`[CORS] Origen local permitido en desarrollo: ${origin}`);
+    callback(null, true);
+    return;
+  }
+
+  console.error('[CORS] Origen rechazado:', origin);
+  console.error('[CORS] Orígenes permitidos:', allowedOrigins);
+
+  callback(new Error(`Origen no permitido por CORS: ${origin}`));
+}
 
 export const corsOptions = {
   origin: validateOrigin,
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-token'],
-  optionsSuccessStatus: 204,
+  methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 204
 };
