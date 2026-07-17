@@ -1,24 +1,44 @@
-type ConfiguracionEntorno = {
-  authApiUrl: string;
-  reportApiUrl: string;
-};
+const BASE_PATH = '/gestionurbana/v1';
 
-const authApiUrl = process.env.EXPO_PUBLIC_AUTH_API_URL;
-const reportApiUrl = process.env.EXPO_PUBLIC_REPORT_API_URL;
-
-if (!authApiUrl) {
-  console.warn(
-    'EXPO_PUBLIC_AUTH_API_URL no está configurada. Revisa mobile/.env.'
-  );
+function limpiarUrl(url?: string) {
+  return url?.trim().replace(/\/$/, '') ?? '';
 }
 
-if (!reportApiUrl) {
-  console.warn(
-    'EXPO_PUBLIC_REPORT_API_URL no está configurada. Revisa mobile/.env.'
-  );
+function construirUrlPorDefecto(puerto: number) {
+  return `http://localhost:${puerto}${BASE_PATH}`;
 }
 
-export const env: ConfiguracionEntorno = {
-  authApiUrl: authApiUrl ?? 'http://10.0.2.2:3006/gestionurbana/v1',
-  reportApiUrl: reportApiUrl ?? 'http://10.0.2.2:3007/gestionurbana/v1'
+function validarUrl(nombre: string, valor: string) {
+  if (!valor) {
+    console.warn(`[ENV] ${nombre} no está configurada.`);
+    return;
+  }
+
+  if (!valor.startsWith('http://') && !valor.startsWith('https://')) {
+    console.warn(`[ENV] ${nombre} debe iniciar con http:// o https://`);
+  }
+
+  if (valor.includes('localhost')) {
+    console.warn(
+      `[ENV] ${nombre} usa localhost. En iPhone físico debes usar la IPv4 de tu computadora.`
+    );
+  }
+}
+
+const authApiUrl = limpiarUrl(
+  process.env.EXPO_PUBLIC_AUTH_API_URL || construirUrlPorDefecto(3006)
+);
+
+const reportApiUrl = limpiarUrl(
+  process.env.EXPO_PUBLIC_REPORT_API_URL || construirUrlPorDefecto(3007)
+);
+
+validarUrl('EXPO_PUBLIC_AUTH_API_URL', authApiUrl);
+validarUrl('EXPO_PUBLIC_REPORT_API_URL', reportApiUrl);
+
+export const env = {
+  authApiUrl,
+  reportApiUrl,
+  timeoutMs: 15000,
+  esDesarrollo: process.env.NODE_ENV !== 'production'
 };
