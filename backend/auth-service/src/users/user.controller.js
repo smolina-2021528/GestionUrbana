@@ -11,6 +11,23 @@ import { sequelize } from '../../configs/db.js';
 import { User } from './user.model.js';
 import { Op } from 'sequelize';
 
+const normalizarBooleanoConsulta = (valor) => {
+  if (typeof valor === 'boolean') return valor;
+  if (typeof valor !== 'string') return undefined;
+
+  const normalizado = valor.trim().toLowerCase();
+
+  if (['true', '1', 'yes', 'si', 'sí'].includes(normalizado)) {
+    return true;
+  }
+
+  if (['false', '0', 'no'].includes(normalizado)) {
+    return false;
+  }
+
+  return undefined;
+};
+
 // PUT /gestionurbana/v1/users/:userId/role
 // Actualiza el rol de un usuario (solo admin)
 export const updateUserRole = asyncHandler(async (req, res) => {
@@ -18,6 +35,7 @@ export const updateUserRole = asyncHandler(async (req, res) => {
   const { roleName } = req.body || {};
 
   const normalized = (roleName || '').trim().toUpperCase();
+
   if (!ALLOWED_ROLES.includes(normalized)) {
     return res.status(400).json({
       success: false,
@@ -26,6 +44,7 @@ export const updateUserRole = asyncHandler(async (req, res) => {
   }
 
   const user = await findUserById(userId);
+
   if (!user) {
     return res.status(404).json({ success: false, message: 'Usuario no encontrado.' });
   }
@@ -45,11 +64,13 @@ export const getUserRoles = asyncHandler(async (req, res) => {
   const { userId } = req.params;
 
   const user = await findUserById(userId);
+
   if (!user) {
     return res.status(404).json({ success: false, message: 'Usuario no encontrado.' });
   }
 
   const roles = await getUserRoleNames(userId);
+
   return res.status(200).json({ success: true, data: roles });
 });
 
@@ -66,7 +87,9 @@ export const getUsersByRole = asyncHandler(async (req, res) => {
     });
   }
 
-  const users = await repoGetUsersByRole(normalized);
+  const activeOnly = normalizarBooleanoConsulta(req.query.activeOnly);
+  const users = await repoGetUsersByRole(normalized, { activeOnly });
+
   return res.status(200).json({
     success: true,
     data: users.map(buildUserResponse),
@@ -115,6 +138,7 @@ export const toggleUserStatus = asyncHandler(async (req, res) => {
   const { userId } = req.params;
 
   const user = await findUserById(userId);
+
   if (!user) {
     return res.status(404).json({ success: false, message: 'Usuario no encontrado.' });
   }
@@ -133,10 +157,10 @@ export const toggleUserStatus = asyncHandler(async (req, res) => {
   );
 
   const updatedUser = await findUserById(userId);
+
   return res.status(200).json({
     success: true,
     message: `Cuenta ${updatedUser.Status ? 'activada' : 'desactivada'} exitosamente.`,
     data: buildUserResponse(updatedUser),
   });
 });
-

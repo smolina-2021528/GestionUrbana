@@ -64,11 +64,11 @@ function obtenerUsuariosAsignables(
   responsableActual?: UsuarioResumenReporte | null
 ) {
   const usuariosActivos = usuarios.filter(usuarioEstaActivo);
-  const responsableActualExiste =
+  const responsableActualEstaActivo =
     responsableActual &&
     usuariosActivos.some((usuario) => usuario.id === responsableActual.id);
 
-  if (responsableActual && !responsableActualExiste) {
+  if (responsableActual && !responsableActualEstaActivo) {
     return [construirUsuarioDesdeResumen(responsableActual), ...usuariosActivos];
   }
 
@@ -92,7 +92,7 @@ export function SelectorResponsableReporte({
   bloqueado = false,
   alCambiarResponsable
 }: PropiedadesSelectorResponsableReporte) {
-  const consultaUsuarios = usarUsuariosPorRol(rolesSistema.administrador);
+  const consultaUsuarios = usarUsuariosPorRol(rolesSistema.administrador, { activeOnly: true });
 
   const respuestaUsuarios = consultaUsuarios.data;
   const usuarios =

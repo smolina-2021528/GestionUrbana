@@ -24,7 +24,7 @@ export const validateAssignableAdmin = async (req, res, next) => {
       });
     }
 
-    if (!user.Status) {
+    if (user.Status !== true) {
       return res.status(400).json({
         success: false,
         message: 'No se puede asignar el reporte a una cuenta desactivada.',
@@ -36,7 +36,7 @@ export const validateAssignableAdmin = async (req, res, next) => {
     if (!roles.includes(ADMIN_ROLE)) {
       return res.status(400).json({
         success: false,
-        message: 'El usuario seleccionado no tiene permisos administrativos.',
+        message: 'Solo una cuenta activa con rol ADMIN_ROLE puede ser responsable de un reporte.',
       });
     }
 

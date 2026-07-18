@@ -18,6 +18,10 @@ type ParametrosConsultaUsuarios = {
   search?: string;
 };
 
+type OpcionesUsuariosPorRol = {
+  activeOnly?: boolean;
+};
+
 function limpiarTexto(valor: string) {
   return valor.trim();
 }
@@ -60,6 +64,18 @@ function construirParametrosUsuarios(
   return parametros;
 }
 
+function construirParametrosUsuariosPorRol(
+  opciones?: OpcionesUsuariosPorRol
+) {
+  if (typeof opciones?.activeOnly !== 'boolean') {
+    return undefined;
+  }
+
+  return {
+    activeOnly: opciones.activeOnly
+  };
+}
+
 function validarIdentificador(
   identificador: string,
   nombreCampo: string
@@ -87,7 +103,8 @@ export const usuariosServicio = {
   },
 
   async obtenerUsuariosPorRol(
-    nombreRol: string
+    nombreRol: string,
+    opciones?: OpcionesUsuariosPorRol
   ): Promise<RespuestaUsuariosPorRol> {
     const rol = validarIdentificador(
       nombreRol,
@@ -95,7 +112,9 @@ export const usuariosServicio = {
     );
 
     return obtenerDatosRespuesta<RespuestaUsuariosPorRol>(
-      clienteAuth.get(rutasApi.usuarios.porRol(rol))
+      clienteAuth.get(rutasApi.usuarios.porRol(rol), {
+        params: construirParametrosUsuariosPorRol(opciones)
+      })
     );
   },
 

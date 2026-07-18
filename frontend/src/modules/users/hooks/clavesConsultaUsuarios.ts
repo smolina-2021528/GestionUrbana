@@ -17,11 +17,12 @@ export const clavesConsultaUsuarios = {
       filtros ?? {}
     ] as const,
 
-  porRol: (nombreRol: string) =>
+  porRol: (nombreRol: string, activeOnly?: boolean) =>
     [
       ...claveBaseUsuarios,
       'rol',
-      nombreRol
+      nombreRol,
+      activeOnly ?? null
     ] as const,
 
   detalles: () =>

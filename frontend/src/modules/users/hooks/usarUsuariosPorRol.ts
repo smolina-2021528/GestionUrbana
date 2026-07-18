@@ -6,6 +6,7 @@ import { usarConsultaUsuariosHabilitada } from './usarConsultaUsuariosHabilitada
 
 type OpcionesUsuariosPorRol = {
   habilitado?: boolean;
+  activeOnly?: boolean;
 };
 
 function normalizarNombreRol(
@@ -23,14 +24,17 @@ export function usarUsuariosPorRol(
   } = usarConsultaUsuariosHabilitada();
 
   const rolNormalizado = normalizarNombreRol(nombreRol);
+  const activeOnly = opciones?.activeOnly;
 
   return useQuery({
     queryKey: clavesConsultaUsuarios.porRol(
-      rolNormalizado
+      rolNormalizado,
+      activeOnly
     ),
     queryFn: () =>
       usuariosServicio.obtenerUsuariosPorRol(
-        rolNormalizado
+        rolNormalizado,
+        { activeOnly }
       ),
     enabled:
       consultaAdministrativaHabilitada &&
