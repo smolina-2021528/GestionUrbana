@@ -7,7 +7,7 @@ import {
     DUPLICATE_THRESHOLD,
 } from '../../helpers/duplicate-service.js';
 
-// â”€â”€â”€ GET /reports/:reportId/similar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── GET /reports/:reportId/similar ──────────────────────────────────────────
 // Endpoint para obtener reportes similares a uno existente
 export const getSimilarReports = async (req, res) => {
     try {
@@ -25,7 +25,7 @@ export const getSimilarReports = async (req, res) => {
         if (!baseReport) {
             return res.status(404).json({
                 success: false,
-                message: `No se encontrÃ³ ningÃºn reporte con id "${reportId}".`,
+                message: `No se encontró ningún reporte con id "${reportId}".`,
             });
         }
 
@@ -68,8 +68,8 @@ export const getSimilarReports = async (req, res) => {
     }
 };
 
-// â”€â”€â”€ POST /reports/check-duplicates â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// Endpoint para verificar si un nuevo reporte (aÃºn no guardado) podrÃ­a ser un duplicado de uno existente.
+// ─── POST /reports/check-duplicates ──────────────────────────────────────────
+// Endpoint para verificar si un nuevo reporte (aún no guardado) podría ser un duplicado de uno existente.
 export const checkDuplicates = async (req, res) => {
     try {
         const { title, description, category, latitude, longitude } = req.body;
@@ -106,8 +106,8 @@ export const checkDuplicates = async (req, res) => {
             data: {
                 hasDuplicates,
                 message: hasDuplicates
-                    ? 'Se encontraron reportes que podrÃ­an ser duplicados. Revisa la lista antes de continuar.'
-                    : 'No se encontraron reportes duplicados. Puedes continuar con la creaciÃ³n.',
+                    ? 'Se encontraron reportes que podrían ser duplicados. Revisa la lista antes de continuar.'
+                    : 'No se encontraron reportes duplicados. Puedes continuar con la creación.',
                 candidates: candidates.map(({ report, score, isDuplicate, distanceM }) => ({
                     ...buildReportGeoResponse(report),
                     similarity: {

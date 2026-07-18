@@ -21,7 +21,7 @@ export const updateUserRole = asyncHandler(async (req, res) => {
   if (!ALLOWED_ROLES.includes(normalized)) {
     return res.status(400).json({
       success: false,
-      message: `Rol no permitido. Valores vÃ¡lidos: ${ALLOWED_ROLES.join(', ')}`,
+      message: `Rol no permitido. Valores válidos: ${ALLOWED_ROLES.join(', ')}`,
     });
   }
 
@@ -40,7 +40,7 @@ export const updateUserRole = asyncHandler(async (req, res) => {
 });
 
 // GET /gestionurbana/v1/users/:userId/roles
-// Consulta los roles de un usuario especÃ­fico
+// Consulta los roles de un usuario específico
 export const getUserRoles = asyncHandler(async (req, res) => {
   const { userId } = req.params;
 
@@ -54,7 +54,7 @@ export const getUserRoles = asyncHandler(async (req, res) => {
 });
 
 // GET /gestionurbana/v1/users/by-role/:roleName
-// Lista todos los usuarios con un rol especÃ­fico (solo admin)
+// Lista todos los usuarios con un rol específico (solo admin)
 export const getUsersByRole = asyncHandler(async (req, res) => {
   const { roleName } = req.params;
   const normalized = (roleName || '').trim().toUpperCase();
@@ -62,7 +62,7 @@ export const getUsersByRole = asyncHandler(async (req, res) => {
   if (!ALLOWED_ROLES.includes(normalized)) {
     return res.status(400).json({
       success: false,
-      message: `Rol no permitido. Valores vÃ¡lidos: ${ALLOWED_ROLES.join(', ')}`,
+      message: `Rol no permitido. Valores válidos: ${ALLOWED_ROLES.join(', ')}`,
     });
   }
 
@@ -74,7 +74,7 @@ export const getUsersByRole = asyncHandler(async (req, res) => {
 });
 
 // GET /gestionurbana/v1/users
-// Lista todos los usuarios del sistema con paginaciÃ³n (solo admin)
+// Lista todos los usuarios del sistema con paginación (solo admin)
 export const getAllUsers = asyncHandler(async (req, res) => {
   const { page = 1, limit = 20, search = '' } = req.query;
   const offset = (parseInt(page) - 1) * parseInt(limit);
@@ -119,7 +119,7 @@ export const toggleUserStatus = asyncHandler(async (req, res) => {
     return res.status(404).json({ success: false, message: 'Usuario no encontrado.' });
   }
 
-  // Proteger al admin activo de desactivarse a sÃ­ mismo
+  // Proteger al admin activo de desactivarse a sí mismo
   if (userId === req.userId) {
     return res.status(400).json({
       success: false,

@@ -10,7 +10,7 @@ const router = Router();
 
 // POST /reports/check-duplicates
 // Verifica si un borrador de reporte probablemente ya existe.
-// No requiere rol de admin â€” cualquier usuario autenticado puede consultarlo.
+// No requiere rol de admin — cualquier usuario autenticado puede consultarlo.
 router.post(
     '/check-duplicates',
     validateJWT,
@@ -19,7 +19,7 @@ router.post(
 );
 
 // GET /reports/:reportId/similar
-// Retorna los reportes mÃ¡s similares a uno existente.
+// Retorna los reportes más similares a uno existente.
 router.get(
     '/:reportId/similar',
     validateJWT,

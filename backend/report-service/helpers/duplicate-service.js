@@ -5,16 +5,16 @@ import { Report }         from '../src/reports/report.model.js';
 import { ReportImage }    from '../src/reports/report-image.model.js';
 import { User }           from '../src/users/user-ref.model.js';
 
-/** Radio mÃ¡ximo en metros para buscar candidatos geogrÃ¡ficamente. */
+/** Radio máximo en metros para buscar candidatos geográficamente. */
 const GEO_RADIUS_M = 100;
 
-/** Score mÃ­nimo (0â€“1) para considerar dos reportes como "similares". */
+/** Score mínimo (0–1) para considerar dos reportes como "similares". */
 export const SIMILARITY_THRESHOLD = 0.45;
 
-/** Score mÃ­nimo (0â€“1) para marcar como "duplicado probable". */
+/** Score mínimo (0–1) para marcar como "duplicado probable". */
 export const DUPLICATE_THRESHOLD = 0.75;
 
-/** NÃºmero mÃ¡ximo de candidatos a comparar. */
+/** Número máximo de candidatos a comparar. */
 const MAX_CANDIDATES = 200;
 
 // esta lista detecta que palabras comunes no aportan valor a la similitud y las ignora.
@@ -106,7 +106,7 @@ const lightIncludes = () => [
 export const fetchCandidates = async (baseReport) => {
     const excludeId = baseReport.Id;
 
-    // Si tiene coordenadas, buscar por proximidad geogrÃ¡fica ampliada (500 m)
+    // Si tiene coordenadas, buscar por proximidad geográfica ampliada (500 m)
     if (baseReport.Latitude != null && baseReport.Longitude != null) {
         const refPoint = sequelize.fn(
             'ST_SetSRID',
@@ -140,7 +140,7 @@ export const fetchCandidates = async (baseReport) => {
                 limit: MAX_CANDIDATES,
             });
 
-            // Complementar con reportes de la misma categorÃ­a sin ubicaciÃ³n
+            // Complementar con reportes de la misma categoría sin ubicación
             const nonGeoCandidates = await Report.findAll({
                 where: {
                     Id:       { [Op.ne]: excludeId },
@@ -155,11 +155,11 @@ export const fetchCandidates = async (baseReport) => {
 
             return [...geoRows, ...nonGeoCandidates];
         } catch {
-            // Fallback: bÃºsqueda por categorÃ­a si PostGIS falla
+            // Fallback: búsqueda por categoría si PostGIS falla
         }
     }
 
-    // Sin coordenadas: buscar por categorÃ­a
+    // Sin coordenadas: buscar por categoría
     return Report.findAll({
         where: {
             Id:       { [Op.ne]: excludeId },

@@ -15,7 +15,7 @@ export const readTempFile = (filePath) => {
 
     if (!ALLOWED_EXTENSIONS.has(ext)) {
         throw new Error(
-            `ExtensiÃ³n no soportada: "${ext}". Se permiten: ${[...ALLOWED_EXTENSIONS].join(', ')}.`
+            `Extensión no soportada: "${ext}". Se permiten: ${[...ALLOWED_EXTENSIONS].join(', ')}.`
         );
     }
 
@@ -110,7 +110,7 @@ export const purgeStaleUploads = (maxAgeMs = 60 * 60 * 1000) => {
     }
 
     if (result.deleted > 0) {
-        console.log(`[ai-file-helper] Limpieza de uploads: ${result.deleted} archivo(s) huÃ©rfano(s) eliminado(s).`);
+        console.log(`[ai-file-helper] Limpieza de uploads: ${result.deleted} archivo(s) huérfano(s) eliminado(s).`);
     }
 
     return result;

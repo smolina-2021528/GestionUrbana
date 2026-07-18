@@ -49,7 +49,7 @@ export const verifyJWT = (token) => {
   });
 };
 
-// Genera un token de verificaciÃ³n de email o reset de contraseÃ±a
+// Genera un token de verificación de email o reset de contraseña
 export const generateVerificationToken = (userId, type, expiresIn = '24h') => {
   return new Promise((resolve, reject) => {
     const payload = {
@@ -67,7 +67,7 @@ export const generateVerificationToken = (userId, type, expiresIn = '24h') => {
 
     jwt.sign(payload, config.jwt.secret, signOptions, (err, token) => {
       if (err) {
-        console.error('Error generando token de verificaciÃ³n:', err);
+        console.error('Error generando token de verificación:', err);
         reject(err);
       } else {
         resolve(token);

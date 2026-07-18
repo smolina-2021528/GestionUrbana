@@ -43,7 +43,7 @@ import { geocodeAddress }     from "../../helpers/nominatim-service.js";
 import { parseDateRange }     from "../../helpers/date-helpers.js";
 
 // POST /api/reports
-// Crea un nuevo reporte con sus imÃ¡genes dentro de una transacciÃ³n.
+// Crea un nuevo reporte con sus imágenes dentro de una transacción.
 export const createReport = async (req, res) => {
   const transaction = await sequelize.transaction();
   const uploadedImages = [];
@@ -65,14 +65,14 @@ export const createReport = async (req, res) => {
         description = description || aiResult.description;
         category    = category    || aiResult.category;
 
-        // Gemini tambiÃ©n sugiere prioridad â€” solo se aplica si el usuario
+        // Gemini también sugiere prioridad — solo se aplica si el usuario
         if (!req.body.priority) {
           resolvedPriority = aiResult.priority;
         }
 
         aiGenerated = true;
       } catch (aiError) {
-        // Gemini fallÃ³: si aÃºn faltan campos obligatorios, devolver 400 normal
+        // Gemini falló: si aún faltan campos obligatorios, devolver 400 normal
         console.warn('[createReport] Gemini no pudo analizar la imagen:', aiError.message);
 
         if (!title || !description || !category) {
@@ -80,13 +80,13 @@ export const createReport = async (req, res) => {
           return res.status(400).json({
             success: false,
             message:
-              'Faltan campos obligatorios (title, description, category) y no se pudo analizar la imagen automÃ¡ticamente.',
+              'Faltan campos obligatorios (title, description, category) y no se pudo analizar la imagen automáticamente.',
           });
         }
       }
     }
 
-    // ValidaciÃ³n final: si despuÃ©s de Gemini aÃºn faltan campos, 400
+    // Validación final: si después de Gemini aún faltan campos, 400
     if (!title || !description || !category) {
       await transaction.rollback();
       return res.status(400).json({
@@ -95,7 +95,7 @@ export const createReport = async (req, res) => {
       });
     }
 
-    // Si se enviÃ³ address pero no coordenadas, intentar resolverlas
+    // Si se envió address pero no coordenadas, intentar resolverlas
     let locationData = buildLocationData(latitude, longitude, address);
     let locationResolved = !!(latitude && longitude);
 
@@ -107,7 +107,7 @@ export const createReport = async (req, res) => {
           locationResolved = true;
         }
       } catch (geoError) {
-        console.warn('[createReport] Nominatim no pudo geocodificar la direcciÃ³n:', geoError.message);
+        console.warn('[createReport] Nominatim no pudo geocodificar la dirección:', geoError.message);
       }
     }
 
@@ -259,7 +259,7 @@ export const getAllReports = async (req, res) => {
       sortOrder: safeSortOrder,
     });
 
-    // Si se pidiÃ³ ordenar por prioridad, aplicamos orden en memoria
+    // Si se pidió ordenar por prioridad, aplicamos orden en memoria
     // (ALTA=1, MEDIA=2, BAJA=3) para garantizar coherencia aunque la BD
     // no maneje el CASE WHEN de la misma forma en todos los motores.
     const orderedRows =
@@ -455,7 +455,7 @@ export const updateReport = async (req, res) => {
           locationResolved = true;
         }
       } catch (geoError) {
-        console.warn('[updateReport] Nominatim no pudo geocodificar la direcciÃ³n:', geoError.message);
+        console.warn('[updateReport] Nominatim no pudo geocodificar la dirección:', geoError.message);
       }
     }
 
@@ -559,7 +559,7 @@ export const changeReportStatus = async (req, res) => {
       await transaction.rollback();
       return res.status(400).json({
         success: false,
-        message: "Estado actual invÃ¡lido.",
+        message: "Estado actual inválido.",
       });
     }
 
@@ -665,7 +665,7 @@ export const getReportStatusHistory = async (req, res) => {
   }
 };
 
-// Elimina una imagen especÃ­fica de un reporte.
+// Elimina una imagen específica de un reporte.
 export const deleteReportImage = async (req, res) => {
   try {
     const { reportId, imageId } = req.params;
@@ -692,14 +692,14 @@ export const deleteReportImage = async (req, res) => {
       });
     }
 
-    // 3. Verificar que el usuario autenticado es dueÃ±o del reporte o es admin
+    // 3. Verificar que el usuario autenticado es dueño del reporte o es admin
     const isOwner = report.UserId === req.userId;
     const isAdmin = req.userRole === "ADMIN_ROLE";
 
     if (!isOwner && !isAdmin) {
       return res.status(403).json({
         success: false,
-        message: "No tienes permiso para eliminar imÃ¡genes de este reporte.",
+        message: "No tienes permiso para eliminar imágenes de este reporte.",
       });
     }
 
@@ -738,7 +738,7 @@ export const searchReports = async (req, res) => {
     if (!q || q.trim().length < 3) {
       return res.status(400).json({
         success: false,
-        message: "El parÃ¡metro q debe tener al menos 3 caracteres.",
+        message: "El parámetro q debe tener al menos 3 caracteres.",
       });
     }
 
@@ -791,7 +791,7 @@ export const searchReports = async (req, res) => {
   }
 };
 
-// Retorna estadÃ­sticas agregadas de todos los reportes.
+// Retorna estadísticas agregadas de todos los reportes.
 export const getReportStats = async (req, res) => {
   try {
     const [total, ...countsByGroup] = await Promise.all([
@@ -846,7 +846,7 @@ export const getReportStats = async (req, res) => {
     console.error("Error en getReportStats:", error);
     return res
       .status(500)
-      .json({ success: false, message: "Error al obtener las estadÃ­sticas." });
+      .json({ success: false, message: "Error al obtener las estadísticas." });
   }
 };
 
@@ -925,7 +925,7 @@ export const getNearbyReports = async (req, res) => {
     if (isNaN(parsedLat) || isNaN(parsedLng)) {
       return res.status(400).json({
         success: false,
-        message: "Los parÃ¡metros lat y lng deben ser nÃºmeros vÃ¡lidos.",
+        message: "Los parámetros lat y lng deben ser números válidos.",
       });
     }
 
@@ -946,7 +946,7 @@ export const getNearbyReports = async (req, res) => {
     if (isNaN(parsedRadius) || parsedRadius < 50 || parsedRadius > 50000) {
       return res.status(400).json({
         success: false,
-        message: "El radio debe ser un nÃºmero entre 50 y 50,000 metros.",
+        message: "El radio debe ser un número entre 50 y 50,000 metros.",
       });
     }
 
@@ -997,7 +997,7 @@ export const getNearbyReports = async (req, res) => {
   }
 };
 
-// Retorna estadÃ­sticas geogrÃ¡ficas: total, con/sin ubicaciÃ³n, desglose por categorÃ­a y cobertura.
+// Retorna estadísticas geográficas: total, con/sin ubicación, desglose por categoría y cobertura.
 export const getGeoStats = async (req, res) => {
   try {
     const [total, withLocation, ...categoryCountsByLocation] =
@@ -1037,7 +1037,7 @@ export const getGeoStats = async (req, res) => {
     console.error("Error en getGeoStats:", error);
     return res.status(500).json({
       success: false,
-      message: "Error al obtener las estadÃ­sticas geogrÃ¡ficas.",
+      message: "Error al obtener las estadísticas geográficas.",
     });
   }
 };
@@ -1051,7 +1051,7 @@ export const updateReportLocation = async (req, res) => {
       return res.status(400).json({
         success: false,
         message:
-          "Solo se puede actualizar la ubicaciÃ³n de reportes en estado PENDIENTE.",
+          "Solo se puede actualizar la ubicación de reportes en estado PENDIENTE.",
       });
     }
 
@@ -1065,14 +1065,14 @@ export const updateReportLocation = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: "UbicaciÃ³n del reporte actualizada exitosamente.",
+      message: "Ubicación del reporte actualizada exitosamente.",
       data: buildReportGeoResponse(updatedReport),
     });
   } catch (error) {
     console.error("Error en updateReportLocation:", error);
     return res.status(500).json({
       success: false,
-      message: "Error al actualizar la ubicaciÃ³n del reporte.",
+      message: "Error al actualizar la ubicación del reporte.",
     });
   }
 };
@@ -1086,7 +1086,7 @@ export const removeReportLocation = async (req, res) => {
       return res.status(400).json({
         success: false,
         message:
-          "Solo se puede eliminar la ubicaciÃ³n de reportes en estado PENDIENTE.",
+          "Solo se puede eliminar la ubicación de reportes en estado PENDIENTE.",
       });
     }
 
@@ -1101,14 +1101,14 @@ export const removeReportLocation = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: "UbicaciÃ³n del reporte eliminada exitosamente.",
+      message: "Ubicación del reporte eliminada exitosamente.",
       data: buildReportGeoResponse(updatedReport),
     });
   } catch (error) {
     console.error("Error en removeReportLocation:", error);
     return res.status(500).json({
       success: false,
-      message: "Error al eliminar la ubicaciÃ³n del reporte.",
+      message: "Error al eliminar la ubicación del reporte.",
     });
   }
 };
@@ -1131,7 +1131,7 @@ export const getReportsByBoundingBox = async (req, res) => {
       return res.status(400).json({
         success: false,
         message:
-          "Los parÃ¡metros swLat, swLng, neLat y neLng son obligatorios y deben ser nÃºmeros vÃ¡lidos.",
+          "Los parámetros swLat, swLng, neLat y neLng son obligatorios y deben ser números válidos.",
       });
     }
 
@@ -1207,7 +1207,7 @@ export const getReportsByBoundingBox = async (req, res) => {
     console.error("Error en getReportsByBoundingBox:", error);
     return res.status(500).json({
       success: false,
-      message: "Error al obtener reportes del Ã¡rea.",
+      message: "Error al obtener reportes del área.",
     });
   }
 };
@@ -1243,8 +1243,8 @@ export const getHeatmap = async (req, res) => {
 };
 
 // POST /gestionurbana/v1/reports/:reportId/ai/reprocess
-// Ejecuta el anÃ¡lisis de IA de forma sÃ­ncrona sobre la primera imagen del reporte.
-// Si el reporte no tiene imÃ¡genes, retorna 422.
+// Ejecuta el análisis de IA de forma síncrona sobre la primera imagen del reporte.
+// Si el reporte no tiene imágenes, retorna 422.
 export const reprocessReportAI = async (req, res) => {
   const { reportId } = req.params;
 
@@ -1255,7 +1255,7 @@ export const reprocessReportAI = async (req, res) => {
     if (!report) {
       return res.status(404).json({
         success: false,
-        message: `No se encontrÃ³ ningÃºn reporte con id "${reportId}".`,
+        message: `No se encontró ningún reporte con id "${reportId}".`,
       });
     }
 
@@ -1264,7 +1264,7 @@ export const reprocessReportAI = async (req, res) => {
     if (images.length === 0) {
       return res.status(422).json({
         success: false,
-        message: "El reporte no tiene imÃ¡genes para analizar con IA.",
+        message: "El reporte no tiene imágenes para analizar con IA.",
       });
     }
 
@@ -1274,7 +1274,7 @@ export const reprocessReportAI = async (req, res) => {
     // 4. Usar la URL de Cloudinary de la primera imagen
     const imageUrl = images[0].ImageUrl;
 
-    // Limpiar cachÃ© para forzar un anÃ¡lisis fresco en el reprocesamiento
+    // Limpiar caché para forzar un análisis fresco en el reprocesamiento
     cacheDelete(imageUrl);
 
     let geminiResult;
@@ -1303,7 +1303,7 @@ export const reprocessReportAI = async (req, res) => {
         AiReasoning:   null,
         AiProcessedAt: new Date(),
         AiRaw:         JSON.stringify(geminiResult),
-        // Actualizar categorÃ­a y prioridad del reporte con los valores de IA
+        // Actualizar categoría y prioridad del reporte con los valores de IA
         Category: geminiResult.category,
         Priority: geminiResult.priority,
       },

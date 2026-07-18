@@ -35,7 +35,7 @@ export const seedAdmin = async () => {
         Username: ADMIN_USERNAME.toLowerCase(),
         Email:    ADMIN_EMAIL.toLowerCase(),
         Password: hashedPassword,
-        Status:   true, // El admin estÃ¡ activo desde el inicio, sin necesidad de verificar email
+        Status:   true, // El admin está activo desde el inicio, sin necesidad de verificar email
       },
       { transaction: t }
     );
@@ -57,7 +57,7 @@ export const seedAdmin = async () => {
     );
 
     const adminRole = await Role.findOne({ where: { Name: ADMIN_ROLE } }, { transaction: t });
-    if (!adminRole) throw new Error(`El rol ${ADMIN_ROLE} no existe. AsegÃºrate de ejecutar seedRoles primero.`);
+    if (!adminRole) throw new Error(`El rol ${ADMIN_ROLE} no existe. Asegúrate de ejecutar seedRoles primero.`);
 
     await UserRole.create(
       { UserId: admin.Id, RoleId: adminRole.Id },

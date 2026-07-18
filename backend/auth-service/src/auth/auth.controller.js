@@ -38,22 +38,22 @@ export const register = async (req, res) => {
   try {
     const { name, surname, username, email, password, phone } = req.body;
 
-    // Verificar si el email ya estÃ¡ en uso
+    // Verificar si el email ya está en uso
     const existing = await User.findOne({
       where: { Email: email.toLowerCase() },
     });
     if (existing) {
       await t.rollback();
-      return res.status(409).json({ success: false, message: 'El email ya estÃ¡ registrado.' });
+      return res.status(409).json({ success: false, message: 'El email ya está registrado.' });
     }
 
-    // Verificar si el username ya estÃ¡ en uso
+    // Verificar si el username ya está en uso
     const existingUsername = await User.findOne({
       where: { Username: username.toLowerCase() },
     });
     if (existingUsername) {
       await t.rollback();
-      return res.status(409).json({ success: false, message: 'El nombre de usuario ya estÃ¡ en uso.' });
+      return res.status(409).json({ success: false, message: 'El nombre de usuario ya está en uso.' });
     }
 
     const hashedPassword = await hashPassword(password);
@@ -102,7 +102,7 @@ export const register = async (req, res) => {
       { transaction: t }
     );
 
-    // Generar token de verificaciÃ³n de email
+    // Generar token de verificación de email
     const verificationToken = await generateEmailVerificationToken();
     const tokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 horas
 
@@ -120,10 +120,10 @@ export const register = async (req, res) => {
 
     await t.commit();
 
-    // Enviar email de verificaciÃ³n en background (no bloquea la respuesta)
+    // Enviar email de verificación en background (no bloquea la respuesta)
     sendVerificationEmail(user.Email, user.Name, verificationToken)
-      .then(() => console.log(`Correo de verificaciÃ³n enviado a: ${user.Email}`))
-      .catch((err) => console.error('Error enviando email de verificaciÃ³n:', err));
+      .then(() => console.log(`Correo de verificación enviado a: ${user.Email}`))
+      .catch((err) => console.error('Error enviando email de verificación:', err));
 
     return res.status(201).json({
       success: true,
@@ -146,19 +146,19 @@ export const login = async (req, res) => {
 
     const user = await findUserByEmailOrUsername(emailOrUsername);
     if (!user) {
-      return res.status(401).json({ success: false, message: 'Credenciales invÃ¡lidas.' });
+      return res.status(401).json({ success: false, message: 'Credenciales inválidas.' });
     }
 
     const isMatch = await verifyPassword(user.Password, password);
     if (!isMatch) {
-      return res.status(401).json({ success: false, message: 'Credenciales invÃ¡lidas.' });
+      return res.status(401).json({ success: false, message: 'Credenciales inválidas.' });
     }
 
-    // Verificar que el email estÃ© verificado
+    // Verificar que el email esté verificado
     if (!user.UserEmail || !user.UserEmail.EmailVerified) {
       return res.status(403).json({
         success: false,
-        message: 'Debes verificar tu email antes de iniciar sesiÃ³n. Revisa tu bandeja de entrada.',
+        message: 'Debes verificar tu email antes de iniciar sesión. Revisa tu bandeja de entrada.',
       });
     }
 
@@ -200,7 +200,7 @@ export const verifyEmail = async (req, res) => {
 
     if (!record || new Date() > record.EmailVerificationTokenExpiry) {
       await t.rollback();
-      return res.status(400).json({ success: false, message: 'Token invÃ¡lido o expirado.' });
+      return res.status(400).json({ success: false, message: 'Token inválido o expirado.' });
     }
 
     if (record.EmailVerified) {
@@ -227,7 +227,7 @@ export const verifyEmail = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: 'Correo verificado y cuenta activada exitosamente. Ya puedes iniciar sesiÃ³n.',
+      message: 'Correo verificado y cuenta activada exitosamente. Ya puedes iniciar sesión.',
     });
   } catch (error) {
     if (t && !t.finished) await t.rollback();
@@ -248,14 +248,14 @@ export const resendVerification = async (req, res) => {
     if (!user) {
       return res.status(200).json({
         success: true,
-        message: 'Si el email existe y no estÃ¡ verificado, recibirÃ¡s un correo.',
+        message: 'Si el email existe y no está verificado, recibirás un correo.',
       });
     }
 
     if (user.UserEmail && user.UserEmail.EmailVerified) {
       return res.status(400).json({
         success: false,
-        message: 'El email ya ha sido verificado. Puedes iniciar sesiÃ³n.',
+        message: 'El email ya ha sido verificado. Puedes iniciar sesión.',
       });
     }
 
@@ -264,12 +264,12 @@ export const resendVerification = async (req, res) => {
     await updateEmailVerificationToken(user.Id, verificationToken, tokenExpiry);
 
     sendVerificationEmail(user.Email, user.Name, verificationToken)
-      .then(() => console.log(`Correo de verificaciÃ³n reenviado a: ${user.Email}`))
-      .catch((err) => console.error('Error reenviando email de verificaciÃ³n:', err));
+      .then(() => console.log(`Correo de verificación reenviado a: ${user.Email}`))
+      .catch((err) => console.error('Error reenviando email de verificación:', err));
 
     return res.status(200).json({
       success: true,
-      message: 'Si el email existe y no estÃ¡ verificado, recibirÃ¡s un correo.',
+      message: 'Si el email existe y no está verificado, recibirás un correo.',
     });
   } catch (error) {
     console.error('Error en resendVerification:', error);
@@ -289,7 +289,7 @@ export const forgotPassword = async (req, res) => {
     if (!user) {
       return res.status(200).json({
         success: true,
-        message: 'Si el email existe, recibirÃ¡s un enlace de recuperaciÃ³n de contraseÃ±a.',
+        message: 'Si el email existe, recibirás un enlace de recuperación de contraseña.',
       });
     }
 
@@ -312,7 +312,7 @@ export const forgotPassword = async (req, res) => {
     const isDev = process.env.NODE_ENV === 'development';
     return res.status(200).json({
       success: true,
-      message: 'Si el email existe, recibirÃ¡s un enlace de recuperaciÃ³n de contraseÃ±a.',
+      message: 'Si el email existe, recibirás un enlace de recuperación de contraseña.',
       ...(isDev && { debug_token: resetToken }),
     });
   } catch (error) {
@@ -330,19 +330,19 @@ export const resetPassword = async (req, res) => {
 
     const user = await findUserByPasswordResetToken(token);
     if (!user) {
-      return res.status(400).json({ success: false, message: 'Token invÃ¡lido o expirado.' });
+      return res.status(400).json({ success: false, message: 'Token inválido o expirado.' });
     }
 
     const hashedPassword = await hashPassword(newPassword);
     await updateUserPassword(user.Id, hashedPassword);
 
     sendPasswordChangedEmail(user.Email, user.Name).catch((err) =>
-      console.error('Error enviando email de confirmaciÃ³n de cambio de contraseÃ±a:', err)
+      console.error('Error enviando email de confirmación de cambio de contraseña:', err)
     );
 
     return res.status(200).json({
       success: true,
-      message: 'ContraseÃ±a actualizada exitosamente.',
+      message: 'Contraseña actualizada exitosamente.',
     });
   } catch (error) {
     console.error('Error en resetPassword:', error);
@@ -381,13 +381,13 @@ export const logout = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: 'SesiÃ³n cerrada exitosamente.',
+      message: 'Sesión cerrada exitosamente.',
     });
   } catch (error) {
     console.error('Error en logout:', error);
     return res.status(500).json({
       success: false,
-      message: 'Error interno al cerrar sesiÃ³n.',
+      message: 'Error interno al cerrar sesión.',
     });
   }
 };

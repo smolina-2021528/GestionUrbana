@@ -9,13 +9,13 @@ import {
 } from '../helpers/stats-constants.js';
 
 
-// Maneja los errores de validaciÃ³n y retorna respuesta formateada
+// Maneja los errores de validación y retorna respuesta formateada
 export const handleValidationErrors = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({
       success: false,
-      message: 'Errores de validaciÃ³n',
+      message: 'Errores de validación',
       errors: errors.array().map((error) => ({
         field: error.path,
         message: error.msg,
@@ -33,8 +33,8 @@ export const validateRegister = [
     .notEmpty()
     .withMessage('El nombre es obligatorio')
     .isLength({ max: 25 })
-    .withMessage('El nombre no puede tener mÃ¡s de 25 caracteres')
-    .matches(/^[a-zA-ZÃ¡Ã©Ã­Ã³ÃºÃÃ‰ÃÃ“ÃšÃ±Ã‘\s]+$/)
+    .withMessage('El nombre no puede tener más de 25 caracteres')
+    .matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)
     .withMessage('El nombre solo puede contener letras y espacios'),
 
   body('surname')
@@ -42,8 +42,8 @@ export const validateRegister = [
     .notEmpty()
     .withMessage('El apellido es obligatorio')
     .isLength({ max: 25 })
-    .withMessage('El apellido no puede tener mÃ¡s de 25 caracteres')
-    .matches(/^[a-zA-ZÃ¡Ã©Ã­Ã³ÃºÃÃ‰ÃÃ“ÃšÃ±Ã‘\s]+$/)
+    .withMessage('El apellido no puede tener más de 25 caracteres')
+    .matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)
     .withMessage('El apellido solo puede contener letras y espacios'),
 
   body('username')
@@ -51,34 +51,34 @@ export const validateRegister = [
     .notEmpty()
     .withMessage('El nombre de usuario es obligatorio')
     .isLength({ max: 50 })
-    .withMessage('El nombre de usuario no puede tener mÃ¡s de 50 caracteres'),
+    .withMessage('El nombre de usuario no puede tener más de 50 caracteres'),
 
   body('email')
     .trim()
     .notEmpty()
-    .withMessage('El correo electrÃ³nico es obligatorio')
+    .withMessage('El correo electrónico es obligatorio')
     .isEmail()
-    .withMessage('El correo electrÃ³nico no tiene un formato vÃ¡lido')
+    .withMessage('El correo electrónico no tiene un formato válido')
     .isLength({ max: 150 })
-    .withMessage('El correo electrÃ³nico no puede tener mÃ¡s de 150 caracteres'),
+    .withMessage('El correo electrónico no puede tener más de 150 caracteres'),
 
   body('password')
     .notEmpty()
-    .withMessage('La contraseÃ±a es obligatoria')
+    .withMessage('La contraseña es obligatoria')
     .isLength({ min: 8, max: 255 })
-    .withMessage('La contraseÃ±a debe tener entre 8 y 255 caracteres')
+    .withMessage('La contraseña debe tener entre 8 y 255 caracteres')
     .matches(/[A-Z]/)
-    .withMessage('La contraseÃ±a debe contener al menos una letra mayÃºscula')
+    .withMessage('La contraseña debe contener al menos una letra mayúscula')
     .matches(/[a-z]/)
-    .withMessage('La contraseÃ±a debe contener al menos una letra minÃºscula')
+    .withMessage('La contraseña debe contener al menos una letra minúscula')
     .matches(/[0-9]/)
-    .withMessage('La contraseÃ±a debe contener al menos un nÃºmero'),
+    .withMessage('La contraseña debe contener al menos un número'),
 
   body('phone')
     .notEmpty()
-    .withMessage('El nÃºmero de telÃ©fono es obligatorio')
+    .withMessage('El número de teléfono es obligatorio')
     .matches(/^\d{8}$/)
-    .withMessage('El nÃºmero de telÃ©fono debe tener exactamente 8 dÃ­gitos'),
+    .withMessage('El número de teléfono debe tener exactamente 8 dígitos'),
 
   handleValidationErrors,
 ];
@@ -90,54 +90,54 @@ export const validateLogin = [
     .notEmpty()
     .withMessage('Email o nombre de usuario es requerido'),
 
-  body('password').notEmpty().withMessage('La contraseÃ±a es requerida'),
+  body('password').notEmpty().withMessage('La contraseña es requerida'),
 
   handleValidationErrors,
 ];
 
 // Validaciones para verificar email
 export const validateVerifyEmail = [
-  body('token').notEmpty().withMessage('El token de verificaciÃ³n es requerido'),
+  body('token').notEmpty().withMessage('El token de verificación es requerido'),
   handleValidationErrors,
 ];
 
-// Validaciones para reenviar verificaciÃ³n
+// Validaciones para reenviar verificación
 export const validateResendVerification = [
   body('email')
     .trim()
     .notEmpty()
     .withMessage('El email es obligatorio')
     .isEmail()
-    .withMessage('Debe proporcionar un email vÃ¡lido'),
+    .withMessage('Debe proporcionar un email válido'),
   handleValidationErrors,
 ];
 
-// Validaciones para recuperar contraseÃ±a
+// Validaciones para recuperar contraseña
 export const validateForgotPassword = [
   body('email')
     .trim()
     .notEmpty()
     .withMessage('El email es obligatorio')
     .isEmail()
-    .withMessage('Debe proporcionar un email vÃ¡lido'),
+    .withMessage('Debe proporcionar un email válido'),
   handleValidationErrors,
 ];
 
-// Validaciones para resetear contraseÃ±a
+// Validaciones para resetear contraseña
 export const validateResetPassword = [
-  body('token').notEmpty().withMessage('El token de recuperaciÃ³n es requerido'),
+  body('token').notEmpty().withMessage('El token de recuperación es requerido'),
 
   body('newPassword')
     .notEmpty()
-    .withMessage('La nueva contraseÃ±a es obligatoria')
+    .withMessage('La nueva contraseña es obligatoria')
     .isLength({ min: 8, max: 255 })
-    .withMessage('La nueva contraseÃ±a debe tener entre 8 y 255 caracteres')
+    .withMessage('La nueva contraseña debe tener entre 8 y 255 caracteres')
     .matches(/[A-Z]/)
-    .withMessage('La nueva contraseÃ±a debe contener al menos una letra mayÃºscula')
+    .withMessage('La nueva contraseña debe contener al menos una letra mayúscula')
     .matches(/[a-z]/)
-    .withMessage('La nueva contraseÃ±a debe contener al menos una letra minÃºscula')
+    .withMessage('La nueva contraseña debe contener al menos una letra minúscula')
     .matches(/[0-9]/)
-    .withMessage('La nueva contraseÃ±a debe contener al menos un nÃºmero'),
+    .withMessage('La nueva contraseña debe contener al menos un número'),
 
   handleValidationErrors,
 ];
@@ -148,67 +148,67 @@ export const validateUpdateProfile = [
     .optional()
     .trim()
     .notEmpty()
-    .withMessage('El nombre no puede estar vacÃ­o')
+    .withMessage('El nombre no puede estar vacío')
     .isLength({ max: 25 })
-    .withMessage('El nombre no puede tener mÃ¡s de 25 caracteres')
-    .matches(/^[a-zA-ZÃ¡Ã©Ã­Ã³ÃºÃÃ‰ÃÃ“ÃšÃ±Ã‘\s]+$/)
+    .withMessage('El nombre no puede tener más de 25 caracteres')
+    .matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)
     .withMessage('El nombre solo puede contener letras y espacios'),
 
   body('surname')
     .optional()
     .trim()
     .notEmpty()
-    .withMessage('El apellido no puede estar vacÃ­o')
+    .withMessage('El apellido no puede estar vacío')
     .isLength({ max: 25 })
-    .withMessage('El apellido no puede tener mÃ¡s de 25 caracteres')
-    .matches(/^[a-zA-ZÃ¡Ã©Ã­Ã³ÃºÃÃ‰ÃÃ“ÃšÃ±Ã‘\s]+$/)
+    .withMessage('El apellido no puede tener más de 25 caracteres')
+    .matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)
     .withMessage('El apellido solo puede contener letras y espacios'),
 
   body('username')
     .optional()
     .trim()
     .notEmpty()
-    .withMessage('El nombre de usuario no puede estar vacÃ­o')
+    .withMessage('El nombre de usuario no puede estar vacío')
     .isLength({ max: 50 })
-    .withMessage('El nombre de usuario no puede tener mÃ¡s de 50 caracteres'),
+    .withMessage('El nombre de usuario no puede tener más de 50 caracteres'),
 
   body('phone')
     .optional()
     .matches(/^\d{8}$/)
-    .withMessage('El nÃºmero de telÃ©fono debe tener exactamente 8 dÃ­gitos'),
+    .withMessage('El número de teléfono debe tener exactamente 8 dígitos'),
 
   handleValidationErrors,
 ];
 
-// Validaciones para cambiar contraseÃ±a
+// Validaciones para cambiar contraseña
 export const validateChangePassword = [
   body('currentPassword')
     .notEmpty()
-    .withMessage('La contraseÃ±a actual es obligatoria'),
+    .withMessage('La contraseña actual es obligatoria'),
 
   body('newPassword')
     .notEmpty()
-    .withMessage('La nueva contraseÃ±a es obligatoria')
+    .withMessage('La nueva contraseña es obligatoria')
     .isLength({ min: 8, max: 255 })
-    .withMessage('La nueva contraseÃ±a debe tener entre 8 y 255 caracteres')
+    .withMessage('La nueva contraseña debe tener entre 8 y 255 caracteres')
     .matches(/[A-Z]/)
-    .withMessage('La nueva contraseÃ±a debe contener al menos una letra mayÃºscula')
+    .withMessage('La nueva contraseña debe contener al menos una letra mayúscula')
     .matches(/[a-z]/)
-    .withMessage('La nueva contraseÃ±a debe contener al menos una letra minÃºscula')
+    .withMessage('La nueva contraseña debe contener al menos una letra minúscula')
     .matches(/[0-9]/)
-    .withMessage('La nueva contraseÃ±a debe contener al menos un nÃºmero'),
+    .withMessage('La nueva contraseña debe contener al menos un número'),
 
   handleValidationErrors,
 ];
 
-// â”€â”€ Validaciones geogrÃ¡ficas reutilizables â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Validaciones geográficas reutilizables ─────────────────────────────────────
 const geoValidations = [
   body('latitude')
     .optional({ nullable: true })
     .isFloat({ min: -90, max: 90 })
-    .withMessage('La latitud debe ser un nÃºmero entre -90 y 90')
+    .withMessage('La latitud debe ser un número entre -90 y 90')
     .custom((value, { req }) => {
-      // Si se enviÃ³ latitude debe acompaÃ±arse de longitude
+      // Si se envió latitude debe acompañarse de longitude
       const hasLat = value !== undefined && value !== null && value !== '';
       const hasLng =
         req.body.longitude !== undefined &&
@@ -217,7 +217,7 @@ const geoValidations = [
 
       if (hasLat && !hasLng) {
         throw new Error(
-          'Si se proporciona latitude tambiÃ©n debe proporcionarse longitude'
+          'Si se proporciona latitude también debe proporcionarse longitude'
         );
       }
       return true;
@@ -226,9 +226,9 @@ const geoValidations = [
   body('longitude')
     .optional({ nullable: true })
     .isFloat({ min: -180, max: 180 })
-    .withMessage('La longitud debe ser un nÃºmero entre -180 y 180')
+    .withMessage('La longitud debe ser un número entre -180 y 180')
     .custom((value, { req }) => {
-      // Si se enviÃ³ longitude debe acompaÃ±arse de latitude
+      // Si se envió longitude debe acompañarse de latitude
       const hasLng = value !== undefined && value !== null && value !== '';
       const hasLat =
         req.body.latitude !== undefined &&
@@ -237,7 +237,7 @@ const geoValidations = [
 
       if (hasLng && !hasLat) {
         throw new Error(
-          'Si se proporciona longitude tambiÃ©n debe proporcionarse latitude'
+          'Si se proporciona longitude también debe proporcionarse latitude'
         );
       }
       return true;
@@ -247,7 +247,7 @@ const geoValidations = [
     .optional({ nullable: true })
     .trim()
     .isLength({ max: 500 })
-    .withMessage('La direcciÃ³n no puede superar los 500 caracteres'),
+    .withMessage('La dirección no puede superar los 500 caracteres'),
 ];
 
 // Validaciones para crear un reporte
@@ -255,25 +255,25 @@ export const validateCreateReport = [
   body('title')
     .trim()
     .notEmpty()
-    .withMessage('El tÃ­tulo es obligatorio')
+    .withMessage('El título es obligatorio')
     .isLength({ min: 3, max: 150 })
-    .withMessage('El tÃ­tulo debe tener entre 3 y 150 caracteres'),
+    .withMessage('El título debe tener entre 3 y 150 caracteres'),
 
   body('description')
     .trim()
     .notEmpty()
-    .withMessage('La descripciÃ³n es obligatoria')
+    .withMessage('La descripción es obligatoria')
     .isLength({ min: 10, max: 2000 })
-    .withMessage('La descripciÃ³n debe tener entre 10 y 2000 caracteres'),
+    .withMessage('La descripción debe tener entre 10 y 2000 caracteres'),
 
   body('category')
     .trim()
     .notEmpty()
-    .withMessage('La categorÃ­a es obligatoria')
+    .withMessage('La categoría es obligatoria')
     .isIn(REPORT_CATEGORIES)
-    .withMessage('CategorÃ­a invÃ¡lida. Valores permitidos: INFRAESTRUCTURA, SEGURIDAD, LIMPIEZA'),
+    .withMessage('Categoría inválida. Valores permitidos: INFRAESTRUCTURA, SEGURIDAD, LIMPIEZA'),
 
-  // Campos geogrÃ¡ficos opcionales
+  // Campos geográficos opcionales
   ...geoValidations,
 
   handleValidationErrors,
@@ -285,21 +285,21 @@ export const validateUpdateReport = [
     .optional()
     .trim()
     .isLength({ min: 3, max: 150 })
-    .withMessage('El tÃ­tulo debe tener entre 3 y 150 caracteres'),
+    .withMessage('El título debe tener entre 3 y 150 caracteres'),
 
   body('description')
     .optional()
     .trim()
     .isLength({ min: 10, max: 2000 })
-    .withMessage('La descripciÃ³n debe tener entre 10 y 2000 caracteres'),
+    .withMessage('La descripción debe tener entre 10 y 2000 caracteres'),
 
   body('category')
     .optional()
     .trim()
     .isIn(REPORT_CATEGORIES)
-    .withMessage('CategorÃ­a invÃ¡lida. Valores permitidos: INFRAESTRUCTURA, SEGURIDAD, LIMPIEZA'),
+    .withMessage('Categoría inválida. Valores permitidos: INFRAESTRUCTURA, SEGURIDAD, LIMPIEZA'),
 
-  // Campos geogrÃ¡ficos opcionales
+  // Campos geográficos opcionales
   ...geoValidations,
 
   handleValidationErrors,
@@ -312,7 +312,7 @@ export const validateChangeReportStatus = [
     .notEmpty()
     .withMessage('El estado es obligatorio')
     .isIn(REPORT_STATUSES)
-    .withMessage('Estado invÃ¡lido. Valores: PENDIENTE, EN_PROCESO, RESUELTO, RECHAZADO'),
+    .withMessage('Estado inválido. Valores: PENDIENTE, EN_PROCESO, RESUELTO, RECHAZADO'),
 
   body('notes')
     .optional()
@@ -322,25 +322,25 @@ export const validateChangeReportStatus = [
   handleValidationErrors,
 ];
 
-// Validaciones para actualizar exclusivamente la ubicaciÃ³n de un reporte
+// Validaciones para actualizar exclusivamente la ubicación de un reporte
 export const validateUpdateLocation = [
   body('latitude')
     .notEmpty()
     .withMessage('La latitud es obligatoria')
     .isFloat({ min: -90, max: 90 })
-    .withMessage('La latitud debe ser un nÃºmero entre -90 y 90'),
+    .withMessage('La latitud debe ser un número entre -90 y 90'),
 
   body('longitude')
     .notEmpty()
     .withMessage('La longitud es obligatoria')
     .isFloat({ min: -180, max: 180 })
-    .withMessage('La longitud debe ser un nÃºmero entre -180 y 180'),
+    .withMessage('La longitud debe ser un número entre -180 y 180'),
 
   body('address')
     .optional({ nullable: true })
     .trim()
     .isLength({ max: 500 })
-    .withMessage('La direcciÃ³n no puede superar los 500 caracteres'),
+    .withMessage('La dirección no puede superar los 500 caracteres'),
 
   handleValidationErrors,
 ];
@@ -389,28 +389,28 @@ export const validateCreateReportOrAI = [
     .optional()
     .trim()
     .isLength({ min: 3, max: 150 })
-    .withMessage('El tÃ­tulo debe tener entre 3 y 150 caracteres'),
+    .withMessage('El título debe tener entre 3 y 150 caracteres'),
 
   body('description')
     .optional()
     .trim()
     .isLength({ min: 10, max: 2000 })
-    .withMessage('La descripciÃ³n debe tener entre 10 y 2000 caracteres'),
+    .withMessage('La descripción debe tener entre 10 y 2000 caracteres'),
 
   body('category')
     .optional()
     .trim()
     .isIn(REPORT_CATEGORIES)
-    .withMessage('CategorÃ­a invÃ¡lida. Valores permitidos: INFRAESTRUCTURA, SEGURIDAD, LIMPIEZA'),
+    .withMessage('Categoría inválida. Valores permitidos: INFRAESTRUCTURA, SEGURIDAD, LIMPIEZA'),
 
-  // Campos geogrÃ¡ficos opcionales
+  // Campos geográficos opcionales
   ...geoValidations,
 
-  // ValidaciÃ³n final: si no viene imagen, los tres campos son obligatorios
+  // Validación final: si no viene imagen, los tres campos son obligatorios
   body('title').custom((value, { req }) => {
     const hasImage = req.files && req.files.length > 0;
     if (!hasImage && (!value || value.trim() === '')) {
-      throw new Error('El tÃ­tulo es obligatorio cuando no se adjunta una imagen');
+      throw new Error('El título es obligatorio cuando no se adjunta una imagen');
     }
     return true;
   }),
@@ -418,7 +418,7 @@ export const validateCreateReportOrAI = [
   body('description').custom((value, { req }) => {
     const hasImage = req.files && req.files.length > 0;
     if (!hasImage && (!value || value.trim() === '')) {
-      throw new Error('La descripciÃ³n es obligatoria cuando no se adjunta una imagen');
+      throw new Error('La descripción es obligatoria cuando no se adjunta una imagen');
     }
     return true;
   }),
@@ -426,7 +426,7 @@ export const validateCreateReportOrAI = [
   body('category').custom((value, { req }) => {
     const hasImage = req.files && req.files.length > 0;
     if (!hasImage && (!value || value.trim() === '')) {
-      throw new Error('La categorÃ­a es obligatoria cuando no se adjunta una imagen');
+      throw new Error('La categoría es obligatoria cuando no se adjunta una imagen');
     }
     return true;
   }),
@@ -434,14 +434,14 @@ export const validateCreateReportOrAI = [
   handleValidationErrors,
 ];
 
-// Validaciones para analizar un reporte con IA (imagen + direcciÃ³n)
+// Validaciones para analizar un reporte con IA (imagen + dirección)
 export const validateAnalyzeReport = [
   body('address')
     .trim()
     .notEmpty()
-    .withMessage('La direcciÃ³n es obligatoria')
+    .withMessage('La dirección es obligatoria')
     .isLength({ max: 500 })
-    .withMessage('La direcciÃ³n no puede superar los 500 caracteres'),
+    .withMessage('La dirección no puede superar los 500 caracteres'),
 
   handleValidationErrors,
 ];
@@ -451,19 +451,19 @@ export const validateAiCreateReport = [
   body('address')
     .trim()
     .notEmpty()
-    .withMessage('La direcciÃ³n es obligatoria')
+    .withMessage('La dirección es obligatoria')
     .isLength({ max: 500 })
-    .withMessage('La direcciÃ³n no puede superar los 500 caracteres'),
+    .withMessage('La dirección no puede superar los 500 caracteres'),
 
   handleValidationErrors,
 ];
 
-// â”€â”€ Validaciones de rango de fechas
+// ── Validaciones de rango de fechas
 export const validateDateRangeQuery = [
   query('startDate')
     .optional()
     .isISO8601()
-    .withMessage('startDate debe ser una fecha ISO 8601 vÃ¡lida')
+    .withMessage('startDate debe ser una fecha ISO 8601 válida')
     .custom((value, { req }) => {
       if (value && req.query.endDate) {
         if (new Date(value) > new Date(req.query.endDate)) {
@@ -476,7 +476,7 @@ export const validateDateRangeQuery = [
   query('endDate')
     .optional()
     .isISO8601()
-    .withMessage('endDate debe ser una fecha ISO 8601 vÃ¡lida')
+    .withMessage('endDate debe ser una fecha ISO 8601 válida')
     .custom((value, { req }) => {
       if (value && req.query.startDate) {
         if (new Date(value) < new Date(req.query.startDate)) {
@@ -501,7 +501,7 @@ export const validateDateRangeQuery = [
   handleValidationErrors,
 ];
 
-// â”€â”€ Validaciones para el endpoint de exportaciÃ³n
+// ── Validaciones para el endpoint de exportación
 export const validateExportQuery = [
   query('format')
     .optional()
@@ -526,7 +526,7 @@ export const validateExportQuery = [
   query('startDate')
     .optional()
     .isISO8601()
-    .withMessage('startDate debe ser una fecha ISO 8601 vÃ¡lida')
+    .withMessage('startDate debe ser una fecha ISO 8601 válida')
     .custom((value, { req }) => {
       if (value && req.query.endDate) {
         if (new Date(value) > new Date(req.query.endDate)) {
@@ -539,7 +539,7 @@ export const validateExportQuery = [
   query('endDate')
     .optional()
     .isISO8601()
-    .withMessage('endDate debe ser una fecha ISO 8601 vÃ¡lida')
+    .withMessage('endDate debe ser una fecha ISO 8601 válida')
     .custom((value, { req }) => {
       if (value && req.query.startDate) {
         if (new Date(value) < new Date(req.query.startDate)) {
@@ -552,12 +552,12 @@ export const validateExportQuery = [
   handleValidationErrors,
 ];
 
-// â”€â”€ Validaciones para el endpoint de ranking de zonas
+// ── Validaciones para el endpoint de ranking de zonas
 export const validateZoneRankingQuery = [
   query('radius')
     .optional()
     .isInt()
-    .withMessage('radius debe ser un nÃºmero entero')
+    .withMessage('radius debe ser un número entero')
     .toInt()
     .isIn(ZONE_RADIUS_OPTIONS)
     .withMessage(
@@ -587,7 +587,7 @@ export const validateHeatmapGridQuery = [
   query('cellDegrees')
     .optional()
     .isFloat({ min: 0.001, max: 0.1 })
-    .withMessage('cellDegrees debe ser un nÃºmero decimal entre 0.001 y 0.1 (grados)')
+    .withMessage('cellDegrees debe ser un número decimal entre 0.001 y 0.1 (grados)')
     .toFloat(),
 
   query('category')
@@ -608,27 +608,27 @@ export const validateHeatmapGridQuery = [
   handleValidationErrors,
 ];
 
-// â”€â”€ Validaciones para POST /reports/check-duplicates 
+// ── Validaciones para POST /reports/check-duplicates 
 export const validateCheckDuplicates = [
   body('title')
     .trim()
     .notEmpty()
-    .withMessage('El tÃ­tulo es obligatorio')
+    .withMessage('El título es obligatorio')
     .isLength({ min: 3, max: 150 })
-    .withMessage('El tÃ­tulo debe tener entre 3 y 150 caracteres'),
+    .withMessage('El título debe tener entre 3 y 150 caracteres'),
 
   body('description')
     .trim()
     .notEmpty()
-    .withMessage('La descripciÃ³n es obligatoria')
+    .withMessage('La descripción es obligatoria')
     .isLength({ min: 10, max: 2000 })
-    .withMessage('La descripciÃ³n debe tener entre 10 y 2000 caracteres'),
+    .withMessage('La descripción debe tener entre 10 y 2000 caracteres'),
 
   body('category')
     .notEmpty()
-    .withMessage('La categorÃ­a es obligatoria')
+    .withMessage('La categoría es obligatoria')
     .isIn(REPORT_CATEGORIES)
-    .withMessage(`La categorÃ­a debe ser una de: ${REPORT_CATEGORIES.join(', ')}`),
+    .withMessage(`La categoría debe ser una de: ${REPORT_CATEGORIES.join(', ')}`),
 
   body('latitude')
     .optional({ nullable: true })

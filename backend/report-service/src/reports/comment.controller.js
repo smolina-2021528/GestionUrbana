@@ -192,7 +192,7 @@ export const followReport = async (req, res) => {
     if (alreadyFollowing) {
       return res.status(409).json({
         success: false,
-        message: "Ya estÃ¡s siguiendo este reporte.",
+        message: "Ya estás siguiendo este reporte.",
       });
     }
 
@@ -329,21 +329,21 @@ export const markNotificationAsRead = async (req, res) => {
     if (result === null) {
       return res.status(404).json({
         success: false,
-        message: 'NotificaciÃ³n no encontrada.',
+        message: 'Notificación no encontrada.',
       });
     }
 
     return res.status(200).json({
       success: true,
       message: result === 'already_read'
-        ? 'La notificaciÃ³n ya estaba marcada como leÃ­da.'
-        : 'NotificaciÃ³n marcada como leÃ­da.',
+        ? 'La notificación ya estaba marcada como leída.'
+        : 'Notificación marcada como leída.',
     });
   } catch (error) {
     console.error('Error en markNotificationAsRead:', error);
     return res.status(500).json({
       success: false,
-      message: 'Error al marcar la notificaciÃ³n como leÃ­da.',
+      message: 'Error al marcar la notificación como leída.',
     });
   }
 };
@@ -355,13 +355,13 @@ export const markAllNotificationsAsRead = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: "Todas las notificaciones han sido marcadas como leÃ­das.",
+      message: "Todas las notificaciones han sido marcadas como leídas.",
     });
   } catch (error) {
     console.error("Error en markAllNotificationsAsRead:", error);
     return res.status(500).json({
       success: false,
-      message: "Error al marcar las notificaciones como leÃ­das.",
+      message: "Error al marcar las notificaciones como leídas.",
     });
   }
 };
@@ -375,19 +375,19 @@ export const deleteNotification = async (req, res) => {
     if (!deleted) {
       return res.status(404).json({
         success: false,
-        message: "NotificaciÃ³n no encontrada.",
+        message: "Notificación no encontrada.",
       });
     }
 
     return res.status(200).json({
       success: true,
-      message: "NotificaciÃ³n eliminada exitosamente.",
+      message: "Notificación eliminada exitosamente.",
     });
   } catch (error) {
     console.error("Error en deleteNotification:", error);
     return res.status(500).json({
       success: false,
-      message: "Error al eliminar la notificaciÃ³n.",
+      message: "Error al eliminar la notificación.",
     });
   }
 };
