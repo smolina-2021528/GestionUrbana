@@ -6,13 +6,13 @@ import {
   View
 } from 'react-native';
 
-import { colores } from '../src/theme/colores';
 import { useAuth } from '../src/modules/auth/hooks/useAuth';
+import { colores } from '../src/theme/colores';
 
 export default function IndexScreen() {
-  const { cargandoSesion, estaAutenticado } = useAuth();
+  const { cargando, autenticado } = useAuth();
 
-  if (cargandoSesion) {
+  if (cargando) {
     return (
       <View style={styles.contenedor}>
         <ActivityIndicator color={colores.textoInvertido} size="large" />
@@ -21,7 +21,7 @@ export default function IndexScreen() {
     );
   }
 
-  if (estaAutenticado) {
+  if (autenticado) {
     return <Redirect href="/inicio" />;
   }
 

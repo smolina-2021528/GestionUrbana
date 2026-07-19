@@ -848,6 +848,9 @@ export function CrearReportePagina() {
             <AnalisisReportePanel
               imagenes={formulario.images}
               direccion={formulario.address}
+              titulo={formulario.title}
+              descripcion={formulario.description}
+              categoria={formulario.category}
               bloqueado={crearReporte.isPending}
               alAplicarAnalisis={aplicarAnalisisReporte}
             />

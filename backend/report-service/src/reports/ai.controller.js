@@ -1,4 +1,4 @@
-﻿import { analyzeReportImage } from '../../helpers/gemini-service.js';
+import { analyzeReportImage } from '../../helpers/gemini-service.js';
 import { geocodeAddress } from '../../helpers/nominatim-service.js';
 import { deleteTempFile } from '../../helpers/ai-file-helper.js';
 import { uploadReportImage, deleteImage } from '../../../shared/cloudinary-service.js';
@@ -17,6 +17,14 @@ const rollbackIfActive = async (transaction) => {
   }
 };
 
+const limpiarTexto = (valor) => String(valor ?? '').trim();
+
+const buildAnalysisContext = (body = {}) => ({
+  title: limpiarTexto(body.title),
+  description: limpiarTexto(body.description),
+  category: limpiarTexto(body.category).toUpperCase(),
+});
+
 export const analyzeReport = async (req, res) => {
   if (!req.file) {
     return res.status(400).json({
@@ -25,24 +33,17 @@ export const analyzeReport = async (req, res) => {
     });
   }
 
-  const { address } = req.body;
-
-  if (!address || address.trim() === '') {
-    deleteTempFile(req.file.path);
-    return res.status(400).json({
-      success: false,
-      message: 'El campo address es obligatorio.',
-    });
-  }
+  const address = limpiarTexto(req.body?.address);
+  const context = buildAnalysisContext(req.body);
 
   try {
     const [geminiResult, nominatimResult] = await Promise.all([
       analyzeReportImage(req.file.path),
-      geocodeAddress(address.trim()),
+      address ? geocodeAddress(address) : Promise.resolve(null),
     ]);
 
     return res.status(200).json(
-      buildAnalysisResponse(geminiResult, nominatimResult),
+      buildAnalysisResponse(geminiResult, nominatimResult, context),
     );
   } catch (error) {
     return res.status(422).json(

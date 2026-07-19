@@ -434,24 +434,39 @@ export const validateCreateReportOrAI = [
   handleValidationErrors,
 ];
 
-// Validaciones para analizar un reporte con IA (imagen + dirección)
 export const validateAnalyzeReport = [
   body('address')
+    .optional({ nullable: true, checkFalsy: true })
     .trim()
-    .notEmpty()
-    .withMessage('La dirección es obligatoria')
     .isLength({ max: 500 })
     .withMessage('La dirección no puede superar los 500 caracteres'),
+
+  body('title')
+    .optional({ nullable: true, checkFalsy: true })
+    .trim()
+    .isLength({ min: 3, max: 150 })
+    .withMessage('El título debe tener entre 3 y 150 caracteres'),
+
+  body('description')
+    .optional({ nullable: true, checkFalsy: true })
+    .trim()
+    .isLength({ min: 10, max: 2000 })
+    .withMessage('La descripción debe tener entre 10 y 2000 caracteres'),
+
+  body('category')
+    .optional({ nullable: true, checkFalsy: true })
+    .trim()
+    .toUpperCase()
+    .isIn(REPORT_CATEGORIES)
+    .withMessage(`La categoría debe ser una de: ${REPORT_CATEGORIES.join(', ')}`),
 
   handleValidationErrors,
 ];
 
-// Validaciones para crear un reporte generado por IA
 export const validateAiCreateReport = [
   body('address')
+    .optional({ nullable: true, checkFalsy: true })
     .trim()
-    .notEmpty()
-    .withMessage('La dirección es obligatoria')
     .isLength({ max: 500 })
     .withMessage('La dirección no puede superar los 500 caracteres'),
 

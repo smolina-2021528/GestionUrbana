@@ -3,6 +3,7 @@ import {
   normalizarImagenesReporte
 } from '../utils/imagenesReporte';
 import type {
+  AnalizarReporteConIaPayload,
   ContenedorReportes,
   CrearReportePayload,
   CrearReporteResponse,
@@ -10,7 +11,8 @@ import type {
   MisReportesResponse,
   ReporteDetalleNormalizado,
   ReporteDetalleResponse,
-  ReporteResumen
+  ReporteResumen,
+  RespuestaAnalisisReporte
 } from '../types/reportes.types';
 
 type ArchivoReactNative = {
@@ -31,14 +33,18 @@ function obtenerNombreArchivo(uri: string, fileName?: string | null) {
     return ultimoSegmento;
   }
 
-  return `reporte-${Date.now()}.jpg`;
+  return 'reporte-' + Date.now() + '.jpg';
 }
 
 function obtenerTipoMime(mimeType?: string | null) {
   return mimeType || 'image/jpeg';
 }
 
-function construirArchivoImagen(payload: CrearReportePayload): ArchivoReactNative {
+function limpiarTexto(valor: string | undefined) {
+  return valor?.trim() ?? '';
+}
+
+function construirArchivoImagen(payload: CrearReportePayload | AnalizarReporteConIaPayload): ArchivoReactNative {
   return {
     uri: payload.image.uri,
     name: obtenerNombreArchivo(payload.image.uri, payload.image.fileName),
@@ -46,16 +52,21 @@ function construirArchivoImagen(payload: CrearReportePayload): ArchivoReactNativ
   };
 }
 
+function agregarCampoTexto(formData: FormData, nombre: string, valor: string | undefined) {
+  const texto = limpiarTexto(valor);
+
+  if (texto) {
+    formData.append(nombre, texto);
+  }
+}
+
 function construirFormData(payload: CrearReportePayload) {
   const formData = new FormData();
 
-  formData.append('title', payload.title.trim());
-  formData.append('description', payload.description.trim());
+  agregarCampoTexto(formData, 'title', payload.title);
+  agregarCampoTexto(formData, 'description', payload.description);
   formData.append('category', payload.category);
-
-  if (payload.address?.trim()) {
-    formData.append('address', payload.address.trim());
-  }
+  agregarCampoTexto(formData, 'address', payload.address);
 
   if (payload.coordinates) {
     formData.append('latitude', String(payload.coordinates.latitude));
@@ -65,6 +76,21 @@ function construirFormData(payload: CrearReportePayload) {
   const archivoImagen = construirArchivoImagen(payload);
 
   formData.append('images', archivoImagen as unknown as Blob);
+
+  return formData;
+}
+
+function construirFormDataAnalisis(payload: AnalizarReporteConIaPayload) {
+  const formData = new FormData();
+
+  agregarCampoTexto(formData, 'title', payload.title);
+  agregarCampoTexto(formData, 'description', payload.description);
+  formData.append('category', payload.category);
+  agregarCampoTexto(formData, 'address', payload.address);
+
+  const archivoImagen = construirArchivoImagen(payload);
+
+  formData.append('image', archivoImagen as unknown as Blob);
 
   return formData;
 }
@@ -123,6 +149,22 @@ function extraerReporteDetalle(respuesta: ReporteDetalleResponse) {
 }
 
 export const reportesService = {
+  async analizarReporteConIa(payload: AnalizarReporteConIaPayload) {
+    const formData = construirFormDataAnalisis(payload);
+
+    const respuesta = await clienteReportes.post<RespuestaAnalisisReporte>(
+      '/reports/analyze',
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      }
+    );
+
+    return respuesta.data;
+  },
+
   async crearReporte(payload: CrearReportePayload) {
     const formData = construirFormData(payload);
 
@@ -152,7 +194,7 @@ export const reportesService = {
 
   async obtenerReporteDetalle(reporteId: string): Promise<ReporteDetalleNormalizado> {
     const respuesta = await clienteReportes.get<ReporteDetalleResponse>(
-      `/reports/${encodeURIComponent(reporteId)}`
+      '/reports/' + encodeURIComponent(reporteId)
     );
 
     return {

@@ -3,7 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
 import { router } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import {
   Image,
@@ -25,7 +25,8 @@ import type { ErrorApi } from '../src/shared/services/manejadorErroresApi';
 import { reportesService } from '../src/modules/reports/services/reportes.service';
 import type {
   CategoriaReporte,
-  CoordenadasReporte
+  CoordenadasReporte,
+  RespuestaAnalisisReporteExitosa
 } from '../src/modules/reports/types/reportes.types';
 import { colores } from '../src/theme/colores';
 import { espaciado } from '../src/theme/espaciado';
@@ -67,6 +68,13 @@ type EstadoPaso = {
   icono: keyof typeof Ionicons.glyphMap;
 };
 
+type EstadoValidacionIaMovil = {
+  estado: 'pendiente' | 'relacionada' | 'advertencia' | 'no_relacionada' | 'no_disponible';
+  titulo: string;
+  mensaje: string;
+  razones: string[];
+};
+
 function obtenerMensajeError(error: unknown) {
   const errorApi = error as Partial<ErrorApi>;
 
@@ -94,12 +102,74 @@ function obtenerTextoCategoria(categoria: CategoriaReporte) {
   return 'Riesgos o situaciones que requieren atención.';
 }
 
+function construirEstadoValidacionIa(
+  respuesta: RespuestaAnalisisReporteExitosa
+): EstadoValidacionIaMovil {
+  const validacion = respuesta.evidenceValidation;
+
+  if (validacion.status === 'RELATED') {
+    return {
+      estado: 'relacionada',
+      titulo: 'Imagen relacionada',
+      mensaje: validacion.message,
+      razones: validacion.reasons
+    };
+  }
+
+  if (validacion.status === 'UNRELATED') {
+    return {
+      estado: 'no_relacionada',
+      titulo: 'Imagen no relacionada',
+      mensaje: validacion.message,
+      razones: validacion.reasons
+    };
+  }
+
+  return {
+    estado: 'advertencia',
+    titulo: 'Revisión recomendada',
+    mensaje: validacion.message,
+    razones: validacion.reasons
+  };
+}
+
+function obtenerEstiloValidacionIa(estado: EstadoValidacionIaMovil['estado']) {
+  if (estado === 'relacionada') {
+    return {
+      contenedor: styles.validacionIaExitosa,
+      icono: 'checkmark-circle-outline' as const,
+      color: colores.exito
+    };
+  }
+
+  if (estado === 'no_relacionada') {
+    return {
+      contenedor: styles.validacionIaError,
+      icono: 'close-circle-outline' as const,
+      color: colores.error
+    };
+  }
+
+  return {
+    contenedor: styles.validacionIaAdvertencia,
+    icono: 'alert-circle-outline' as const,
+    color: colores.advertencia
+  };
+}
+
 export default function CrearReporteScreen() {
   const [imagen, setImagen] = useState<ImagePicker.ImagePickerAsset | null>(null);
   const [coordenadas, setCoordenadas] = useState<CoordenadasReporte | null>(null);
   const [obteniendoUbicacion, setObteniendoUbicacion] = useState(false);
   const [mensajeError, setMensajeError] = useState<string | null>(null);
   const [mensajeExito, setMensajeExito] = useState<string | null>(null);
+  const [validandoIa, setValidandoIa] = useState(false);
+  const [validacionIa, setValidacionIa] = useState<EstadoValidacionIaMovil>({
+    estado: 'pendiente',
+    titulo: 'Validación pendiente',
+    mensaje: 'La foto se validará antes de enviar el reporte.',
+    razones: []
+  });
 
   const {
     control,
@@ -138,10 +208,24 @@ export default function CrearReporteScreen() {
         titulo: 'Ubicación',
         completado: Boolean(coordenadas || direccionActual?.trim()),
         icono: 'location-outline'
+      },
+      {
+        titulo: 'IA',
+        completado: ['relacionada', 'advertencia', 'no_disponible'].includes(validacionIa.estado),
+        icono: 'sparkles-outline'
       }
     ],
-    [coordenadas, descripcionActual, direccionActual, imagen, tituloActual]
+    [coordenadas, descripcionActual, direccionActual, imagen, tituloActual, validacionIa.estado]
   );
+
+  useEffect(() => {
+    setValidacionIa({
+      estado: 'pendiente',
+      titulo: 'Validación pendiente',
+      mensaje: 'La foto se validará antes de enviar el reporte.',
+      razones: []
+    });
+  }, [imagen, tituloActual, descripcionActual, categoriaActual]);
 
   const seleccionarImagenGaleria = async () => {
     setMensajeError(null);
@@ -219,12 +303,67 @@ export default function CrearReporteScreen() {
     }
   };
 
+  const validarEvidenciaConIa = async (valores: ValoresReporte) => {
+    if (!imagen) {
+      setMensajeError('Agrega una foto como evidencia antes de enviar el reporte.');
+      return false;
+    }
+
+    setValidandoIa(true);
+
+    try {
+      const respuesta = await reportesService.analizarReporteConIa({
+        title: valores.title,
+        description: valores.description,
+        category: valores.category,
+        address: valores.address,
+        image: imagen
+      });
+
+      if (respuesta.success === false) {
+        setValidacionIa({
+          estado: 'no_disponible',
+          titulo: 'IA no disponible',
+          mensaje: respuesta.message ?? 'No fue posible validar con IA. El reporte se enviará para revisión manual.',
+          razones: []
+        });
+        return true;
+      }
+
+      const estadoValidacion = construirEstadoValidacionIa(respuesta);
+      setValidacionIa(estadoValidacion);
+
+      if (estadoValidacion.estado === 'no_relacionada') {
+        setMensajeError('La foto no parece coincidir con el reporte. Cambia la imagen o ajusta la información antes de enviarlo.');
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      setValidacionIa({
+        estado: 'no_disponible',
+        titulo: 'IA no disponible',
+        mensaje: obtenerMensajeError(error),
+        razones: ['El reporte se enviará para revisión manual.']
+      });
+      return true;
+    } finally {
+      setValidandoIa(false);
+    }
+  };
+
   const enviarReporte = async (valores: ValoresReporte) => {
     setMensajeError(null);
     setMensajeExito(null);
 
     if (!imagen) {
       setMensajeError('Agrega una foto como evidencia antes de enviar el reporte.');
+      return;
+    }
+
+    const evidenciaValida = await validarEvidenciaConIa(valores);
+
+    if (!evidenciaValida) {
       return;
     }
 
@@ -479,6 +618,50 @@ export default function CrearReporteScreen() {
           <View style={styles.tarjetaPrincipal}>
             <View style={styles.tarjetaEncabezado}>
               <View style={styles.tarjetaIcono}>
+                <Ionicons name="sparkles-outline" size={22} color={colores.primario} />
+              </View>
+
+              <View style={styles.tarjetaTexto}>
+                <Text style={styles.tarjetaTitulo}>Validación inteligente</Text>
+                <Text style={styles.tarjetaDescripcion}>
+                  Antes de enviar, la IA revisará si la foto coincide con el reporte.
+                </Text>
+              </View>
+            </View>
+
+            <View style={[styles.validacionIa, obtenerEstiloValidacionIa(validacionIa.estado).contenedor]}>
+              <Ionicons
+                name={obtenerEstiloValidacionIa(validacionIa.estado).icono}
+                size={22}
+                color={obtenerEstiloValidacionIa(validacionIa.estado).color}
+              />
+              <View style={styles.validacionIaTextoContenedor}>
+                <Text style={[styles.validacionIaTitulo, { color: obtenerEstiloValidacionIa(validacionIa.estado).color }]}>
+                  {validacionIa.titulo}
+                </Text>
+                <Text style={styles.validacionIaMensaje}>{validacionIa.mensaje}</Text>
+                {validacionIa.razones.length > 0 ? (
+                  <Text style={styles.validacionIaRazon}>{validacionIa.razones[0]}</Text>
+                ) : null}
+              </View>
+            </View>
+
+            <Boton
+              variante="secundario"
+              cargando={validandoIa}
+              onPress={handleSubmit(async (valores) => {
+                setMensajeError(null);
+                setMensajeExito(null);
+                await validarEvidenciaConIa(valores);
+              })}
+            >
+              Validar foto con IA
+            </Boton>
+          </View>
+
+          <View style={styles.tarjetaPrincipal}>
+            <View style={styles.tarjetaEncabezado}>
+              <View style={styles.tarjetaIcono}>
                 <Ionicons name="location-outline" size={22} color={colores.primario} />
               </View>
 
@@ -549,12 +732,13 @@ export default function CrearReporteScreen() {
             <Text style={styles.footerTitulo}>Reporte ciudadano</Text>
             <Text style={styles.footerTexto}>
               {imagen ? 'Con evidencia' : 'Falta foto'} ·{' '}
-              {coordenadas || direccionActual?.trim() ? 'Con ubicación' : 'Falta ubicación'}
+              {coordenadas || direccionActual?.trim() ? 'Con ubicación' : 'Falta ubicación'} ·{' '}
+              {validacionIa.estado === 'relacionada' ? 'IA OK' : 'IA pendiente'}
             </Text>
           </View>
 
-          <Boton cargando={isSubmitting} onPress={handleSubmit(enviarReporte)}>
-            Enviar
+          <Boton cargando={isSubmitting || validandoIa} onPress={handleSubmit(enviarReporte)}>
+            {validandoIa ? 'Validando...' : 'Enviar'}
           </Boton>
         </View>
       </KeyboardAvoidingView>
@@ -818,6 +1002,44 @@ const styles = StyleSheet.create({
   errorCampo: {
     color: colores.error,
     fontSize: 13
+  },
+  validacionIa: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: espaciado.md,
+    borderRadius: 18,
+    borderWidth: 1,
+    padding: espaciado.lg
+  },
+  validacionIaExitosa: {
+    backgroundColor: '#ECFDF5',
+    borderColor: '#BBF7D0'
+  },
+  validacionIaAdvertencia: {
+    backgroundColor: '#FFFBEB',
+    borderColor: '#FDE68A'
+  },
+  validacionIaError: {
+    backgroundColor: '#FEF2F2',
+    borderColor: '#FECACA'
+  },
+  validacionIaTextoContenedor: {
+    flex: 1,
+    gap: 4
+  },
+  validacionIaTitulo: {
+    fontSize: 15,
+    fontWeight: '900'
+  },
+  validacionIaMensaje: {
+    color: colores.texto,
+    fontSize: 14,
+    lineHeight: 20
+  },
+  validacionIaRazon: {
+    color: colores.textoSuave,
+    fontSize: 13,
+    lineHeight: 19
   },
   botonGps: {
     minHeight: 54,

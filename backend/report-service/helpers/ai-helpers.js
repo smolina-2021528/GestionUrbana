@@ -1,8 +1,10 @@
+import { buildEvidenceValidation } from './evidence-validation.js';
 import { buildReportGeoResponse } from '../utils/geo-helpers.js';
+
 /**
- * Construye la respuesta del endpoint GET /analyze.
+ * Construye la respuesta del endpoint POST /analyze.
  */
-export const buildAnalysisResponse = (geminiResult, nominatimResult) => {
+export const buildAnalysisResponse = (geminiResult, nominatimResult, context = {}) => {
     const locationFound = nominatimResult !== null && nominatimResult !== undefined;
 
     return {
@@ -13,6 +15,7 @@ export const buildAnalysisResponse = (geminiResult, nominatimResult) => {
             category: geminiResult.category,
             priority: geminiResult.priority,
         },
+        evidenceValidation: buildEvidenceValidation(geminiResult, context),
         location: {
             latitude: locationFound ? (nominatimResult.latitude ?? null) : null,
             longitude: locationFound ? (nominatimResult.longitude ?? null) : null,

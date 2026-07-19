@@ -8,7 +8,8 @@ import { usarAnalizarReporteConIa } from '../hooks/usarReportesIa';
 import type {
   AnalisisSugeridoReporte,
   RespuestaAnalisisReporteExitosa,
-  UbicacionAnalisisReporte
+  UbicacionAnalisisReporte,
+  ValidacionEvidenciaReporte
 } from '../types/reportesIaTipos';
 import type { CategoriaReporte, PrioridadReporte } from '../types/reportesTipos';
 import './analisisReportePanel.css';
@@ -21,6 +22,9 @@ export type AnalisisReporteAplicado = {
 type PropiedadesAnalisisReportePanel = {
   imagenes: File[];
   direccion: string;
+  titulo: string;
+  descripcion: string;
+  categoria: CategoriaReporte | '';
   bloqueado?: boolean;
   alAplicarAnalisis: (resultado: AnalisisReporteAplicado) => void;
 };
@@ -67,9 +71,50 @@ function formatearCoordenada(valor: number | null) {
   }).format(valor);
 }
 
+function formatearScore(valor: number | null) {
+  if (valor === null) {
+    return 'Sin comparación';
+  }
+
+  return `${new Intl.NumberFormat('es-GT', {
+    maximumFractionDigits: 0
+  }).format(valor * 100)}%`;
+}
+
+function obtenerTituloValidacion(validacion: ValidacionEvidenciaReporte) {
+  if (validacion.status === 'RELATED') {
+    return 'Imagen relacionada';
+  }
+
+  if (validacion.status === 'REVIEW') {
+    return 'Revisar coincidencia';
+  }
+
+  if (validacion.status === 'UNRELATED') {
+    return 'Imagen posiblemente no relacionada';
+  }
+
+  return 'Sin comparación completa';
+}
+
+function obtenerVarianteValidacion(validacion: ValidacionEvidenciaReporte) {
+  if (validacion.status === 'RELATED') {
+    return 'exito' as const;
+  }
+
+  if (validacion.status === 'UNRELATED' || validacion.status === 'REVIEW') {
+    return 'advertencia' as const;
+  }
+
+  return 'informacion' as const;
+}
+
 export function AnalisisReportePanel({
   imagenes,
   direccion,
+  titulo,
+  descripcion,
+  categoria,
   bloqueado = false,
   alAplicarAnalisis
 }: PropiedadesAnalisisReportePanel) {
@@ -81,16 +126,18 @@ export function AnalisisReportePanel({
 
   const imagenPrincipal = useMemo(() => imagenes[0] ?? null, [imagenes]);
   const direccionLimpia = limpiarTexto(direccion);
+  const tituloLimpio = limpiarTexto(titulo);
+  const descripcionLimpia = limpiarTexto(descripcion);
   const tieneImagen = Boolean(imagenPrincipal);
-  const tieneDireccion = direccionLimpia.length > 0;
+  const tieneContextoReporte = Boolean(tituloLimpio || descripcionLimpia || categoria);
   const tieneVariasImagenes = imagenes.length > 1;
-  const puedeAnalizar = tieneImagen && tieneDireccion && !bloqueado && !analizarReporte.isPending;
+  const puedeAnalizar = tieneImagen && !bloqueado && !analizarReporte.isPending;
 
   useEffect(() => {
     setResultado(null);
     setMensajeError(null);
     setMensajeExito(null);
-  }, [imagenPrincipal, direccionLimpia]);
+  }, [imagenPrincipal, direccionLimpia, tituloLimpio, descripcionLimpia, categoria]);
 
   const analizarEvidencia = async () => {
     setMensajeError(null);
@@ -101,15 +148,13 @@ export function AnalisisReportePanel({
       return;
     }
 
-    if (!direccionLimpia) {
-      setMensajeError('Ingresa una dirección o referencia antes de analizar la evidencia.');
-      return;
-    }
-
     try {
       const respuesta = await analizarReporte.mutateAsync({
         image: imagenPrincipal,
-        address: direccionLimpia
+        address: direccionLimpia || undefined,
+        title: tituloLimpio || undefined,
+        description: descripcionLimpia || undefined,
+        category: categoria || undefined
       });
 
       if (respuesta.success === false) {
@@ -119,7 +164,11 @@ export function AnalisisReportePanel({
       }
 
       setResultado(respuesta);
-      setMensajeExito('Análisis completado. Revisa las sugerencias antes de aplicarlas.');
+      setMensajeExito(
+        respuesta.evidenceValidation.shouldWarn
+          ? 'Análisis completado. Revisa la advertencia antes de enviar.'
+          : 'Análisis completado. La imagen parece coherente con el reporte.'
+      );
     } catch (error) {
       setResultado(null);
       setMensajeError(obtenerMensajeError(error));
@@ -143,30 +192,36 @@ export function AnalisisReportePanel({
 
   return (
     <Tarjeta
-      titulo="4. Análisis asistido"
-      descripcion="Usa la evidencia y la dirección para obtener una propuesta automática antes de enviar."
+      titulo="4. Validación inteligente"
+      descripcion="La IA compara la imagen con el reporte para ayudarte a evitar evidencia no relacionada."
       className="analisisReportePanel"
     >
       <div className="analisisReportePanel__contenido">
         <div className="analisisReportePanel__intro">
           <div>
-            <strong>Revisión automática del reporte</strong>
+            <strong>Revisión guiada de evidencia</strong>
             <p>
-              El análisis puede sugerir título, descripción, categoría, prioridad y ubicación. La
-              creación manual se mantiene disponible aunque el análisis no se ejecute.
+              La IA revisa la imagen principal, sugiere datos y valida si la foto parece coincidir
+              con el título, descripción y categoría del reporte.
             </p>
           </div>
 
           <Boton disabled={!puedeAnalizar} onClick={analizarEvidencia}>
-            {analizarReporte.isPending ? 'Analizando evidencia...' : 'Analizar evidencia'}
+            {analizarReporte.isPending ? 'Analizando evidencia...' : 'Validar imagen'}
           </Boton>
         </div>
 
-        {!tieneImagen || !tieneDireccion ? (
-          <Alerta variante="informacion" titulo="Datos necesarios para analizar">
+        {!tieneImagen ? (
+          <Alerta variante="informacion" titulo="Imagen necesaria">
+            <p>Selecciona al menos una imagen para usar la validación inteligente.</p>
+          </Alerta>
+        ) : null}
+
+        {tieneImagen && !tieneContextoReporte ? (
+          <Alerta variante="informacion" titulo="Agrega contexto para comparar">
             <p>
-              Para usar esta ayuda debes seleccionar al menos una imagen e ingresar una dirección o
-              referencia en la sección de ubicación.
+              Puedes analizar solo la imagen, pero para validar coincidencia completa conviene
+              completar título, descripción o categoría antes de presionar “Validar imagen”.
             </p>
           </Alerta>
         ) : null}
@@ -194,12 +249,25 @@ export function AnalisisReportePanel({
 
         {resultado ? (
           <div className="analisisReportePanel__resultado">
+            <Alerta
+              variante={obtenerVarianteValidacion(resultado.evidenceValidation)}
+              titulo={obtenerTituloValidacion(resultado.evidenceValidation)}
+            >
+              <p>{resultado.evidenceValidation.message}</p>
+            </Alerta>
+
             <div className="analisisReportePanel__estado">
               <span>{resultado.ready ? 'Listo para revisar' : 'Revisión parcial'}</span>
-              <strong>
-                {resultado.location.found ? 'Ubicación encontrada' : 'Ubicación sin confirmar'}
-              </strong>
+              <strong>Coincidencia estimada: {formatearScore(resultado.evidenceValidation.score)}</strong>
             </div>
+
+            {resultado.evidenceValidation.reasons.length > 0 ? (
+              <ul className="analisisReportePanel__razones">
+                {resultado.evidenceValidation.reasons.map((razon) => (
+                  <li key={razon}>{razon}</li>
+                ))}
+              </ul>
+            ) : null}
 
             <div className="analisisReportePanel__grid">
               <article>
@@ -208,18 +276,18 @@ export function AnalisisReportePanel({
               </article>
 
               <article>
-                <span>Categoría</span>
+                <span>Categoría sugerida</span>
                 <strong>{etiquetasCategoria[resultado.analysis.category]}</strong>
               </article>
 
               <article>
-                <span>Prioridad</span>
+                <span>Prioridad sugerida</span>
                 <strong>{etiquetasPrioridad[resultado.analysis.priority]}</strong>
               </article>
 
               <article>
                 <span>Dirección interpretada</span>
-                <strong>{resultado.location.address ?? direccionLimpia}</strong>
+                <strong>{(resultado.location.address ?? direccionLimpia) || 'No registrada'}</strong>
               </article>
 
               <article>
@@ -248,7 +316,7 @@ export function AnalisisReportePanel({
                 disabled={bloqueado || analizarReporte.isPending}
                 onClick={analizarEvidencia}
               >
-                Volver a analizar
+                Volver a validar
               </Boton>
             </div>
           </div>

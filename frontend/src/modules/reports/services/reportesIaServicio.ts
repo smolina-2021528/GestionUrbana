@@ -13,10 +13,12 @@ import type {
   VerificarDuplicadosReportePayload
 } from '../types/reportesIaTipos';
 
+import type { CategoriaReporte } from '../types/reportesTipos';
+
 type ParametrosConsultaIa = Record<string, unknown>;
 
-function limpiarTexto(valor: string) {
-  return valor.trim();
+function limpiarTexto(valor: string | undefined | null) {
+  return String(valor ?? '').trim();
 }
 
 function limpiarParametros(parametros?: ParametrosConsultaIa) {
@@ -50,13 +52,27 @@ function limpiarParametros(parametros?: ParametrosConsultaIa) {
   return Object.keys(parametrosLimpios).length > 0 ? parametrosLimpios : undefined;
 }
 
-function agregarCampoFormulario(formulario: FormData, nombre: string, valor: string | File) {
+function agregarCampoFormulario(
+  formulario: FormData,
+  nombre: string,
+  valor: string | File | CategoriaReporte | undefined | null
+) {
+  if (valor === undefined || valor === null) {
+    return;
+  }
+
   if (valor instanceof File) {
     formulario.append(nombre, valor);
     return;
   }
 
-  formulario.append(nombre, limpiarTexto(valor));
+  const texto = limpiarTexto(valor);
+
+  if (!texto) {
+    return;
+  }
+
+  formulario.append(nombre, texto);
 }
 
 function construirFormularioIa(datos: AnalizarReporteConIaPayload | CrearReporteConIaPayload) {
@@ -64,6 +80,12 @@ function construirFormularioIa(datos: AnalizarReporteConIaPayload | CrearReporte
 
   agregarCampoFormulario(formulario, 'image', datos.image);
   agregarCampoFormulario(formulario, 'address', datos.address);
+
+  if ('title' in datos) {
+    agregarCampoFormulario(formulario, 'title', datos.title);
+    agregarCampoFormulario(formulario, 'description', datos.description);
+    agregarCampoFormulario(formulario, 'category', datos.category || undefined);
+  }
 
   return formulario;
 }

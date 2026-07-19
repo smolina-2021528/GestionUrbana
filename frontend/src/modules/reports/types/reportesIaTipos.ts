@@ -7,6 +7,13 @@ import type {
 
 export const etapasErrorIaReporte = ['gemini', 'cloudinary', 'database'] as const;
 
+export const estadosValidacionEvidencia = [
+  'RELATED',
+  'REVIEW',
+  'UNRELATED',
+  'NO_CONTEXT'
+] as const;
+
 export const etiquetasSimilitudReporte = [
   'Duplicado probable',
   'Muy similar',
@@ -29,6 +36,10 @@ export const limitesIaReportes = {
 
 export type EtapaErrorIaReporte = (typeof etapasErrorIaReporte)[number] | string;
 
+export type EstadoValidacionEvidencia =
+  | (typeof estadosValidacionEvidencia)[number]
+  | string;
+
 export type EtiquetaSimilitudReporte =
   | (typeof etiquetasSimilitudReporte)[number]
   | string;
@@ -43,12 +54,15 @@ export type ErrorIaReporte = {
 
 export type AnalizarReporteConIaPayload = {
   image: File;
-  address: string;
+  address?: string;
+  title?: string;
+  description?: string;
+  category?: CategoriaReporte | '';
 };
 
 export type CrearReporteConIaPayload = {
   image: File;
-  address: string;
+  address?: string;
 };
 
 export type AnalisisSugeridoReporte = {
@@ -56,6 +70,22 @@ export type AnalisisSugeridoReporte = {
   description: string;
   category: CategoriaReporte;
   priority: PrioridadReporte;
+};
+
+export type ValidacionEvidenciaReporte = {
+  status: EstadoValidacionEvidencia;
+  isRelevant: boolean;
+  shouldWarn: boolean;
+  score: number | null;
+  confidence: 'none' | 'low' | 'medium' | 'high' | string;
+  message: string;
+  reasons: string[];
+  comparedWith: {
+    titleProvided: boolean;
+    descriptionProvided: boolean;
+    categoryProvided: boolean;
+    suggestedCategory?: CategoriaReporte | string | null;
+  };
 };
 
 export type UbicacionAnalisisReporte = {
@@ -68,6 +98,7 @@ export type UbicacionAnalisisReporte = {
 export type RespuestaAnalisisReporteExitosa = {
   success: true;
   analysis: AnalisisSugeridoReporte;
+  evidenceValidation: ValidacionEvidenciaReporte;
   location: UbicacionAnalisisReporte;
   ready: boolean;
 };

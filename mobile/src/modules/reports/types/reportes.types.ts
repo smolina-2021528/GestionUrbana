@@ -23,6 +23,10 @@ export type CrearReportePayload = CrearReporteFormulario & {
   coordinates?: CoordenadasReporte | null;
 };
 
+export type AnalizarReporteConIaPayload = CrearReporteFormulario & {
+  image: ImagePickerAsset;
+};
+
 export type ImagenReporte = {
   id?: string;
   Id?: string;
@@ -65,6 +69,57 @@ export type CrearReporteResponse = {
   message?: string;
   data?: ReporteResumen;
 };
+
+export type EstadoValidacionEvidencia = 'RELATED' | 'REVIEW' | 'UNRELATED' | 'NO_CONTEXT' | string;
+
+export type ValidacionEvidenciaReporte = {
+  status: EstadoValidacionEvidencia;
+  isRelevant: boolean;
+  shouldWarn: boolean;
+  score: number | null;
+  confidence: 'none' | 'low' | 'medium' | 'high' | string;
+  message: string;
+  reasons: string[];
+  comparedWith: {
+    titleProvided: boolean;
+    descriptionProvided: boolean;
+    categoryProvided: boolean;
+    suggestedCategory?: CategoriaReporte | string | null;
+  };
+};
+
+export type AnalisisSugeridoReporte = {
+  title: string;
+  description: string;
+  category: CategoriaReporte;
+  priority: PrioridadReporte;
+};
+
+export type UbicacionAnalisisReporte = {
+  latitude: number | null;
+  longitude: number | null;
+  address: string | null;
+  found: boolean;
+};
+
+export type RespuestaAnalisisReporteExitosa = {
+  success: true;
+  analysis: AnalisisSugeridoReporte;
+  evidenceValidation: ValidacionEvidenciaReporte;
+  location: UbicacionAnalisisReporte;
+  ready: boolean;
+};
+
+export type RespuestaAnalisisReporteFallida = {
+  success: false;
+  message?: string;
+  error?: string;
+  stage?: string;
+};
+
+export type RespuestaAnalisisReporte =
+  | RespuestaAnalisisReporteExitosa
+  | RespuestaAnalisisReporteFallida;
 
 export type ContenedorReportes = {
   reports?: ReporteResumen[];

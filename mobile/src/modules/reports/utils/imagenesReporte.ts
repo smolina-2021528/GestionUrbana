@@ -9,7 +9,7 @@ function limpiarTexto(valor: unknown) {
 }
 
 function esUrlImagenValida(valor: string) {
-  return /^https?:\/\//i.test(valor) || valor.startsWith('file://');
+  return /^https?:///i.test(valor) || valor.startsWith('file://');
 }
 
 export function obtenerUrlImagenReporte(imagen?: ImagenReporte | null) {
