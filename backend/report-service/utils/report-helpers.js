@@ -22,6 +22,7 @@ const buildReportImageResponse = (image) => {
 export const buildReportResponse = (report) => {
     return {
         id: report.Id,
+        clientRequestId: report.ClientRequestId ?? null,
         title: report.Title,
         description: report.Description,
         category: report.Category,

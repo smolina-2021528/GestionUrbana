@@ -55,6 +55,7 @@ export type AnalisisIAReporte = {
 
 export type Reporte = {
   id: string;
+  clientRequestId: string | null;
   title: string;
   description: string;
   category: CategoriaReporte;
@@ -122,6 +123,7 @@ export type FiltrosMisReportes = FiltrosFechaReportes & {
 };
 
 export type CrearReportePayload = {
+  clientRequestId?: string;
   title?: string;
   description?: string;
   category?: CategoriaReporte;
@@ -178,6 +180,7 @@ export type RespuestaDetalleReporte = RespuestaApiReportes<Reporte>;
 export type RespuestaCrearReporte = RespuestaApiReportes<Reporte> & {
   aiGenerated?: boolean;
   locationResolved?: boolean;
+  duplicateHandled?: boolean;
 };
 
 export type RespuestaActualizarReporte = RespuestaApiReportes<Reporte> & {

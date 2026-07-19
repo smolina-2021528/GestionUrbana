@@ -51,6 +51,28 @@ export const findReportById = async (reportId) => {
     }
 };
 
+export const findReportByClientRequestId = async (userId, clientRequestId) => {
+    try {
+        if (!userId || !clientRequestId) {
+            return null;
+        }
+
+        const report = await Report.findOne({
+            where: {
+                UserId: userId,
+                ClientRequestId: clientRequestId,
+            },
+            include: getReportIncludes(),
+            order: [[{ model: ReportImage, as: 'Images' }, 'order', 'ASC']],
+        });
+
+        return report;
+    } catch (error) {
+        console.error('Error buscando reporte por clientRequestId:', error);
+        throw new Error('Error al buscar reporte por identificador de solicitud');
+    }
+};
+
 // Lista los reportes de un usuario con paginación
 export const findReportsByUser = async (userId, options = {}) => {
     try {

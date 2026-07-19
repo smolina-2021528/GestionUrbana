@@ -34,6 +34,14 @@ function limpiarTexto(valor: string) {
   return valor.trim();
 }
 
+function generarClientRequestId() {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+
+  return `web-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
 function limpiarParametros(parametros?: ParametrosConsulta) {
   if (!parametros) {
     return undefined;
@@ -84,6 +92,10 @@ function tieneImagenes(datos: { images?: File[] }) {
 function construirFormularioReporte(datos: CrearReportePayload | ActualizarReportePayload) {
   const formulario = new FormData();
 
+  if ('clientRequestId' in datos) {
+    agregarCampoFormulario(formulario, 'clientRequestId', datos.clientRequestId);
+  }
+
   agregarCampoFormulario(formulario, 'title', datos.title);
   agregarCampoFormulario(formulario, 'description', datos.description);
   agregarCampoFormulario(formulario, 'category', datos.category);
@@ -100,6 +112,10 @@ function construirFormularioReporte(datos: CrearReportePayload | ActualizarRepor
 
 function construirPayloadReporte(datos: CrearReportePayload | ActualizarReportePayload) {
   return {
+    ...('clientRequestId' in datos &&
+      datos.clientRequestId !== undefined && {
+        clientRequestId: limpiarTexto(datos.clientRequestId)
+      }),
     ...(datos.title !== undefined && { title: limpiarTexto(datos.title) }),
     ...(datos.description !== undefined && { description: limpiarTexto(datos.description) }),
     ...(datos.category !== undefined && { category: datos.category }),
@@ -179,9 +195,15 @@ export const reportesServicio = {
   },
 
   async crearReporte(datos: CrearReportePayload): Promise<RespuestaCrearReporte> {
-    if (tieneImagenes(datos)) {
+    const datosConRequestId: CrearReportePayload = {
+      ...datos,
+      clientRequestId: datos.clientRequestId ?? generarClientRequestId()
+    };
+
+    if (tieneImagenes(datosConRequestId)) {
       return obtenerDatosRespuesta<RespuestaCrearReporte>(
-        clienteReportes.post(rutasApi.reportes.crear, construirFormularioReporte(datos), {
+        clienteReportes.post(rutasApi.reportes.crear, construirFormularioReporte(datosConRequestId), {
+          timeout: 60000,
           headers: {
             'Content-Type': 'multipart/form-data'
           }
@@ -190,7 +212,9 @@ export const reportesServicio = {
     }
 
     return obtenerDatosRespuesta<RespuestaCrearReporte>(
-      clienteReportes.post(rutasApi.reportes.crear, construirPayloadReporte(datos))
+      clienteReportes.post(rutasApi.reportes.crear, construirPayloadReporte(datosConRequestId), {
+        timeout: 45000
+      })
     );
   },
 

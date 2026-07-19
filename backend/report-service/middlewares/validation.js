@@ -250,6 +250,14 @@ const geoValidations = [
     .withMessage('La dirección no puede superar los 500 caracteres'),
 ];
 
+const clientRequestIdValidation = body('clientRequestId')
+  .optional({ nullable: true })
+  .trim()
+  .isLength({ min: 8, max: 80 })
+  .withMessage('clientRequestId debe tener entre 8 y 80 caracteres')
+  .matches(/^[a-zA-Z0-9._:-]+$/)
+  .withMessage('clientRequestId solo puede contener letras, números, punto, guion, guion bajo o dos puntos');
+
 // Validaciones para crear un reporte
 export const validateCreateReport = [
   body('title')
@@ -274,6 +282,7 @@ export const validateCreateReport = [
     .withMessage('Categoría inválida. Valores permitidos: INFRAESTRUCTURA, SEGURIDAD, LIMPIEZA'),
 
   // Campos geográficos opcionales
+  clientRequestIdValidation,
   ...geoValidations,
 
   handleValidationErrors,
@@ -404,6 +413,7 @@ export const validateCreateReportOrAI = [
     .withMessage('Categoría inválida. Valores permitidos: INFRAESTRUCTURA, SEGURIDAD, LIMPIEZA'),
 
   // Campos geográficos opcionales
+  clientRequestIdValidation,
   ...geoValidations,
 
   // Validación final: si no viene imagen, los tres campos son obligatorios

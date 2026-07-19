@@ -11,6 +11,7 @@ import {
 } from "../../helpers/notification-service.js";
 import {
   findReportById,
+  findReportByClientRequestId,
   findReportsByUser,
   findAllReports,
   deleteReport as deleteReportDB,
@@ -42,14 +43,71 @@ import { cacheDelete }         from "../../helpers/ai-cache.js";
 import { geocodeAddress }     from "../../helpers/nominatim-service.js";
 import { parseDateRange }     from "../../helpers/date-helpers.js";
 
+const normalizeClientRequestId = (value) => {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const cleanValue = value.trim();
+
+  if (!cleanValue) {
+    return null;
+  }
+
+  return cleanValue.slice(0, 80);
+};
+
+const isUniqueConstraintError = (error) => {
+  return error?.name === "SequelizeUniqueConstraintError";
+};
+
+const removeTemporaryRequestFiles = async (files = []) => {
+  if (!Array.isArray(files) || files.length === 0) {
+    return;
+  }
+
+  const { promises: fs } = await import("fs");
+
+  await Promise.allSettled(
+    files.map((file) => {
+      if (!file?.path) {
+        return Promise.resolve();
+      }
+
+      return fs.unlink(file.path);
+    }),
+  );
+};
+
+const buildDuplicateReportResponse = (report) => ({
+  success: true,
+  message: "Este reporte ya había sido recibido. Te mostramos el registro existente.",
+  duplicateHandled: true,
+  data: buildReportGeoResponse(report),
+});
+
 // POST /api/reports
 // Crea un nuevo reporte con sus imágenes dentro de una transacción.
 export const createReport = async (req, res) => {
   const transaction = await sequelize.transaction();
   const uploadedImages = [];
+  let clientRequestId = null;
 
   try {
     let { title, description, category, latitude, longitude, address } = req.body;
+
+    clientRequestId = normalizeClientRequestId(req.body.clientRequestId);
+
+    if (clientRequestId) {
+      const existingReport = await findReportByClientRequestId(req.userId, clientRequestId);
+
+      if (existingReport) {
+        await transaction.rollback();
+        await removeTemporaryRequestFiles(req.files);
+
+        return res.status(200).json(buildDuplicateReportResponse(existingReport));
+      }
+    }
     let aiGenerated = false;
     let resolvedPriority = DEFAULT_PRIORITY;
 
@@ -119,6 +177,7 @@ export const createReport = async (req, res) => {
         Priority: resolvedPriority,
         Status: DEFAULT_STATUS,
         UserId: req.userId,
+        ClientRequestId: clientRequestId,
         ...locationData,
       },
       { transaction },
@@ -172,9 +231,21 @@ export const createReport = async (req, res) => {
   } catch (error) {
     await transaction.rollback();
 
+    if (clientRequestId && isUniqueConstraintError(error)) {
+      const existingReport = await findReportByClientRequestId(req.userId, clientRequestId);
+
+      if (existingReport) {
+        await removeTemporaryRequestFiles(req.files);
+
+        return res.status(200).json(buildDuplicateReportResponse(existingReport));
+      }
+    }
+
     for (const publicId of uploadedImages) {
       await deleteImage(publicId);
     }
+
+    await removeTemporaryRequestFiles(req.files);
 
     console.error("Error en createReport:", error);
     return res.status(500).json({
@@ -1314,7 +1385,7 @@ export const reprocessReportAI = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: "Reporte reanalizadÐ¾ con IA exitosamente.",
+      message: "Reporte reanalizado con IA exitosamente.",
       data: buildReportGeoResponse(updatedReport),
     });
   } catch (error) {
@@ -1325,6 +1396,3 @@ export const reprocessReportAI = async (req, res) => {
     });
   }
 };
-
-
-

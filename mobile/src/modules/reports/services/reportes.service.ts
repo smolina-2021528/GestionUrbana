@@ -21,6 +21,28 @@ type ArchivoReactNative = {
   type: string;
 };
 
+function generarClientRequestId() {
+  return `mobile-${Date.now()}-${Math.random().toString(36).slice(2, 12)}`;
+}
+
+function esErrorTimeout(error: unknown) {
+  const posibleError = error as {
+    codigo?: string;
+    code?: string;
+    mensaje?: string;
+    message?: string;
+  };
+
+  const texto = `${posibleError.mensaje ?? ''} ${posibleError.message ?? ''}`.toLowerCase();
+
+  return (
+    posibleError.codigo === 'ECONNABORTED' ||
+    posibleError.code === 'ECONNABORTED' ||
+    texto.includes('timeout') ||
+    texto.includes('tardó demasiado')
+  );
+}
+
 function obtenerNombreArchivo(uri: string, fileName?: string | null) {
   if (fileName) {
     return fileName;
@@ -62,6 +84,10 @@ function agregarCampoTexto(formData: FormData, nombre: string, valor: string | u
 
 function construirFormData(payload: CrearReportePayload) {
   const formData = new FormData();
+
+  if (payload.clientRequestId) {
+    formData.append('clientRequestId', payload.clientRequestId);
+  }
 
   agregarCampoTexto(formData, 'title', payload.title);
   agregarCampoTexto(formData, 'description', payload.description);
@@ -148,6 +174,19 @@ function extraerReporteDetalle(respuesta: ReporteDetalleResponse) {
   return null;
 }
 
+async function buscarReportePorClientRequestId(clientRequestId: string) {
+  const respuesta = await clienteReportes.get<MisReportesResponse>('/reports/my-reports', {
+    params: {
+      limit: 5
+    },
+    timeout: 20000
+  });
+
+  const reportes = extraerReportes(respuesta.data);
+
+  return reportes.find((reporte) => reporte.clientRequestId === clientRequestId) ?? null;
+}
+
 export const reportesService = {
   async analizarReporteConIa(payload: AnalizarReporteConIaPayload) {
     const formData = construirFormDataAnalisis(payload);
@@ -166,19 +205,45 @@ export const reportesService = {
   },
 
   async crearReporte(payload: CrearReportePayload) {
-    const formData = construirFormData(payload);
+    const clientRequestId = payload.clientRequestId ?? generarClientRequestId();
+    const payloadConRequestId: CrearReportePayload = {
+      ...payload,
+      clientRequestId
+    };
 
-    const respuesta = await clienteReportes.post<CrearReporteResponse>(
-      '/reports',
-      formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data'
+    const formData = construirFormData(payloadConRequestId);
+
+    try {
+      const respuesta = await clienteReportes.post<CrearReporteResponse>(
+        '/reports',
+        formData,
+        {
+          timeout: 60000,
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
         }
-      }
-    );
+      );
 
-    return respuesta.data;
+      return respuesta.data;
+    } catch (error) {
+      if (!esErrorTimeout(error)) {
+        throw error;
+      }
+
+      const reporteRecibido = await buscarReportePorClientRequestId(clientRequestId);
+
+      if (reporteRecibido) {
+        return {
+          success: true,
+          message: 'Tu reporte fue recibido correctamente. La app tardó en recibir la confirmación, pero ya aparece en tus reportes.',
+          data: reporteRecibido,
+          recoveredAfterTimeout: true
+        };
+      }
+
+      throw error;
+    }
   },
 
   async obtenerMisReportes(): Promise<MisReportesNormalizados> {

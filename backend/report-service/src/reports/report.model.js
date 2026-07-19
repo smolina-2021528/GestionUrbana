@@ -89,6 +89,17 @@ export const Report = sequelize.define(
         key: 'id',
       },
     },
+    ClientRequestId: {
+      type: DataTypes.STRING(80),
+      allowNull: true,
+      field: 'client_request_id',
+      validate: {
+        len: {
+          args: [8, 80],
+          msg: 'clientRequestId debe tener entre 8 y 80 caracteres.',
+        },
+      },
+    },
     AssignedTo: {
       type: DataTypes.STRING(16),
       allowNull: true,
@@ -256,6 +267,10 @@ export const createCompositeIndexes = async () => {
     {
       name: 'reports_ai_status_idx',
       sql: "CREATE INDEX IF NOT EXISTS reports_ai_status_idx ON reports (ai_status) WHERE ai_status IS NOT NULL;",
+    },
+    {
+      name: 'reports_user_client_request_unique_idx',
+      sql: 'CREATE UNIQUE INDEX IF NOT EXISTS reports_user_client_request_unique_idx ON reports (user_id, client_request_id) WHERE client_request_id IS NOT NULL;',
     },
   ];
 

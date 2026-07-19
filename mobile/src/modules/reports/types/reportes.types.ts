@@ -19,6 +19,7 @@ export type CrearReporteFormulario = {
 };
 
 export type CrearReportePayload = CrearReporteFormulario & {
+  clientRequestId?: string;
   image: ImagePickerAsset;
   coordinates?: CoordenadasReporte | null;
 };
@@ -50,6 +51,7 @@ export type UsuarioResumenReporte = {
 
 export type ReporteResumen = {
   id: string;
+  clientRequestId?: string | null;
   title: string;
   description: string;
   category: CategoriaReporte;
@@ -68,6 +70,8 @@ export type CrearReporteResponse = {
   success: boolean;
   message?: string;
   data?: ReporteResumen;
+  duplicateHandled?: boolean;
+  recoveredAfterTimeout?: boolean;
 };
 
 export type EstadoValidacionEvidencia = 'RELATED' | 'REVIEW' | 'UNRELATED' | 'NO_CONTEXT' | string;
