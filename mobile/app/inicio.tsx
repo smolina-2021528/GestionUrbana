@@ -16,6 +16,7 @@ import { Boton } from '../src/shared/components/Boton';
 import { MensajeEstado } from '../src/shared/components/MensajeEstado';
 import type { ErrorApi } from '../src/shared/services/manejadorErroresApi';
 import { useAuth } from '../src/modules/auth/hooks/useAuth';
+import { useResumenNotificaciones } from '../src/modules/notifications/hooks/useNotificaciones';
 import { useMisReportes } from '../src/modules/reports/hooks/useMisReportes';
 import type {
   EstadoReporte,
@@ -25,6 +26,7 @@ import { colores } from '../src/theme/colores';
 import { espaciado } from '../src/theme/espaciado';
 
 const rutaPerfil = '/perfil' as Href;
+const rutaNotificaciones = '/notificaciones' as Href;
 
 const etiquetasEstado: Record<EstadoReporte, string> = {
   PENDIENTE: 'Pendiente',
@@ -166,11 +168,13 @@ function AccesoRapido({
   titulo,
   descripcion,
   icono,
+  badge,
   onPress
 }: {
   titulo: string;
   descripcion: string;
   icono: keyof typeof Ionicons.glyphMap;
+  badge?: number;
   onPress: () => void;
 }) {
   return (
@@ -184,10 +188,25 @@ function AccesoRapido({
     >
       <View style={styles.accesoIcono}>
         <Ionicons name={icono} size={24} color={colores.primario} />
+
+        {typeof badge === 'number' && badge > 0 ? (
+          <View style={styles.accesoBadge}>
+            <Text style={styles.accesoBadgeTexto}>{badge > 9 ? '9+' : badge}</Text>
+          </View>
+        ) : null}
       </View>
 
       <View style={styles.accesoTexto}>
-        <Text style={styles.accesoTitulo}>{titulo}</Text>
+        <View style={styles.accesoTituloFila}>
+          <Text style={styles.accesoTitulo}>{titulo}</Text>
+
+          {typeof badge === 'number' && badge > 0 ? (
+            <Text style={styles.accesoTituloBadge}>
+              {badge === 1 ? '1 nueva' : `${badge} nuevas`}
+            </Text>
+          ) : null}
+        </View>
+
         <Text style={styles.accesoDescripcion}>{descripcion}</Text>
       </View>
 
@@ -260,6 +279,7 @@ function UltimoReporteCard({ reporte }: { reporte: ReporteResumen | null }) {
 export default function InicioScreen() {
   const { usuario, cerrarSesion } = useAuth();
   const consultaReportes = useMisReportes();
+  const consultaNotificaciones = useResumenNotificaciones();
 
   const reportes = consultaReportes.data?.reportes ?? [];
   const totalReportes = reportes.length;
@@ -267,6 +287,7 @@ export default function InicioScreen() {
   const reportesEnProceso = contarPorEstado(reportes, 'EN_PROCESO');
   const reportesResueltos = contarPorEstado(reportes, 'RESUELTO');
   const ultimoReporte = obtenerUltimoReporte(reportes);
+  const notificacionesNoLeidas = consultaNotificaciones.data?.unreadCount ?? 0;
 
   const mensajeError = consultaReportes.error
     ? obtenerMensajeError(consultaReportes.error)
@@ -274,12 +295,17 @@ export default function InicioScreen() {
 
   const refrescar = () => {
     void consultaReportes.refetch();
+    void consultaNotificaciones.refetch();
   };
 
   const manejarCerrarSesion = async () => {
     await cerrarSesion();
     router.replace('/login');
   };
+
+  const estaRefrescando =
+    consultaReportes.isRefetching ||
+    consultaNotificaciones.isRefetching;
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -288,7 +314,7 @@ export default function InicioScreen() {
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
-            refreshing={consultaReportes.isRefetching}
+            refreshing={estaRefrescando}
             onRefresh={refrescar}
             tintColor={colores.primario}
           />
@@ -317,13 +343,34 @@ export default function InicioScreen() {
               </View>
             </Pressable>
 
-            <Pressable
-              accessibilityRole="button"
-              style={styles.botonCerrarSesion}
-              onPress={manejarCerrarSesion}
-            >
-              <Ionicons name="log-out-outline" size={20} color={colores.textoSuave} />
-            </Pressable>
+            <View style={styles.heroAcciones}>
+              <Pressable
+                accessibilityRole="button"
+                style={({ pressed }) => [
+                  styles.botonNotificaciones,
+                  pressed ? styles.botonNotificacionesPresionado : null
+                ]}
+                onPress={() => router.push(rutaNotificaciones)}
+              >
+                <Ionicons name="notifications-outline" size={20} color={colores.textoInvertido} />
+
+                {notificacionesNoLeidas > 0 ? (
+                  <View style={styles.botonNotificacionesBadge}>
+                    <Text style={styles.botonNotificacionesBadgeTexto}>
+                      {notificacionesNoLeidas > 9 ? '9+' : notificacionesNoLeidas}
+                    </Text>
+                  </View>
+                ) : null}
+              </Pressable>
+
+              <Pressable
+                accessibilityRole="button"
+                style={styles.botonCerrarSesion}
+                onPress={manejarCerrarSesion}
+              >
+                <Ionicons name="log-out-outline" size={20} color={colores.textoSuave} />
+              </Pressable>
+            </View>
           </View>
 
           <Pressable
@@ -347,6 +394,12 @@ export default function InicioScreen() {
         {mensajeError ? (
           <MensajeEstado variante="error" titulo="No se pudo cargar tu resumen">
             {mensajeError}
+          </MensajeEstado>
+        ) : null}
+
+        {consultaNotificaciones.error ? (
+          <MensajeEstado variante="advertencia" titulo="Notificaciones no disponibles">
+            No fue posible actualizar el contador de notificaciones.
           </MensajeEstado>
         ) : null}
 
@@ -418,6 +471,14 @@ export default function InicioScreen() {
                 descripcion="Consulta el estado de tus solicitudes."
                 icono="albums-outline"
                 onPress={() => router.push('/mis-reportes')}
+              />
+
+              <AccesoRapido
+                titulo="Notificaciones"
+                descripcion="Revisa cambios de estado y nuevos avisos."
+                icono="notifications-outline"
+                badge={notificacionesNoLeidas}
+                onPress={() => router.push(rutaNotificaciones)}
               />
             </View>
 
@@ -506,6 +567,42 @@ const styles = StyleSheet.create({
   avatarTexto: {
     color: colores.textoInvertido,
     fontSize: 24,
+    fontWeight: '900'
+  },
+  heroAcciones: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: espaciado.sm
+  },
+  botonNotificaciones: {
+    width: 44,
+    height: 44,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative'
+  },
+  botonNotificacionesPresionado: {
+    opacity: 0.82
+  },
+  botonNotificacionesBadge: {
+    position: 'absolute',
+    right: -5,
+    top: -5,
+    minWidth: 21,
+    height: 21,
+    borderRadius: 11,
+    backgroundColor: colores.error,
+    borderWidth: 2,
+    borderColor: colores.texto,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4
+  },
+  botonNotificacionesBadgeTexto: {
+    color: colores.textoInvertido,
+    fontSize: 10,
     fontWeight: '900'
   },
   botonCerrarSesion: {
@@ -669,15 +766,46 @@ const styles = StyleSheet.create({
     borderRadius: 19,
     backgroundColor: '#DBEAFE',
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
+    position: 'relative'
+  },
+  accesoBadge: {
+    position: 'absolute',
+    right: -5,
+    top: -5,
+    minWidth: 21,
+    height: 21,
+    borderRadius: 11,
+    backgroundColor: colores.error,
+    borderWidth: 2,
+    borderColor: colores.tarjeta,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4
+  },
+  accesoBadgeTexto: {
+    color: colores.textoInvertido,
+    fontSize: 10,
+    fontWeight: '900'
   },
   accesoTexto: {
     flex: 1,
     gap: 3
   },
+  accesoTituloFila: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: espaciado.sm,
+    flexWrap: 'wrap'
+  },
   accesoTitulo: {
     color: colores.texto,
     fontSize: 17,
+    fontWeight: '900'
+  },
+  accesoTituloBadge: {
+    color: colores.error,
+    fontSize: 12,
     fontWeight: '900'
   },
   accesoDescripcion: {
