@@ -21,6 +21,7 @@ export function Pantalla({ children, scroll = true }: PropiedadesPantalla) {
     <ScrollView
       contentContainerStyle={styles.contenidoScroll}
       keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
     >
       {children}
     </ScrollView>
@@ -50,12 +51,16 @@ const styles = StyleSheet.create({
   },
   contenidoScroll: {
     flexGrow: 1,
-    padding: espaciado.xl,
+    paddingHorizontal: espaciado.xl,
+    paddingTop: espaciado.xl,
+    paddingBottom: espaciado.xxl,
     gap: espaciado.lg
   },
   contenidoFijo: {
     flex: 1,
-    padding: espaciado.xl,
+    paddingHorizontal: espaciado.xl,
+    paddingTop: espaciado.xl,
+    paddingBottom: espaciado.xxl,
     gap: espaciado.lg
   }
 });
