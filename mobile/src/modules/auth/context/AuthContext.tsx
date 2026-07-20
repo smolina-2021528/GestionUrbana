@@ -10,7 +10,9 @@ import {
 import { almacenamientoSesion } from '../../../shared/services/almacenamientoSesion';
 import { authService } from '../services/auth.service';
 import type {
+  ActualizarFotoPerfilPayload,
   ActualizarPerfilPayload,
+  CambiarPasswordPayload,
   LoginPayload,
   RegistroPayload,
   UsuarioAutenticado,
@@ -27,10 +29,23 @@ type AuthContextValue = {
   verificarCorreo: (payload: VerificarCorreoPayload) => Promise<void>;
   refrescarPerfil: () => Promise<UsuarioAutenticado | null>;
   actualizarPerfil: (payload: ActualizarPerfilPayload) => Promise<UsuarioAutenticado>;
+  actualizarFotoPerfil: (payload: ActualizarFotoPerfilPayload) => Promise<UsuarioAutenticado>;
+  cambiarPassword: (payload: CambiarPasswordPayload) => Promise<void>;
   cerrarSesion: () => Promise<void>;
 };
 
 export const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+
+function mezclarUsuarioActualizado(
+  usuarioActual: UsuarioAutenticado | null,
+  usuarioActualizado: UsuarioAutenticado
+) {
+  return {
+    ...(usuarioActual ?? usuarioActualizado),
+    ...usuarioActualizado,
+    roles: usuarioActualizado.roles ?? usuarioActual?.roles ?? []
+  };
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [usuario, setUsuario] = useState<UsuarioAutenticado | null>(null);
@@ -94,13 +109,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const actualizarPerfil = useCallback(async (payload: ActualizarPerfilPayload) => {
     const respuesta = await authService.actualizarPerfil(payload);
 
-    setUsuario((usuarioActual) => ({
-      ...(usuarioActual ?? respuesta.data),
-      ...respuesta.data,
-      roles: respuesta.data.roles ?? usuarioActual?.roles ?? []
-    }));
+    setUsuario((usuarioActual) => mezclarUsuarioActualizado(usuarioActual, respuesta.data));
 
     return respuesta.data;
+  }, []);
+
+  const actualizarFotoPerfil = useCallback(async (payload: ActualizarFotoPerfilPayload) => {
+    const respuesta = await authService.actualizarFotoPerfil(payload);
+
+    setUsuario((usuarioActual) => mezclarUsuarioActualizado(usuarioActual, respuesta.data));
+
+    return respuesta.data;
+  }, []);
+
+  const cambiarPassword = useCallback(async (payload: CambiarPasswordPayload) => {
+    await authService.cambiarPassword(payload);
   }, []);
 
   const cerrarSesion = useCallback(async () => {
@@ -124,6 +147,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       verificarCorreo,
       refrescarPerfil,
       actualizarPerfil,
+      actualizarFotoPerfil,
+      cambiarPassword,
       cerrarSesion
     }),
     [
@@ -135,6 +160,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       verificarCorreo,
       refrescarPerfil,
       actualizarPerfil,
+      actualizarFotoPerfil,
+      cambiarPassword,
       cerrarSesion
     ]
   );

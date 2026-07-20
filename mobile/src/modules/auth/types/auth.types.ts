@@ -38,6 +38,17 @@ export type ActualizarPerfilPayload = {
   phone?: string;
 };
 
+export type ActualizarFotoPerfilPayload = {
+  uri: string;
+  fileName?: string | null;
+  mimeType?: string | null;
+};
+
+export type CambiarPasswordPayload = {
+  currentPassword: string;
+  newPassword: string;
+};
+
 export type LoginResponse = {
   success: boolean;
   message?: string;
@@ -65,4 +76,9 @@ export type ActualizarPerfilResponse = {
   success: boolean;
   message: string;
   data: UsuarioAutenticado;
+};
+
+export type CambiarPasswordResponse = {
+  success: boolean;
+  message: string;
 };
