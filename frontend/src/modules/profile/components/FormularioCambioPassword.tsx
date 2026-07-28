@@ -4,6 +4,8 @@ import { useForm } from 'react-hook-form';
 import type { SubmitHandler } from 'react-hook-form';
 import { z } from 'zod';
 
+import { Lock } from 'lucide-react';
+
 import { Alerta } from '../../../shared/components/feedback/Alerta';
 import { Boton } from '../../../shared/components/ui/Boton';
 import { obtenerMensajeError } from '../../../shared/services/manejadorErroresApi';
@@ -124,7 +126,12 @@ export function FormularioCambioPassword() {
       </label>
 
       <div className="accionesFormularioTemporal">
-        <Boton disabled={isSubmitting} type="submit" variante="secundario">
+        <Boton
+          disabled={isSubmitting}
+          type="submit"
+          variante="primario"
+          iconoIzquierdo={<Lock size={16} />}
+        >
           {isSubmitting ? 'Actualizando contraseña...' : 'Actualizar contraseña'}
         </Boton>
       </div>
