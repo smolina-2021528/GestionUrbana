@@ -26,6 +26,11 @@ const etiquetasCategoria: Record<CategoriaReporte, string> = {
   LIMPIEZA: 'Limpieza'
 };
 
+const formateadorFecha = new Intl.DateTimeFormat('es-GT', {
+  dateStyle: 'medium',
+  timeStyle: 'short'
+});
+
 function formatearFecha(fecha: string | null | undefined) {
   if (!fecha) {
     return 'No disponible';
@@ -37,10 +42,7 @@ function formatearFecha(fecha: string | null | undefined) {
     return 'No disponible';
   }
 
-  return new Intl.DateTimeFormat('es-GT', {
-    dateStyle: 'medium',
-    timeStyle: 'short'
-  }).format(fechaValida);
+  return formateadorFecha.format(fechaValida);
 }
 
 function obtenerNombreUsuario(usuario: UsuarioResumenReporte | null) {

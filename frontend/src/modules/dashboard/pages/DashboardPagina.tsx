@@ -39,11 +39,24 @@ function sumarValores(valores: Array<number | null>): number {
   return valores.reduce<number>((total, valor) => total + valorParaSuma(valor), 0);
 }
 
+const formateadoresCache = new Map<string, Intl.NumberFormat>();
+
+function obtenerFormateadorDecimal(decimales: number, minimumDigits: number) {
+  const clave = `${decimales}-${minimumDigits}`;
+  let formateador = formateadoresCache.get(clave);
+  if (!formateador) {
+    formateador = new Intl.NumberFormat('es-GT', {
+      maximumFractionDigits: decimales,
+      minimumFractionDigits: minimumDigits
+    });
+    formateadoresCache.set(clave, formateador);
+  }
+  return formateador;
+}
+
 function formatearDecimal(valor: number, decimales = 1): string {
-  return new Intl.NumberFormat('es-GT', {
-    maximumFractionDigits: decimales,
-    minimumFractionDigits: valor % 1 === 0 ? 0 : Math.min(decimales, 1)
-  }).format(valor);
+  const minDigits = valor % 1 === 0 ? 0 : Math.min(decimales, 1);
+  return obtenerFormateadorDecimal(decimales, minDigits).format(valor);
 }
 
 function formatearPorcentaje(valor: number | null): string | null {

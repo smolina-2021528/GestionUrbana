@@ -26,6 +26,15 @@ const etiquetasCategoria: Record<CategoriaReporte, string> = {
   LIMPIEZA: 'Limpieza'
 };
 
+const formateadorFecha = new Intl.DateTimeFormat('es-GT', {
+  dateStyle: 'medium',
+  timeStyle: 'short'
+});
+
+const formateadorCoordenada = new Intl.NumberFormat('es-GT', {
+  maximumFractionDigits: 5
+});
+
 function formatearFecha(fecha: string | null | undefined) {
   if (!fecha) {
     return 'Fecha no disponible';
@@ -37,16 +46,11 @@ function formatearFecha(fecha: string | null | undefined) {
     return 'Fecha no disponible';
   }
 
-  return new Intl.DateTimeFormat('es-GT', {
-    dateStyle: 'medium',
-    timeStyle: 'short'
-  }).format(fechaValida);
+  return formateadorFecha.format(fechaValida);
 }
 
 function formatearCoordenada(valor: number) {
-  return new Intl.NumberFormat('es-GT', {
-    maximumFractionDigits: 5
-  }).format(valor);
+  return formateadorCoordenada.format(valor);
 }
 
 function obtenerNombreUsuario(usuario: UsuarioResumenReporte | null) {

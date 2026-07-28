@@ -22,8 +22,15 @@ const etiquetasEstado: Record<EstadoReporte, string> = {
   RECHAZADO: 'Rechazado'
 };
 
+const formateadorNumero = new Intl.NumberFormat('es-GT');
+
+const formateadorFecha = new Intl.DateTimeFormat('es-GT', {
+  dateStyle: 'medium',
+  timeStyle: 'short'
+});
+
 function formatearNumero(valor: number) {
-  return new Intl.NumberFormat('es-GT').format(valor);
+  return formateadorNumero.format(valor);
 }
 
 function formatearFecha(fecha: string | null | undefined) {
@@ -37,18 +44,15 @@ function formatearFecha(fecha: string | null | undefined) {
     return 'Fecha no disponible';
   }
 
-  return new Intl.DateTimeFormat('es-GT', {
-    dateStyle: 'medium',
-    timeStyle: 'short'
-  }).format(fechaValida);
+  return formateadorFecha.format(fechaValida);
 }
 
 function obtenerConteoPorEstado(reportes: Reporte[]) {
   return reportes.reduce<Record<EstadoReporte, number>>(
-    (conteo, reporte) => ({
-      ...conteo,
-      [reporte.status]: conteo[reporte.status] + 1
-    }),
+    (conteo, reporte) => {
+      conteo[reporte.status] = (conteo[reporte.status] ?? 0) + 1;
+      return conteo;
+    },
     {
       PENDIENTE: 0,
       EN_PROCESO: 0,

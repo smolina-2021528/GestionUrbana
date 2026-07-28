@@ -24,8 +24,10 @@ type PropiedadesListadoReportes = {
   alVerDetalle?: (reporte: Reporte) => void;
 };
 
+const formateadorNumero = new Intl.NumberFormat('es-GT');
+
 function formatearNumero(valor: number) {
-  return new Intl.NumberFormat('es-GT').format(valor);
+  return formateadorNumero.format(valor);
 }
 
 export function ListadoReportes({

@@ -19,6 +19,11 @@ const etiquetasEstado: Record<string, string> = {
   RECHAZADO: 'Rechazado'
 };
 
+const formateadorFecha = new Intl.DateTimeFormat('es-GT', {
+  dateStyle: 'medium',
+  timeStyle: 'short'
+});
+
 function formatearFecha(fecha: string | null | undefined) {
   if (!fecha) {
     return 'Fecha no disponible';
@@ -30,10 +35,7 @@ function formatearFecha(fecha: string | null | undefined) {
     return 'Fecha no disponible';
   }
 
-  return new Intl.DateTimeFormat('es-GT', {
-    dateStyle: 'medium',
-    timeStyle: 'short'
-  }).format(fechaValida);
+  return formateadorFecha.format(fechaValida);
 }
 
 function obtenerEtiquetaEstado(estado: string | null | undefined) {
