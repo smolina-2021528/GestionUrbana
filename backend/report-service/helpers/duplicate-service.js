@@ -1,4 +1,4 @@
-﻿// este servicio se encarga de detectar reportes similares o duplicados.
+// este servicio se encarga de detectar reportes similares o duplicados.
 import { Op, QueryTypes } from 'sequelize';
 import { sequelize }      from '../configs/db.js';
 import { Report }         from '../src/reports/report.model.js';
@@ -119,7 +119,7 @@ export const fetchCandidates = async (baseReport) => {
         );
         const locationGeog = sequelize.fn(
             'ST_GeogFromWKB',
-            sequelize.cast(sequelize.col('location'), 'geometry'),
+            sequelize.cast(sequelize.col('Location'), 'geometry'),
         );
 
         try {

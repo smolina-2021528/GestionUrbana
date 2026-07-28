@@ -1,4 +1,4 @@
-﻿import { Op } from 'sequelize';
+import { Op } from 'sequelize';
 import { sequelize } from '../configs/db.js';
 import { Report } from '../src/reports/report.model.js';
 import { ReportImage } from '../src/reports/report-image.model.js';
@@ -249,7 +249,7 @@ export const findReportsByProximity = async (latitude, longitude, radiusMeters, 
 
         const locationGeog = sequelize.fn(
             'ST_GeogFromWKB',
-            sequelize.cast(sequelize.col('location'), 'geometry')
+            sequelize.cast(sequelize.col('Location'), 'geometry')
         );
 
         const where = {

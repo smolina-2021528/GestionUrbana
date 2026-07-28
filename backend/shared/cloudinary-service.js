@@ -49,7 +49,7 @@ const buildCloudinaryImageUrl = (imagePath, folder) => {
 
   const pathToUse = cleanImagePath.includes('/')
     ? cleanImagePath
-    : `${folder}/${cleanImagePath}`;
+    : (folder ? `${folder}/${cleanImagePath}` : cleanImagePath);
 
   return `https://res.cloudinary.com/${cloudName}/image/upload/${pathToUse}`;
 };
@@ -60,8 +60,9 @@ export const uploadImage = async (filePath, fileName) => {
     assertCloudinaryConfigured();
 
     const folder = config.cloudinary.folder;
+    const publicId = fileName.replace(/\.[^/.]+$/, "");
     const options = {
-      public_id: fileName,
+      public_id: publicId,
       folder,
       resource_type: 'image',
       transformation: [
@@ -95,7 +96,7 @@ export const deleteImage = async (imagePath) => {
     const folder = config.cloudinary.folder;
     const publicId = imagePath.includes('/')
       ? imagePath
-      : `${folder}/${imagePath}`;
+      : (folder ? `${folder}/${imagePath}` : imagePath);
 
     const result = await cloudinary.uploader.destroy(publicId);
     return normalizeCloudinaryDestroyResult(result);
@@ -114,8 +115,9 @@ export const uploadReportImage = async (filePath, fileName) => {
     assertCloudinaryConfigured();
 
     const folder = config.cloudinary.folderReports;
+    const publicId = fileName.replace(/\.[^/.]+$/, "");
     const options = {
-      public_id: fileName,
+      public_id: publicId,
       folder,
       resource_type: 'image',
       transformation: [
