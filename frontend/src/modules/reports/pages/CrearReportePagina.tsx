@@ -2,6 +2,8 @@ import type { ChangeEvent, FormEvent } from 'react';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import { ImagePlus } from 'lucide-react';
+
 import { rutasAplicacion } from '../../../config/constantesSistema';
 import { textosSistema } from '../../../design/identity/textosSistema';
 import { Alerta } from '../../../shared/components/feedback/Alerta';
@@ -800,14 +802,27 @@ export function CrearReportePagina() {
               <div className="crearReportePagina__campos">
                 <label className="crearReportePagina__campo crearReportePagina__campoArchivo">
                   <span>Imágenes del reporte</span>
-                  <input
-                    key={llaveInputImagenes}
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp"
-                    multiple
-                    disabled={crearReporte.isPending}
-                    onChange={cambiarImagenes}
-                  />
+                  <div className="crearReportePagina__zonaCarga">
+                    <input
+                      key={llaveInputImagenes}
+                      type="file"
+                      className="crearReportePagina__inputOculto"
+                      accept="image/jpeg,image/png,image/webp"
+                      multiple
+                      disabled={crearReporte.isPending}
+                      onChange={cambiarImagenes}
+                    />
+                    <div className="crearReportePagina__zonaCargaContenido">
+                      <ImagePlus size={28} className="crearReportePagina__zonaCargaIcono" />
+                      <div className="crearReportePagina__zonaCargaTextos">
+                        <span className="crearReportePagina__zonaCargaBoton">Seleccionar imágenes</span>
+                        <span className="crearReportePagina__zonaCargaSeparador">o arrastra tus archivos aquí</span>
+                      </div>
+                      <span className="crearReportePagina__zonaCargaFormatos">
+                        Formatos aceptados: JPEG, PNG, WebP (máx. {maximoTamanoImagenMb} MB por archivo)
+                      </span>
+                    </div>
+                  </div>
                   {errores.images ? (
                     <small className="crearReportePagina__error">{errores.images}</small>
                   ) : (

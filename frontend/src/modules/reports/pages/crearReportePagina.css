@@ -246,10 +246,87 @@
   color: var(--color-texto-invertido);
 }
 
-.crearReportePagina__campoArchivo input {
-  padding: var(--espacio-4);
-  border-style: dashed;
-  background: var(--color-superficie-secundaria);
+.crearReportePagina__inputOculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+.crearReportePagina__zonaCarga {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 9rem;
+  border: 2px dashed var(--color-borde);
+  border-radius: var(--radio-lg);
+  background-color: var(--color-superficie-secundaria);
+  cursor: pointer;
+  outline: none;
+  transition:
+    border-color var(--transicion-rapida),
+    background-color var(--transicion-rapida),
+    box-shadow var(--transicion-rapida);
+}
+
+.crearReportePagina__zonaCarga:hover {
+  border-color: var(--color-principal);
+  background-color: rgb(36 116 214 / 0.04);
+}
+
+.crearReportePagina__zonaCarga:has(.crearReportePagina__inputOculto:focus-visible) {
+  border-color: var(--color-principal);
+  box-shadow: 0 0 0 3px rgb(22 93 175 / 0.16);
+}
+
+.crearReportePagina__zonaCargaContenido {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espacio-2);
+  text-align: center;
+  padding: var(--espacio-5);
+}
+
+.crearReportePagina__zonaCargaIcono {
+  color: var(--color-principal);
+  transition: transform var(--transicion-rapida);
+}
+
+.crearReportePagina__zonaCarga:hover .crearReportePagina__zonaCargaIcono {
+  transform: translateY(-2px);
+}
+
+.crearReportePagina__zonaCargaTextos {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--espacio-1) var(--espacio-2);
+  font-size: var(--tamano-texto-sm);
+}
+
+.crearReportePagina__zonaCargaBoton {
+  color: var(--color-principal);
+  font-weight: var(--peso-seminegrita);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.crearReportePagina__zonaCargaSeparador {
+  color: var(--color-texto-secundario);
+}
+
+.crearReportePagina__zonaCargaFormatos {
+  font-size: var(--tamano-texto-xs);
+  color: var(--color-texto-suave);
 }
 
 .crearReportePagina__imagenesSeleccionadas {
