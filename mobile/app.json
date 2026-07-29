@@ -6,7 +6,6 @@
     "orientation": "portrait",
     "scheme": "ciudadactiva",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
     "splash": {
       "backgroundColor": "#0F172A"
     },
@@ -49,7 +48,8 @@
         {
           "locationWhenInUsePermission": "Ciudad Activa necesita tu ubicación para registrar dónde ocurre el problema urbano."
         }
-      ]
+      ],
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true
