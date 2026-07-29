@@ -1,4 +1,4 @@
-﻿import fs from 'fs';
+import fs from 'fs';
 import path from 'path';
 import { getGeminiModel } from '../configs/gemini-config.js';
 import {
@@ -78,9 +78,22 @@ export const analyzeReportImage = async (imagePath) => {
     return cached;
   }
 
-  const mimeType = getMimeType(imagePath);
-  const imageData = fs.readFileSync(imagePath);
-  const base64 = imageData.toString('base64');
+  let mimeType;
+  let base64;
+
+  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+    const response = await fetch(imagePath);
+    if (!response.ok) {
+      throw new Error(`No se pudo descargar la imagen remota de Cloudinary para análisis: ${response.statusText}`);
+    }
+    mimeType = response.headers.get('content-type');
+    const arrayBuffer = await response.arrayBuffer();
+    base64 = Buffer.from(arrayBuffer).toString('base64');
+  } else {
+    mimeType = getMimeType(imagePath);
+    const imageData = fs.readFileSync(imagePath);
+    base64 = imageData.toString('base64');
+  }
 
   const imagePart = {
     inlineData: {
