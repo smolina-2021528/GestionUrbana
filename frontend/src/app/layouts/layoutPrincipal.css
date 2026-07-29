@@ -2,9 +2,14 @@
   display: grid;
   grid-template-columns: var(--ancho-sidebar) minmax(0, 1fr);
   min-height: 100vh;
+  transition: grid-template-columns var(--transicion-normal);
   background:
     radial-gradient(circle at top left, rgb(36 116 214 / 0.08), transparent 28rem),
     var(--color-fondo);
+}
+
+.layoutPrincipal--sidebar-colapsado {
+  grid-template-columns: 5.5rem minmax(0, 1fr);
 }
 
 .layoutPrincipal__sidebar {
@@ -15,9 +20,10 @@
   gap: var(--espacio-5);
   height: 100vh;
   border-right: 1px solid var(--color-borde);
-  background: rgb(255 255 255 / 0.92);
+  background: var(--color-translucido-superficie-solid);
   padding: var(--espacio-5);
   backdrop-filter: blur(16px);
+  transition: width var(--transicion-normal), padding var(--transicion-normal);
 }
 
 .layoutPrincipal__marca {
@@ -25,6 +31,7 @@
   justify-content: center;
   border-bottom: 1px solid var(--color-borde);
   padding-bottom: var(--espacio-5);
+  min-height: 3.5rem;
 }
 
 .layoutPrincipal__logoEnlace {
@@ -36,6 +43,46 @@
   width: min(12.5rem, 100%);
   height: auto;
   object-fit: contain;
+}
+
+.layoutPrincipal__toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-3);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-lg);
+  background: var(--color-superficie);
+  color: var(--color-texto-secundario);
+  padding: var(--espacio-3);
+  cursor: pointer;
+  width: 100%;
+  transition:
+    background-color var(--transicion-rapida),
+    border-color var(--transicion-rapida),
+    color var(--transicion-rapida);
+}
+
+.layoutPrincipal__toggle:hover {
+  border-color: var(--color-azul-civico-200);
+  background: var(--color-principal-suave);
+  color: var(--color-principal);
+}
+
+.layoutPrincipal__iconoToggle {
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  place-items: center;
+  border-radius: var(--radio-md);
+  background: var(--color-translucido-superficie);
+  color: currentColor;
+  flex-shrink: 0;
+}
+
+.layoutPrincipal__textoToggle {
+  font-size: var(--tamano-texto-sm);
+  font-weight: var(--peso-seminegrita);
+  white-space: nowrap;
 }
 
 .layoutPrincipal__navegacion {
@@ -86,7 +133,7 @@
   height: 2.25rem;
   place-items: center;
   border-radius: var(--radio-md);
-  background: rgb(255 255 255 / 0.72);
+  background: var(--color-translucido-superficie);
   color: currentColor;
   line-height: 1;
 }
@@ -167,7 +214,7 @@
   gap: var(--espacio-5);
   min-height: var(--alto-header);
   border-bottom: 1px solid var(--color-borde);
-  background: rgb(248 250 252 / 0.9);
+  background: var(--color-header-bg);
   padding: var(--espacio-4) var(--espacio-6);
   backdrop-filter: blur(16px);
 }
@@ -304,6 +351,10 @@
     grid-template-columns: 1fr;
   }
 
+  .layoutPrincipal__toggle {
+    display: none;
+  }
+
   .layoutPrincipal__sidebar {
     position: static;
     height: auto;
@@ -382,5 +433,66 @@
 
   .layoutPrincipal__titulo p {
     display: none;
+  }
+}
+
+@media (min-width: 1181px) {
+  .layoutPrincipal__sidebar--colapsado {
+    padding: var(--espacio-5) var(--espacio-3);
+    align-items: center;
+  }
+
+  .layoutPrincipal__sidebar--colapsado .layoutPrincipal__logoEnlace {
+    display: none;
+  }
+
+  .layoutPrincipal__sidebar--colapsado .layoutPrincipal__marca {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .layoutPrincipal__sidebar--colapsado .layoutPrincipal__textoEnlace {
+    display: none;
+  }
+
+  .layoutPrincipal__sidebar--colapsado .layoutPrincipal__enlace {
+    grid-template-columns: 1fr;
+    justify-content: center;
+    padding: var(--espacio-2);
+    width: 100%;
+    transform: none;
+  }
+
+  .layoutPrincipal__sidebar--colapsado .layoutPrincipal__enlace:hover {
+    transform: none;
+  }
+
+  .layoutPrincipal__sidebar--colapsado .layoutPrincipal__icono {
+    margin: 0 auto;
+  }
+
+  .layoutPrincipal__sidebar--colapsado .layoutPrincipal__panelRol {
+    justify-content: center;
+    padding: var(--espacio-3);
+    border-radius: var(--radio-completo);
+    width: auto;
+  }
+
+  .layoutPrincipal__sidebar--colapsado .layoutPrincipal__infoRol {
+    display: none;
+  }
+
+  .layoutPrincipal__sidebar--colapsado .layoutPrincipal__toggle {
+    justify-content: center;
+    padding: var(--espacio-2);
+    width: 100%;
+  }
+
+  .layoutPrincipal__sidebar--colapsado .layoutPrincipal__textoToggle {
+    display: none;
+  }
+
+  .layoutPrincipal__sidebar--colapsado .layoutPrincipal__iconoToggle {
+    margin: 0 auto;
   }
 }

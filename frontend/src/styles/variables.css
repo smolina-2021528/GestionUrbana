@@ -83,6 +83,10 @@
   --color-texto-suave: var(--color-gris-urbano-500);
   --color-texto-invertido: var(--color-blanco);
 
+  --color-translucido-superficie: rgb(255 255 255 / 0.72);
+  --color-translucido-superficie-solid: rgb(255 255 255 / 0.92);
+  --color-header-bg: rgb(248 250 252 / 0.9);
+
   --color-prioridad-baja: var(--color-verde-operativo-600);
   --color-prioridad-baja-fondo: var(--color-verde-operativo-50);
   --color-prioridad-media: var(--color-amarillo-alerta-600);
@@ -151,4 +155,153 @@
 
   --transicion-rapida: 150ms ease;
   --transicion-normal: 220ms ease;
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  /* Theme overrides */
+  --color-fondo: #090d16;
+  --color-superficie: #131b2e;
+  --color-superficie-secundaria: #0d1321;
+  --color-borde: #1e293b;
+
+  --color-texto: #f8fafc;
+  --color-texto-secundario: #cbd5e1;
+  --color-texto-suave: #64748b;
+  --color-texto-invertido: #090d16;
+
+  /* Base gray scale overrides to ensure global background gradients are dark */
+  --color-gris-urbano-50: #0d1321;
+  --color-gris-urbano-100: #090d16;
+  --color-gris-urbano-200: #1e293b;
+
+  /* Principal color tweaks for dark theme readability */
+  --color-principal: var(--color-azul-civico-400);
+  --color-principal-hover: var(--color-azul-civico-300);
+  --color-principal-suave: rgb(79 151 243 / 0.1);
+
+  /* Semantic soft colors adjustments */
+  --color-exito-suave: rgb(25 169 99 / 0.1) !important;
+  --color-advertencia-suave: rgb(240 157 11 / 0.1) !important;
+  --color-error-suave: rgb(244 63 94 / 0.1) !important;
+
+  /* Soft and dark shades overrides for badges and custom panels */
+  --color-rojo-critico-50: rgb(244 63 94 / 0.1);
+  --color-rojo-critico-100: rgb(244 63 94 / 0.2);
+  --color-rojo-critico-800: #fda4af;
+  --color-rojo-critico-900: #fecdd3;
+
+  --color-amarillo-alerta-50: rgb(240 157 11 / 0.1);
+  --color-amarillo-alerta-100: rgb(240 157 11 / 0.2);
+  --color-amarillo-alerta-800: #fde68a;
+  --color-amarillo-alerta-900: #fef3c7;
+
+  --color-verde-operativo-50: rgb(25 169 99 / 0.1);
+  --color-verde-operativo-100: rgb(25 169 99 / 0.2);
+  --color-verde-operativo-800: #abefca;
+  --color-verde-operativo-900: #d3f8e3;
+
+  --color-azul-civico-50: rgb(79 151 243 / 0.1);
+  --color-azul-civico-100: rgb(79 151 243 / 0.2);
+  --color-azul-civico-800: #cbd5e1;
+  --color-azul-civico-900: #f1f5f9;
+
+  /* Translucent variables */
+  --color-translucido-superficie: rgb(19 27 46 / 0.72);
+  --color-translucido-superficie-solid: rgb(19 27 46 / 0.92);
+  --color-header-bg: rgb(9 13 22 / 0.9);
+}
+
+/* Leaflet Map filters and styles under dark theme */
+[data-theme='dark'] .leaflet-tile-container {
+  filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%) !important;
+}
+
+[data-theme='dark'] .leaflet-container {
+  background-color: #090d16 !important;
+}
+
+[data-theme='dark'] .leaflet-bar,
+[data-theme='dark'] .leaflet-bar a,
+[data-theme='dark'] .leaflet-popup-content-wrapper,
+[data-theme='dark'] .leaflet-popup-tip {
+  background-color: #131b2e !important;
+  color: #f8fafc !important;
+  border-color: #1e293b !important;
+}
+
+[data-theme='dark'] .leaflet-popup-content-wrapper {
+  box-shadow: 0 12px 28px rgb(0 0 0 / 0.4) !important;
+}
+
+[data-theme='dark'] .leaflet-bar a:hover {
+  background-color: #1e293b !important;
+}
+
+/* Dark theme adjustments for headers */
+[data-theme='dark'] .encabezadoPaginaTemporal,
+[data-theme='dark'] .reportesPagina__encabezado,
+[data-theme='dark'] .crearReportePagina__encabezado,
+[data-theme='dark'] .notificacionesPagina__encabezado,
+[data-theme='dark'] .usuariosPagina__encabezado {
+  background:
+    radial-gradient(circle at top left, rgb(79 151 243 / 0.15), transparent 18rem),
+    linear-gradient(135deg, var(--color-superficie) 0%, var(--color-superficie-secundaria) 100%) !important;
+  border-color: var(--color-borde) !important;
+}
+
+/* Dark theme adjustments for empty states and images placeholders */
+[data-theme='dark'] .estadoVacio,
+[data-theme='dark'] .estadoVacioTemporal,
+[data-theme='dark'] .detalleReporte__sinEvidencia,
+[data-theme='dark'] .tarjetaReporte__sinImagen {
+  border-color: var(--color-borde) !important;
+  background: linear-gradient(135deg, var(--color-superficie-secundaria) 0%, var(--color-superficie) 100%) !important;
+}
+
+/* Dark theme adjustments for alerts */
+[data-theme='dark'] .alerta--informacion {
+  border-color: rgb(79 151 243 / 0.3) !important;
+  background: rgb(79 151 243 / 0.1) !important;
+  color: var(--color-azul-civico-300) !important;
+}
+
+[data-theme='dark'] .alerta--exito {
+  border-color: rgb(25 169 99 / 0.3) !important;
+  background: rgb(25 169 99 / 0.1) !important;
+  color: var(--color-verde-operativo-300) !important;
+}
+
+[data-theme='dark'] .alerta--advertencia {
+  border-color: rgb(240 157 11 / 0.3) !important;
+  background: rgb(240 157 11 / 0.1) !important;
+  color: var(--color-amarillo-alerta-300) !important;
+}
+
+[data-theme='dark'] .alerta--error {
+  border-color: rgb(244 63 94 / 0.3) !important;
+  background: rgb(244 63 94 / 0.1) !important;
+  color: var(--color-rojo-critico-300) !important;
+}
+
+/* Ensure paragraph elements inside alerts use inherited color */
+.alerta p {
+  color: inherit !important;
+}
+
+/* Dark theme adjustments for authentication layouts */
+[data-theme='dark'] .layoutAutenticacion__bloqueConcepto {
+  background: rgb(19 27 46 / 0.8) !important;
+  border-color: var(--color-principal) !important;
+}
+
+[data-theme='dark'] .layoutAutenticacion__puntos article {
+  border-color: var(--color-borde) !important;
+  background: rgb(19 27 46 / 0.6) !important;
+}
+
+[data-theme='dark'] .layoutAutenticacion__panelFormulario {
+  background: rgb(9 13 22 / 0.85) !important;
+  border-color: var(--color-borde) !important;
 }

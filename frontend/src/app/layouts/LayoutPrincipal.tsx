@@ -7,11 +7,15 @@ import {
   LogOut,
   MapPinned,
   Search,
-  UsersRound
+  UsersRound,
+  ChevronLeft,
+  ChevronRight,
+  Sun,
+  Moon
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { useState } from 'react';
-import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { NavLink, Outlet, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 
 import {
   obtenerInformacionRuta,
@@ -54,6 +58,49 @@ export function LayoutPrincipal() {
   const { usuario, roles, cerrarSesion } = usarAutenticacion();
   const { esAdministrador, obtenerRutasVisibles } = usarPermisos();
   const [cerrandoSesion, setCerrandoSesion] = useState(false);
+  const [tema, setTema] = useState(() => {
+    return localStorage.getItem('tema') || 'light';
+  });
+
+  const toggleTema = () => {
+    setTema((prev) => {
+      const nuevoTema = prev === 'light' ? 'dark' : 'light';
+      localStorage.setItem('tema', nuevoTema);
+      document.documentElement.setAttribute('data-theme', nuevoTema);
+      return nuevoTema;
+    });
+  };
+  const [searchParams] = useSearchParams();
+  const queryParam = searchParams.get('q') || '';
+  const [textoBusqueda, setTextoBusqueda] = useState(queryParam);
+
+  useEffect(() => {
+    setTextoBusqueda(queryParam);
+  }, [queryParam]);
+
+  const manejarBusquedaSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const queryLimpia = textoBusqueda.trim();
+    const rutaBusqueda = esAdministrador ? rutasAplicacion.reportes : rutasAplicacion.misReportes;
+
+    if (queryLimpia) {
+      navegar(`${rutaBusqueda}?q=${encodeURIComponent(queryLimpia)}`);
+    } else {
+      navegar(rutaBusqueda);
+    }
+  };
+  const [sidebarColapsado, setSidebarColapsado] = useState(() => {
+    const guardado = localStorage.getItem('sidebar-colapsado');
+    return guardado === 'true';
+  });
+
+  const toggleSidebar = () => {
+    setSidebarColapsado((prev) => {
+      const nuevoEstado = !prev;
+      localStorage.setItem('sidebar-colapsado', String(nuevoEstado));
+      return nuevoEstado;
+    });
+  };
 
   const informacionRuta = obtenerInformacionRuta(ubicacion.pathname);
   const enlacesVisibles = obtenerRutasVisibles();
@@ -76,8 +123,8 @@ export function LayoutPrincipal() {
   };
 
   return (
-    <div className="layoutPrincipal">
-      <aside className="layoutPrincipal__sidebar" aria-label="Navegación principal">
+    <div className={`layoutPrincipal ${sidebarColapsado ? 'layoutPrincipal--sidebar-colapsado' : ''}`}>
+      <aside className={`layoutPrincipal__sidebar ${sidebarColapsado ? 'layoutPrincipal__sidebar--colapsado' : ''}`} aria-label="Navegación principal">
         <div className="layoutPrincipal__marca">
           <NavLink className="layoutPrincipal__logoEnlace" to={rutaInicio}>
             <img
@@ -102,6 +149,7 @@ export function LayoutPrincipal() {
                 }
                 end={enlace.ruta === rutasAplicacion.reportes}
                 to={enlace.ruta}
+                title={enlace.etiqueta}
               >
                 <span className="layoutPrincipal__icono" aria-hidden="true">
                   <IconoEnlace size={19} strokeWidth={2.2} />
@@ -116,13 +164,29 @@ export function LayoutPrincipal() {
           })}
         </nav>
 
-        <div className="layoutPrincipal__panelRol">
+        <div
+          className="layoutPrincipal__panelRol"
+          title={esAdministrador ? 'Administrador: Acceso activo' : 'Ciudadano: Acceso activo'}
+        >
           <span className="layoutPrincipal__estadoRol" aria-hidden="true" />
-          <div>
+          <div className="layoutPrincipal__infoRol">
             <strong>{esAdministrador ? 'Administrador' : 'Ciudadano'}</strong>
             <small>Acceso activo</small>
           </div>
         </div>
+
+        <button
+          className="layoutPrincipal__toggle"
+          type="button"
+          onClick={toggleSidebar}
+          aria-label={sidebarColapsado ? "Expandir barra lateral" : "Colapsar barra lateral"}
+          title={sidebarColapsado ? "Expandir" : "Colapsar"}
+        >
+          <span className="layoutPrincipal__iconoToggle" aria-hidden="true">
+            {sidebarColapsado ? <ChevronRight size={19} strokeWidth={2.2} /> : <ChevronLeft size={19} strokeWidth={2.2} />}
+          </span>
+          <span className="layoutPrincipal__textoToggle">Contraer menú</span>
+        </button>
       </aside>
 
       <div className="layoutPrincipal__cuerpo">
@@ -134,15 +198,23 @@ export function LayoutPrincipal() {
           </div>
 
           <div className="layoutPrincipal__accionesHeader">
-            <label className="layoutPrincipal__buscador">
-              <Search
-                aria-hidden="true"
-                className="layoutPrincipal__buscadorIcono"
-                size={18}
-                strokeWidth={2.2}
-              />
-              <input aria-label="Buscar en Ciudad Activa" placeholder="Buscar" type="search" />
-            </label>
+            <form className="layoutPrincipal__buscadorForm" onSubmit={manejarBusquedaSubmit}>
+              <label className="layoutPrincipal__buscador">
+                <Search
+                  aria-hidden="true"
+                  className="layoutPrincipal__buscadorIcono"
+                  size={18}
+                  strokeWidth={2.2}
+                />
+                <input
+                  aria-label="Buscar reportes"
+                  placeholder="Buscar reportes..."
+                  type="search"
+                  value={textoBusqueda}
+                  onChange={(e) => setTextoBusqueda(e.target.value)}
+                />
+              </label>
+            </form>
 
             <NavLink
               aria-label="Notificaciones"
@@ -152,6 +224,16 @@ export function LayoutPrincipal() {
             >
               <Bell size={18} strokeWidth={2.2} />
             </NavLink>
+
+            <button
+              aria-label="Alternar tema"
+              className="layoutPrincipal__botonIcono"
+              title={tema === 'light' ? 'Activar modo oscuro' : 'Activar modo claro'}
+              type="button"
+              onClick={toggleTema}
+            >
+              {tema === 'light' ? <Moon size={18} strokeWidth={2.2} /> : <Sun size={18} strokeWidth={2.2} />}
+            </button>
 
             <button
               aria-label="Cerrar sesión"
