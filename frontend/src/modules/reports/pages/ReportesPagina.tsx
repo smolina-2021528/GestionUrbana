@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { rutasAplicacion, rolesSistema } from '../../../config/constantesSistema';
 import { textosSistema } from '../../../design/identity/textosSistema';
@@ -104,6 +104,8 @@ function obtenerMensajeBusquedaFallida(mensaje?: string, error?: string) {
 
 export function ReportesPagina() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const queryParam = searchParams.get('q') || '';
   const { roles } = usarAutenticacion();
 
   const [filtros, setFiltros] = useState<FiltrosListadoReportes>(filtrosIniciales);
@@ -114,11 +116,16 @@ export function ReportesPagina() {
   const [mostrarHeatmap, setMostrarHeatmap] = useState(true);
   const [filtrosHeatmap, setFiltrosHeatmap] =
     useState<FiltrosHeatmapReportesTipo>(filtrosHeatmapIniciales);
-  const [textoBusquedaTerritorial, setTextoBusquedaTerritorial] = useState('');
-  const [busquedaTerritorial, setBusquedaTerritorial] = useState('');
+  const [textoBusquedaTerritorial, setTextoBusquedaTerritorial] = useState(queryParam);
+  const [busquedaTerritorial, setBusquedaTerritorial] = useState(queryParam);
   const [reporteMapaSeleccionadoId, setReporteMapaSeleccionadoId] = useState<string | undefined>();
   const [mensajeUbicacion, setMensajeUbicacion] = useState<string | undefined>();
   const [solicitandoUbicacion, setSolicitandoUbicacion] = useState(false);
+
+  useEffect(() => {
+    setTextoBusquedaTerritorial(queryParam);
+    setBusquedaTerritorial(queryParam);
+  }, [queryParam]);
 
   const esAdministrador = roles.includes(rolesSistema.administrador);
   const busquedaTerritorialActiva = esTextoBusquedaReporteValido(busquedaTerritorial);
@@ -330,6 +337,7 @@ export function ReportesPagina() {
     setTextoBusquedaTerritorial('');
     setBusquedaTerritorial('');
     setReporteMapaSeleccionadoId(undefined);
+    setSearchParams({});
   };
 
   const buscarTerritorialmente = () => {
@@ -341,6 +349,7 @@ export function ReportesPagina() {
 
     setBusquedaTerritorial(textoLimpio);
     setReporteMapaSeleccionadoId(undefined);
+    setSearchParams({ q: textoLimpio });
   };
 
   const limpiarConsultaGeografica = () => {

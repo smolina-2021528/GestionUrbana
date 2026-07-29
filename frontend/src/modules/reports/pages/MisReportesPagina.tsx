@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { rutasAplicacion } from '../../../config/constantesSistema';
 import { textosSistema } from '../../../design/identity/textosSistema';
@@ -43,12 +43,26 @@ function limpiarFiltro<TFiltros extends Record<string, unknown>>(
 
 export function MisReportesPagina() {
   const navigate = useNavigate();
-  const [filtros, setFiltros] = useState<FiltrosMisReportes>(filtrosIniciales);
+  const [searchParams] = useSearchParams();
+  const queryParam = searchParams.get('q') || '';
+  const [filtros, setFiltros] = useState<FiltrosMisReportes>(() => ({
+    ...filtrosIniciales,
+    q: queryParam || undefined
+  }));
+
+  useEffect(() => {
+    setFiltros((filtrosActuales) => ({
+      ...filtrosActuales,
+      page: 1,
+      q: queryParam || undefined
+    }));
+  }, [queryParam]);
 
   const consultaMisReportes = usarMisReportes(filtros);
 
   const respuestaReportes = consultaMisReportes.data;
   const reportes = respuestaReportes?.success === true ? respuestaReportes.data ?? [] : [];
+  const reportesFiltrados = reportes;
   const paginacion = respuestaReportes?.success === true ? respuestaReportes.pagination : undefined;
 
   const mensajeRespuestaFallida =
@@ -205,6 +219,32 @@ export function MisReportesPagina() {
         </div>
       </Tarjeta>
 
+      {queryParam && (
+        <Tarjeta
+          className="reportesPagina__filtroInfo"
+          style={{
+            marginBottom: '1rem',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '0.75rem 1rem'
+          }}
+        >
+          <div>
+            Filtrado por búsqueda: <strong>"{queryParam}"</strong>
+          </div>
+          <Boton variante="secundario" tamano="sm" onClick={() => navigate(rutasAplicacion.misReportes)}>
+            Limpiar búsqueda
+          </Boton>
+        </Tarjeta>
+      )}
+
+      {queryParam && reportesFiltrados.length === 0 && reportes.length > 0 && (
+        <Alerta variante="informacion" titulo="Sin resultados">
+          <p>No se encontraron reportes que coincidan con la búsqueda "{queryParam}".</p>
+        </Alerta>
+      )}
+
       {mensajeError && reportes.length > 0 ? (
         <Alerta variante="advertencia" titulo="Los datos mostrados pueden no estar actualizados">
           <p>{mensajeError}</p>
@@ -212,21 +252,27 @@ export function MisReportesPagina() {
       ) : null}
 
       <ListadoReportes
-        reportes={reportes}
+        reportes={reportesFiltrados}
         cargando={estaCargando}
         mensajeError={mensajeError}
         paginacion={paginacion}
         mostrarCiudadano={false}
         mostrarAsignado={false}
-        tituloVacio="Aún no has registrado reportes"
-        descripcionVacia="Cuando crees un reporte urbano, podrás darle seguimiento desde esta sección."
+        tituloVacio={queryParam ? "No hay resultados para tu búsqueda" : "Aún no has registrado reportes"}
+        descripcionVacia={queryParam ? "Intenta con otras palabras clave o limpia el filtro de búsqueda." : "Cuando crees un reporte urbano, podrás darle seguimiento desde esta sección."}
         accionVacia={
-          <div className="reportesPagina__accionesVacias">
-            <Boton onClick={irACrearReporte}>Crear reporte</Boton>
-            <Boton variante="secundario" onClick={actualizarReportes}>
-              Actualizar reportes
+          queryParam ? (
+            <Boton onClick={() => navigate(rutasAplicacion.misReportes)}>
+              Limpiar búsqueda
             </Boton>
-          </div>
+          ) : (
+            <div className="reportesPagina__accionesVacias">
+              <Boton onClick={irACrearReporte}>Crear reporte</Boton>
+              <Boton variante="secundario" onClick={actualizarReportes}>
+                Actualizar reportes
+              </Boton>
+            </div>
+          )
         }
         alActualizar={actualizarReportes}
         alVerDetalle={irADetalleReporte}

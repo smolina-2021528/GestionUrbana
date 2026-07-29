@@ -120,6 +120,7 @@ export type FiltrosListadoReportes = FiltrosFechaReportes & {
 export type FiltrosMisReportes = FiltrosFechaReportes & {
   page?: number;
   limit?: number;
+  q?: string;
 };
 
 export type CrearReportePayload = {
