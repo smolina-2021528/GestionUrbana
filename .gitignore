@@ -42,3 +42,6 @@ mobile/.expo/
 mobile/node_modules/
 mobile/dist/
 mobile/web-build/
+
+# Frontend compilado
+frontend/dist/
