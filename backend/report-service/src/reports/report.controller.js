@@ -1,4 +1,4 @@
-﻿import { Op } from "sequelize";
+import { Op } from "sequelize";
 import { sequelize } from "../../configs/db.js";
 import { Report } from "./report.model.js";
 import { ReportImage } from "./report-image.model.js";
@@ -25,6 +25,7 @@ import {
 import {
   uploadReportImage,
   deleteImage,
+  getReportImageUrl,
 } from "../../../shared/cloudinary-service.js";
 import {
   buildReportGeoResponse,
@@ -438,7 +439,7 @@ export const deleteReport = async (req, res) => {
 // Lista los reportes del usuario autenticado.
 export const getMyReports = async (req, res) => {
   try {
-    let { page = 1, limit = 10 } = req.query;
+    let { page = 1, limit = 10, q } = req.query;
 
     page = parseInt(page);
     limit = parseInt(limit);
@@ -456,6 +457,7 @@ export const getMyReports = async (req, res) => {
       offset,
       startDate,
       endDate,
+      q: q ? q.trim() : undefined,
     });
 
     const reports = rows.map((report) => buildReportGeoResponse(report));
@@ -1343,14 +1345,15 @@ export const reprocessReportAI = async (req, res) => {
     await markReportAIPending(reportId);
 
     // 4. Usar la URL de Cloudinary de la primera imagen
-    const imageUrl = images[0].ImageUrl;
+    const storedImagePath = images[0].ImageUrl ?? images[0].PublicId;
+    const resolvedUrl = getReportImageUrl(storedImagePath);
 
     // Limpiar caché para forzar un análisis fresco en el reprocesamiento
-    cacheDelete(imageUrl);
+    cacheDelete(resolvedUrl);
 
     let geminiResult;
     try {
-      geminiResult = await analyzeReportImage(imageUrl);
+      geminiResult = await analyzeReportImage(resolvedUrl);
     } catch (aiError) {
       // Marcar como FAILED si Gemini falla
       await Report.update(

@@ -76,10 +76,17 @@ export const findReportByClientRequestId = async (userId, clientRequestId) => {
 // Lista los reportes de un usuario con paginación
 export const findReportsByUser = async (userId, options = {}) => {
     try {
-        const { limit = 10, offset = 0, startDate, endDate } = options;
+        const { limit = 10, offset = 0, startDate, endDate, q } = options;
 
         const where = { UserId: userId };
         Object.assign(where, buildDateWhereClause(startDate, endDate));
+
+        if (q) {
+            where[Op.or] = [
+                { Title:       { [Op.iLike]: `%${q}%` } },
+                { Description: { [Op.iLike]: `%${q}%` } },
+            ];
+        }
 
         const reports = await Report.findAndCountAll({
             where,
